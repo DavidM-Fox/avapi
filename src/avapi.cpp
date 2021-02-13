@@ -1,103 +1,120 @@
 #include "../inc/avapi.h"
 
-quote::quote(std::string t_symbol) : m_symbol(t_symbol)
+namespace avapi {
+
+// Quote constructor
+Quote::Quote(std::string symbol, std::string api_key)
+    : m_symbol(symbol), m_api_key(api_key)
 {
-    std::string api_key;
-    std::ifstream file("..\\..\\api.key");
-    if (file.is_open()) {
-        std::getline(file, api_key);
-        this->m_api_key = api_key;
-        file.close();
-    }
-    else {
-        std::cout << "Unable to open file";
-    }
 }
 
-// quote deconstructor
-quote::~quote() {}
+// Quote deconstructor
+Quote::~Quote() {}
 
-// Class Setters
-void quote::set_function(std::string t_function)
+// Get Intraday stock data on a set interval.
+void Quote::getIntraday(std::string interval)
 {
-    this->m_function = t_function;
-}
-void quote::set_symbol(std::string t_symbol) { this->m_symbol = t_symbol; }
-void quote::set_interval(std::string t_interval)
-{
-    this->m_interval = t_interval;
-}
+    std::string url =
+        "https://www.alphavantage.co/"
+        "query?function=TIME_SERIES_INTRADAY&symbol={symbol}&interval="
+        "{interval}&apikey={api}&datatype=csv";
 
-// Class Getters
-std::string quote::get_function() { return this->m_function; }
-std::string quote::get_symbol() { return this->m_symbol; }
-std::string quote::get_interval() { return this->m_interval; }
+    string_replace(url, "{symbol}", this->m_symbol);
+    string_replace(url, "{interval}", interval);
+    string_replace(url, "{api}", this->m_api_key);
 
-/*
-Downloads historical stock data for a set range.
-t_function can be "Today", "Daily", "Weekly", or "Monthly".
-Returns an std::string of the .csv file.
-*/
-void quote::download(const std::string &t_function)
-{
-    if (build_url(t_function)) {
-        std::string file =
-            "..\\..\\stock_data\\" + t_function + "_" + get_symbol() + ".csv";
-        const char *url = this->m_url.c_str();
-        CURL *curl;
-        FILE *fp;
-        CURLcode res;
-        curl = curl_easy_init();
-        if (curl) {
-            fp = fopen(file.c_str(), "wb");
-            curl_easy_setopt(curl, CURLOPT_URL, url);
-            curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, NULL);
-            curl_easy_setopt(curl, CURLOPT_WRITEDATA, fp);
-            res = curl_easy_perform(curl);
+    std::cout << url;
 
-            /* always cleanup */
-            curl_easy_cleanup(curl);
-            fclose(fp);
-        }
-    }
-    else {
-        std::cout << "Error: t_function is incorrect";
-    }
+    std::string file_name =
+        "..\\..\\data\\intraday_" + interval + "_" + this->m_symbol + ".csv";
+    download(url, file_name);
 }
 
-// Builds download url from quote data
-bool quote::build_url(const std::string &t_function)
+// Get daily stock data from last_n days.
+void Quote::getDaily(int last_n)
 {
-    std::string url;
-    if (t_function == "Today")
-        url = "https://www.alphavantage.co/"
-              "query?function=TIME_SERIES_INTRADAY&symbol={symbol}&interval="
-              "15min&apikey={api}&datatype=csv";
-    else if (t_function == "Daily")
-        url = "https://www.alphavantage.co/"
-              "query?function=TIME_SERIES_DAILY&symbol={symbol}&apikey={api}&"
-              "datatype=csv";
-    else if (t_function == "Weekly")
-        url = "https://www.alphavantage.co/"
-              "query?function=TIME_SERIES_WEEKLY&symbol={symbol}&apikey={api}&"
-              "datatype=csv";
-    else if (t_function == "Monthly")
-        url = "https://www.alphavantage.co/"
-              "query?function=TIME_SERIES_MONTHLY&symbol={symbol}&apikey={api}&"
-              "datatype=csv";
-    else
-        return false;
+    std::string url =
+        "https://www.alphavantage.co/"
+        "query?function=TIME_SERIES_DAILY&symbol={symbol}&apikey={api}&"
+        "datatype=csv";
+    string_replace(url, "{symbol}", this->m_symbol);
+    string_replace(url, "{api}", this->m_api_key);
+
+    std::string file_name = "..\\..\\data\\daily_" + this->m_symbol + ".csv";
+    download(url, file_name);
+}
+
+// Get weekly stock data from last_n weeks.
+void Quote::getWeekly(int last_n)
+{
+    std::string url =
+        "https://www.alphavantage.co/"
+        "query?function=TIME_SERIES_WEEKLY&symbol={symbol}&apikey={api}&"
+        "datatype=csv";
 
     string_replace(url, "{symbol}", this->m_symbol);
     string_replace(url, "{api}", this->m_api_key);
-    this->m_url = url;
 
-    return true;
+    std::string file_name = "..\\..\\data\\weekly_" + this->m_symbol + ".csv";
+    download(url, file_name);
 }
 
-// Replaces string "{from}" to "{to}"
-bool quote::string_replace(std::string &str, const std::string from,
-                           const std::string to)
+// Get monthly stock data from last_n months.
+void Quote::getMonthly(int last_n)
+{
+    std::string url =
+        "https://www.alphavantage.co/"
+        "query?function=TIME_SERIES_MONTHLY&symbol={symbol}&apikey={api}&"
+        "datatype=csv";
+
+    string_replace(url, "{symbol}", this->m_symbol);
+    string_replace(url, "{api}", this->m_api_key);
+
+    std::string file_name = "..\\..\\data\\monthly_" + this->m_symbol + ".csv";
+    download(url, file_name);
+}
+
+void Quote::getGlobalQuote()
+{
+    std::string url =
+        "https://www.alphavantage.co/"
+        "query?function=GLOBAL_QUOTE&symbol={symbol}&apikey={api}&datatype=csv";
+
+    string_replace(url, "{symbol}", this->m_symbol);
+    string_replace(url, "{api}", this->m_api_key);
+
+    std::string file_name =
+        "..\\..\\data\\global_quote_" + this->m_symbol + ".csv";
+    download(url, file_name);
+}
+
+// Downloads historical stock data for a set range.
+// t_function can be "Today", "Daily", "Weekly", or "Monthly".
+// Returns an std::string of the .csv file.
+void Quote::download(const std::string &t_url, const std::string &file_name)
+{
+    const char *url = t_url.c_str();
+    const char *file = file_name.c_str();
+    CURL *curl;
+    FILE *fp;
+    CURLcode res;
+    curl = curl_easy_init();
+    if (curl) {
+        fp = fopen(file, "wb");
+        curl_easy_setopt(curl, CURLOPT_URL, url);
+        curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, NULL);
+        curl_easy_setopt(curl, CURLOPT_WRITEDATA, fp);
+        res = curl_easy_perform(curl);
+
+        /* always cleanup */
+        curl_easy_cleanup(curl);
+        fclose(fp);
+    }
+}
+
+// Replaces string "from" to "to" within "str"
+bool string_replace(std::string &str, const std::string from,
+                    const std::string to)
 {
     size_t start = str.find(from);
     if (start == std::string::npos) {
@@ -106,3 +123,21 @@ bool quote::string_replace(std::string &str, const std::string from,
     str.replace(start, from.length(), to);
     return true;
 }
+
+// Reads the first line from provided file
+// Used mainly for reading an api.key file with a single line
+std::string readFirstLineFromFile(const std::string &file_name)
+{
+    std::string api_key;
+    std::ifstream file(file_name);
+    if (file.is_open()) {
+        std::getline(file, api_key);
+        file.close();
+    }
+    else {
+        std::cout << "Unable to open file: " << file_name;
+    }
+    return api_key;
+}
+
+} // namespace avapi
