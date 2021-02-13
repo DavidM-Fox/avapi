@@ -34,3 +34,4 @@
 # Project Specific
 *.key
 build/
+data/
