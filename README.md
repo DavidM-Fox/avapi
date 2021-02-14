@@ -22,7 +22,7 @@ avapi::time_series series = quote.getIntradayDataSeries("15min");
 
 ```
 
-The ```avapi::time_series``` object is a vector of pairs with each pair containing a Unix timestamp and the data associated with it.
+The ```avapi::time_series``` object is a vector of pairs with each pair containing a Unix timestamp and a vector containing the data associated with said timestamp. The data is ordered as [open, high, low, close, volume].
 
 ```C++
 
