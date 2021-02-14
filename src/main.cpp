@@ -1,19 +1,19 @@
 #include "../inc/avapi.h"
-#include "../inc/csv-parser.h"
-#include <chrono>
-#include <sstream>
-#include <vector>
+#include "../inc/rapidcsv.h"
 
 int main()
 {
     std::string api_key = avapi::readFirstLineFromFile("../../api.key");
-    avapi::Quote quote("GME", api_key);
-    auto xy = quote.getIntraday("15min");
-    auto time = quote.getTimeCol();
+    avapi::Quote quote("TSLA", api_key);
+    avapi::time_series TSLA_intraday = quote.getIntradayDataSeries("15min");
 
-    for (auto &t : time) {
-
-        std::cout << t << '\n';
+    for (auto &pair : TSLA_intraday) {
+        std::cout << pair.first << ": ";
+        std::cout << pair.second[0] << ", ";
+        std::cout << pair.second[1] << ", ";
+        std::cout << pair.second[2] << ", ";
+        std::cout << pair.second[3] << ", ";
+        std::cout << pair.second[4] << '\n';
     }
     std::cout << std::endl;
 }

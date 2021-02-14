@@ -1,5 +1,5 @@
 #include "../inc/avapi.h"
-#include "../inc/csv-parser.h"
+#include "../inc/rapidcsv.h"
 
 namespace avapi {
 
@@ -7,85 +7,73 @@ namespace avapi {
 Quote::Quote(std::string symbol, std::string api_key)
     : m_symbol(symbol), m_api_key(api_key)
 {
+    string_replace(url_symbol_api, "{symbol}", symbol);
+    string_replace(url_symbol_api, "{api}", api_key);
 }
 
 // Quote deconstructor
 Quote::~Quote() {}
 
-// Get Intraday stock data on a set interval.
-std::vector<std::vector<float>> Quote::getIntraday(std::string interval)
+time_series Quote::getIntradayDataSeries(const std::string &interval)
 {
     std::string url =
-        "https://www.alphavantage.co/"
-        "query?function=TIME_SERIES_INTRADAY&symbol={symbol}&interval="
-        "{interval}&apikey={api}&datatype=csv";
+        url_base + "TIME_SERIES_INTRADAY&interval={interval}" + url_symbol_api;
 
-    string_replace(url, "{symbol}", this->m_symbol);
     string_replace(url, "{interval}", interval);
-    string_replace(url, "{api}", this->m_api_key);
-
-    std::cout << url;
 
     std::string file_name =
         "..\\..\\data\\intraday_" + interval + "_" + this->m_symbol + ".csv";
+
     download(url, file_name);
 
-    return parse(file_name);
+    return parseIntradayCsv(file_name);
 }
 
-// Get daily stock data from last_n days.
-std::vector<std::vector<float>> Quote::getDaily(int last_n)
+time_series Quote::getTimeDataSeries(const function &func, const size_t &n_last)
 {
-    std::string url =
-        "https://www.alphavantage.co/"
-        "query?function=TIME_SERIES_DAILY&symbol={symbol}&apikey={api}&"
-        "datatype=csv";
-    string_replace(url, "{symbol}", this->m_symbol);
-    string_replace(url, "{api}", this->m_api_key);
+    std::string url, file_name;
+    switch (func) {
 
-    std::string file_name = "..\\..\\data\\daily_" + this->m_symbol + ".csv";
-    download(url, file_name);
-    return parse(file_name);
-}
+    case function::DAILY:
+        url = url_base + "TIME_SERIES_DAILY" + url_symbol_api;
+        string_replace(url, "{symbol}", this->m_symbol);
+        string_replace(url, "{api}", this->m_api_key);
 
-// Get weekly stock data from last_n weeks.
-std::vector<std::vector<float>> Quote::getWeekly(int last_n)
-{
-    std::string url =
-        "https://www.alphavantage.co/"
-        "query?function=TIME_SERIES_WEEKLY&symbol={symbol}&apikey={api}&"
-        "datatype=csv";
+        file_name = "..\\..\\data\\daily_" + this->m_symbol + ".csv";
 
-    string_replace(url, "{symbol}", this->m_symbol);
-    string_replace(url, "{api}", this->m_api_key);
+        download(url, file_name);
+        return parseTimeDataSeries(file_name, n_last);
 
-    std::string file_name = "..\\..\\data\\weekly_" + this->m_symbol + ".csv";
-    download(url, file_name);
-    return parse(file_name);
-}
+    case function::WEEKLY:
+        url = url_base + "TIME_SERIES_WEEKLY" + url_symbol_api;
+        string_replace(url, "{symbol}", this->m_symbol);
+        string_replace(url, "{api}", this->m_api_key);
 
-// Get monthly stock data from last_n months.
-std::vector<std::vector<float>> Quote::getMonthly(int last_n)
-{
-    std::string url =
-        "https://www.alphavantage.co/"
-        "query?function=TIME_SERIES_MONTHLY&symbol={symbol}&apikey={api}&"
-        "datatype=csv";
+        file_name = "..\\..\\data\\weekly_" + this->m_symbol + ".csv";
 
-    string_replace(url, "{symbol}", this->m_symbol);
-    string_replace(url, "{api}", this->m_api_key);
+        download(url, file_name);
+        return parseTimeDataSeries(file_name, n_last);
 
-    std::string file_name = "..\\..\\data\\monthly_" + this->m_symbol + ".csv";
-    download(url, file_name);
-    return parse(file_name);
+    case function::MONTHLY:
+        url = url_base + "TIME_SERIES_MONTHLY" + url_symbol_api;
+        string_replace(url, "{symbol}", this->m_symbol);
+        string_replace(url, "{api}", this->m_api_key);
+
+        file_name = "..\\..\\data\\monthly_" + this->m_symbol + ".csv";
+
+        download(url, file_name);
+        return parseTimeDataSeries(file_name, n_last);
+
+    default:
+        std::cout << "Error: Incorrect function passed." << std::endl;
+        break;
+    }
 }
 
 // Get latest global quote for stock
-std::vector<std::vector<float>> Quote::getGlobalQuote()
+time_pair Quote::getGlobalQuote()
 {
-    std::string url =
-        "https://www.alphavantage.co/"
-        "query?function=GLOBAL_QUOTE&symbol={symbol}&apikey={api}&datatype=csv";
+    std::string url = url_base + "GLOBAL_QUOTE" + url_symbol_api;
 
     string_replace(url, "{symbol}", this->m_symbol);
     string_replace(url, "{api}", this->m_api_key);
@@ -93,13 +81,86 @@ std::vector<std::vector<float>> Quote::getGlobalQuote()
     std::string file_name =
         "..\\..\\data\\global_quote_" + this->m_symbol + ".csv";
     download(url, file_name);
-    return parse(file_name);
+
+    rapidcsv::Document doc("../../data/global_quote.csv",
+                           rapidcsv::LabelParams(0, 0));
+
+    std::vector<float> data = doc.GetRow<float>(this->m_symbol);
+    data.erase(data.begin() + 5);
+
+    // std::vector<std::string> date = doc.GetColumn<std::string>("latestDay");
+    time_pair global_quote = std::make_pair(
+        dateToUnixTimestamp(doc.GetColumn<std::string>("latestDay")[0]), data);
+
+    return global_quote;
 }
 
-std::vector<std::time_t> Quote::getTimeCol() { return this->m_timeCol; }
+time_series Quote::parseIntradayCsv(const std::string &file_name)
+{
+    rapidcsv::Document doc(file_name);
 
-// Curls stock data using "t_url" and saves it to .csv "file_name"
-void Quote::download(const std::string &t_url, const std::string &file_name)
+    std::vector<std::string> date_time = doc.GetColumn<std::string>(0);
+    size_t n_data = date_time.size();
+
+    std::vector<float> open = doc.GetColumn<float>(1);
+    std::vector<float> high = doc.GetColumn<float>(2);
+    std::vector<float> low = doc.GetColumn<float>(3);
+    std::vector<float> close = doc.GetColumn<float>(4);
+    std::vector<float> volume = doc.GetColumn<float>(5);
+
+    time_series series;
+
+    for (int i = 0; i < n_data; ++i) {
+
+        std::vector<float> data;
+
+        data.push_back(open[i]);
+        data.push_back(high[i]);
+        data.push_back(low[i]);
+        data.push_back(close[i]);
+        data.push_back(volume[i]);
+
+        series.push_back(
+            std::make_pair(dateTimeToUnixTimestamp(date_time[i]), data));
+    }
+    return series;
+}
+
+time_series Quote::parseTimeDataSeries(const std::string &file_name,
+                                       const size_t &n_last)
+{
+    rapidcsv::Document doc(file_name);
+
+    std::vector<std::string> date = doc.GetColumn<std::string>(0);
+    size_t n_data = date.size();
+
+    std::vector<float> open = doc.GetColumn<float>(1);
+    std::vector<float> high = doc.GetColumn<float>(2);
+    std::vector<float> low = doc.GetColumn<float>(3);
+    std::vector<float> close = doc.GetColumn<float>(4);
+    std::vector<float> volume = doc.GetColumn<float>(5);
+
+    time_series series;
+
+    for (int i = 0; i < n_data; ++i) {
+
+        std::vector<float> data;
+
+        data.push_back(open[i]);
+        data.push_back(high[i]);
+        data.push_back(low[i]);
+        data.push_back(close[i]);
+        data.push_back(volume[i]);
+
+        series.push_back(std::make_pair(dateToUnixTimestamp(date[i]), data));
+    }
+    return series;
+}
+
+// Helper Functions -----------------------
+
+// Curls .csv data file using "t_url" and saves it to .csv "file_name"
+void download(const std::string &t_url, const std::string &file_name)
 {
     const char *url = t_url.c_str();
     const char *file = file_name.c_str();
@@ -120,47 +181,6 @@ void Quote::download(const std::string &t_url, const std::string &file_name)
     }
 }
 
-std::vector<std::vector<float>> Quote::parse(const std::string &file_name)
-{
-    std::string time_str = "%Y-%m-%d";
-    if (file_name.find("intraday")) {
-        time_str = "%Y-%m-%d %H:%M:%S";
-    }
-
-    csv::CSVReader reader(file_name);
-
-    std::tm t{};
-
-    std::vector<float> x;
-    float val;
-    std::vector<std::vector<float>> xy;
-
-    std::vector<std::time_t> time_vec;
-
-    for (csv::CSVRow &row : reader) {
-        std::vector<float> x;
-        for (int i = 0; i < 6; ++i) {
-            if (i == 0) {
-                std::stringstream ss;
-                ss << row[i].get<std::string>();
-                ss >> std::get_time(&t, time_str.c_str());
-                time_t time = mktime(&t);
-                time_vec.push_back(time);
-            }
-            else {
-                val = row[i].get<float>();
-
-                x.push_back(val);
-            }
-        }
-        xy.push_back(x);
-    }
-
-    this->m_timeCol = time_vec;
-
-    return xy;
-}
-
 // Replaces string "from" to "to" within "str"
 bool string_replace(std::string &str, const std::string from,
                     const std::string to)
@@ -174,7 +194,7 @@ bool string_replace(std::string &str, const std::string from,
 }
 
 // Reads the first line from provided file
-// Used mainly for reading an api.key file with a single line
+// Used mainly for reading an api key
 std::string readFirstLineFromFile(const std::string &file_name)
 {
     std::string api_key;
@@ -189,4 +209,22 @@ std::string readFirstLineFromFile(const std::string &file_name)
     return api_key;
 }
 
+// Converts string "%Y-%m-%d %H:%M:%S" to Unix Timestamp (seconds since
+// epoch)
+std::time_t dateTimeToUnixTimestamp(std::string input)
+{
+    std::tm t{};
+    std::istringstream ss(input);
+    ss >> std::get_time(&t, "%Y-%m-%d %H:%M:%S");
+    return mktime(&t);
+}
+
+// Converts string "%Y-%m-%d" to Unix Timestamp (seconds since epoch)
+std::time_t dateToUnixTimestamp(std::string input)
+{
+    std::tm t{};
+    std::istringstream ss(input);
+    ss >> std::get_time(&t, "%Y-%m-%d");
+    return mktime(&t);
+}
 } // namespace avapi
