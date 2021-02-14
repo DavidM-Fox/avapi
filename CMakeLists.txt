@@ -12,7 +12,6 @@ set(PROJECT_SOURCES
         src/main.cpp
         inc/rapidcsv.h
         inc/avapi.h
-        src/avapi.cpp
 )
 
 add_executable(avapi_test ${PROJECT_SOURCES})
