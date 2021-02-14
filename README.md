@@ -30,7 +30,7 @@ typedef std::vector<std::pair<std::time_t, std::vector<float>>> time_series
 
 ```
 
-We can iterate over this object to test our this library's function
+We can iterate over this object to test this library's function
 
 ```C++
 
@@ -49,7 +49,6 @@ std::cout << std::endl;
 This gives the following output:
 
 ```
-
 1613181600: 817, 817.99, 816.6, 817.55, 14545
 1613180700: 817.05, 817.5, 816.54, 816.98, 5424
 1613179800: 817, 817.5, 817, 817.04, 3234
@@ -61,5 +60,4 @@ This gives the following output:
 1613174400: 815.75, 815.79, 815.7, 815.7, 4021
 1613173500: 816, 816, 815.76, 815.88, 2738
 1613172600: 815.3, 816, 815.12, 815.99, 16265....
-
 ```
