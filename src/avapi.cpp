@@ -122,14 +122,13 @@ void Quote::download(const std::string &t_url, const std::string &file_name)
 
 std::vector<std::vector<float>> Quote::parse(const std::string &file_name)
 {
-    std::string time_str = "%Y-%m-%d %H:%M:%S";
+    std::string time_str = "%Y-%m-%d";
     if (file_name.find("intraday")) {
-        time_str = "%Y-%m-%d";
+        time_str = "%Y-%m-%d %H:%M:%S";
     }
 
     csv::CSVReader reader(file_name);
 
-    std::time_t time_stamp;
     std::tm t{};
 
     std::vector<float> x;
@@ -144,7 +143,7 @@ std::vector<std::vector<float>> Quote::parse(const std::string &file_name)
             if (i == 0) {
                 std::stringstream ss;
                 ss << row[i].get<std::string>();
-                ss >> std::get_time(&t, "%Y-%m-%d %H:%M:%S");
+                ss >> std::get_time(&t, time_str.c_str());
                 time_t time = mktime(&t);
                 time_vec.push_back(time);
             }
