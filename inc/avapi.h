@@ -6,6 +6,7 @@
 #include <iostream>
 #include <stdio.h>
 #include <string>
+#include <vector>
 
 namespace avapi {
 
@@ -14,11 +15,13 @@ public:
     Quote(std::string symbol, std::string api_key);
     ~Quote();
 
-    void getIntraday(std::string interval);
-    void getDaily(int last_n);
-    void getWeekly(int last_n);
-    void getMonthly(int last_n);
-    void getGlobalQuote();
+    std::vector<std::vector<float>> getIntraday(std::string interval);
+    std::vector<std::vector<float>> getDaily(int last_n);
+    std::vector<std::vector<float>> getWeekly(int last_n);
+    std::vector<std::vector<float>> getMonthly(int last_n);
+    std::vector<std::vector<float>> getGlobalQuote();
+
+    std::vector<std::time_t> getTimeCol();
 
     std::string m_symbol;
 
@@ -26,9 +29,12 @@ private:
     std::string m_api_key;
 
     void download(const std::string &t_url, const std::string &file_name);
+    std::vector<std::vector<float>> parse(const std::string &file_name);
 
     std::string m_fileName;
     std::string m_url;
+    std::vector<std::time_t> m_timeCol;
+    std::vector<float> m_volCol;
 };
 
 // Helper Functions

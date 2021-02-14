@@ -1,4 +1,5 @@
 #include "../inc/avapi.h"
+#include "../inc/csv-parser.h"
 
 namespace avapi {
 
@@ -12,7 +13,7 @@ Quote::Quote(std::string symbol, std::string api_key)
 Quote::~Quote() {}
 
 // Get Intraday stock data on a set interval.
-void Quote::getIntraday(std::string interval)
+std::vector<std::vector<float>> Quote::getIntraday(std::string interval)
 {
     std::string url =
         "https://www.alphavantage.co/"
@@ -28,10 +29,12 @@ void Quote::getIntraday(std::string interval)
     std::string file_name =
         "..\\..\\data\\intraday_" + interval + "_" + this->m_symbol + ".csv";
     download(url, file_name);
+
+    return parse(file_name);
 }
 
 // Get daily stock data from last_n days.
-void Quote::getDaily(int last_n)
+std::vector<std::vector<float>> Quote::getDaily(int last_n)
 {
     std::string url =
         "https://www.alphavantage.co/"
@@ -42,10 +45,11 @@ void Quote::getDaily(int last_n)
 
     std::string file_name = "..\\..\\data\\daily_" + this->m_symbol + ".csv";
     download(url, file_name);
+    return parse(file_name);
 }
 
 // Get weekly stock data from last_n weeks.
-void Quote::getWeekly(int last_n)
+std::vector<std::vector<float>> Quote::getWeekly(int last_n)
 {
     std::string url =
         "https://www.alphavantage.co/"
@@ -57,10 +61,11 @@ void Quote::getWeekly(int last_n)
 
     std::string file_name = "..\\..\\data\\weekly_" + this->m_symbol + ".csv";
     download(url, file_name);
+    return parse(file_name);
 }
 
 // Get monthly stock data from last_n months.
-void Quote::getMonthly(int last_n)
+std::vector<std::vector<float>> Quote::getMonthly(int last_n)
 {
     std::string url =
         "https://www.alphavantage.co/"
@@ -72,9 +77,11 @@ void Quote::getMonthly(int last_n)
 
     std::string file_name = "..\\..\\data\\monthly_" + this->m_symbol + ".csv";
     download(url, file_name);
+    return parse(file_name);
 }
 
-void Quote::getGlobalQuote()
+// Get latest global quote for stock
+std::vector<std::vector<float>> Quote::getGlobalQuote()
 {
     std::string url =
         "https://www.alphavantage.co/"
@@ -86,11 +93,12 @@ void Quote::getGlobalQuote()
     std::string file_name =
         "..\\..\\data\\global_quote_" + this->m_symbol + ".csv";
     download(url, file_name);
+    return parse(file_name);
 }
 
-// Downloads historical stock data for a set range.
-// t_function can be "Today", "Daily", "Weekly", or "Monthly".
-// Returns an std::string of the .csv file.
+std::vector<std::time_t> Quote::getTimeCol() { return this->m_timeCol; }
+
+// Curls stock data using "t_url" and saves it to .csv "file_name"
 void Quote::download(const std::string &t_url, const std::string &file_name)
 {
     const char *url = t_url.c_str();
@@ -110,6 +118,48 @@ void Quote::download(const std::string &t_url, const std::string &file_name)
         curl_easy_cleanup(curl);
         fclose(fp);
     }
+}
+
+std::vector<std::vector<float>> Quote::parse(const std::string &file_name)
+{
+    std::string time_str = "%Y-%m-%d %H:%M:%S";
+    if (file_name.find("intraday")) {
+        time_str = "%Y-%m-%d";
+    }
+
+    csv::CSVReader reader(file_name);
+
+    std::time_t time_stamp;
+    std::tm t{};
+
+    std::vector<float> x;
+    float val;
+    std::vector<std::vector<float>> xy;
+
+    std::vector<std::time_t> time_vec;
+
+    for (csv::CSVRow &row : reader) {
+        std::vector<float> x;
+        for (int i = 0; i < 6; ++i) {
+            if (i == 0) {
+                std::stringstream ss;
+                ss << row[i].get<std::string>();
+                ss >> std::get_time(&t, "%Y-%m-%d %H:%M:%S");
+                time_t time = mktime(&t);
+                time_vec.push_back(time);
+            }
+            else {
+                val = row[i].get<float>();
+
+                x.push_back(val);
+            }
+        }
+        xy.push_back(x);
+    }
+
+    this->m_timeCol = time_vec;
+
+    return xy;
 }
 
 // Replaces string "from" to "to" within "str"
