@@ -9,11 +9,8 @@
 
 namespace avapi {
 
-typedef std::vector<std::pair<std::time_t, std::vector<float>>> time_series;
 typedef std::pair<std::time_t, std::vector<float>> time_pair;
-
-std::string url_base = "https://www.alphavantage.co/query?function=";
-std::string url_symbol_api = "&symbol={symbol}&apikey={api}&datatype=csv";
+typedef std::vector<time_pair> time_series;
 
 enum class function { DAILY, WEEKLY, MONTHLY };
 
@@ -35,8 +32,6 @@ private:
 
     time_series parseTimeDataSeries(const std::string &file_name,
                                     const size_t &n_last);
-
-    void download(const std::string &t_url, const std::string &file_name);
 };
 
 // Helper Functions

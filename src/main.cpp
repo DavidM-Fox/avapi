@@ -5,9 +5,9 @@ int main()
 {
     std::string api_key = avapi::readFirstLineFromFile("../../api.key");
     avapi::Quote quote("TSLA", api_key);
-    avapi::time_series TSLA_intraday = quote.getIntradayDataSeries("15min");
+    avapi::time_series series = quote.getIntradayDataSeries("15min");
 
-    for (auto &pair : TSLA_intraday) {
+    for (auto &pair : series) {
         std::cout << pair.first << ": ";
         std::cout << pair.second[0] << ", ";
         std::cout << pair.second[1] << ", ";

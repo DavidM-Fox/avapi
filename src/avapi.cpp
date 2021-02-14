@@ -3,6 +3,9 @@
 
 namespace avapi {
 
+std::string url_base = "https://www.alphavantage.co/query?function=";
+std::string url_symbol_api = "&symbol={symbol}&apikey={api}&datatype=csv";
+
 // Quote constructor
 Quote::Quote(std::string symbol, std::string api_key)
     : m_symbol(symbol), m_api_key(api_key)
@@ -66,7 +69,8 @@ time_series Quote::getTimeDataSeries(const function &func, const size_t &n_last)
 
     default:
         std::cout << "Error: Incorrect function passed." << std::endl;
-        break;
+        time_series fail;
+        return fail;
     }
 }
 
@@ -88,7 +92,6 @@ time_pair Quote::getGlobalQuote()
     std::vector<float> data = doc.GetRow<float>(this->m_symbol);
     data.erase(data.begin() + 5);
 
-    // std::vector<std::string> date = doc.GetColumn<std::string>("latestDay");
     time_pair global_quote = std::make_pair(
         dateToUnixTimestamp(doc.GetColumn<std::string>("latestDay")[0]), data);
 
@@ -100,7 +103,7 @@ time_series Quote::parseIntradayCsv(const std::string &file_name)
     rapidcsv::Document doc(file_name);
 
     std::vector<std::string> date_time = doc.GetColumn<std::string>(0);
-    size_t n_data = date_time.size();
+    int n_data = date_time.size();
 
     std::vector<float> open = doc.GetColumn<float>(1);
     std::vector<float> high = doc.GetColumn<float>(2);
