@@ -8,22 +8,35 @@
 #include <string>
 #include <vector>
 
-
 namespace avapi {
 
+// Pair of time_t and vector<float>:
+// UNIX TIMESTAMP, [DATA]
 typedef std::pair<std::time_t, std::vector<float>> time_pair;
 typedef std::vector<time_pair> time_series;
 
-enum class function { DAILY, WEEKLY, MONTHLY };
+// avapi::Quote helper functions
+void downloadCsv(const std::string &t_url, const std::string &file_name);
+bool stringReplace(std::string &str, const std::string from,
+                   const std::string to);
+std::string readFirstLineFromFile(const std::string &file_name);
+std::time_t dateTimeToUnixTimestamp(std::string input);
+std::time_t dateToUnixTimestamp(std::string input);
+void printSeries(const time_series &series);
+void printPair(const time_pair &pair);
+
+std::string url_base = "https://www.alphavantage.co/query?function=";
+std::string url_symbol_api = "&symbol={symbol}&apikey={api}&datatype=csv";
+
+enum function { DAILY, WEEKLY, MONTHLY };
 
 class Quote {
 public:
     Quote(std::string symbol, std::string api_key);
     ~Quote();
 
-    time_series getIntradayDataSeries(const std::string &interval = "15min");
-    time_series getTimeDataSeries(const function &func,
-                                  const size_t &n_last = 30);
+    time_series getIntradaySeries(const std::string &interval = "15min");
+    time_series getTimeSeries(const function &func, const size_t &last_n = 30);
     time_pair getGlobalQuote();
 
     std::string m_symbol;
@@ -32,103 +45,85 @@ public:
 private:
     time_series parseIntradayCsv(const std::string &file_name);
 
-    time_series parseTimeDataSeries(const std::string &file_name,
-                                    const size_t &n_last);
+    time_series parseTimeSeriesCsv(const std::string &file_name,
+                                   const size_t &last_n);
 };
-
-// Helper Functions
-void download(const std::string &t_url, const std::string &file_name);
-bool string_replace(std::string &str, const std::string from,
-                    const std::string to);
-std::string readFirstLineFromFile(const std::string &file_name);
-std::time_t dateTimeToUnixTimestamp(std::string input);
-std::time_t dateToUnixTimestamp(std::string input);
-
-std::string url_base = "https://www.alphavantage.co/query?function=";
-std::string url_symbol_api = "&symbol={symbol}&apikey={api}&datatype=csv";
 
 // Quote constructor
 Quote::Quote(std::string symbol, std::string api_key)
     : m_symbol(symbol), m_api_key(api_key)
 {
-    string_replace(url_symbol_api, "{symbol}", symbol);
-    string_replace(url_symbol_api, "{api}", api_key);
+    stringReplace(url_symbol_api, "{symbol}", symbol);
+    stringReplace(url_symbol_api, "{api}", api_key);
 }
 
 // Quote deconstructor
 Quote::~Quote() {}
 
-time_series Quote::getIntradayDataSeries(const std::string &interval)
+// Get an intraday time series which each time_pair being:
+//
+// time_t unix_timestamp, vector([open, high, low, close, volume])
+time_series Quote::getIntradaySeries(const std::string &interval)
 {
     std::string url =
         url_base + "TIME_SERIES_INTRADAY&interval={interval}" + url_symbol_api;
 
-    string_replace(url, "{interval}", interval);
+    stringReplace(url, "{interval}", interval);
 
     std::string file_name =
         "..\\..\\data\\intraday_" + interval + "_" + this->m_symbol + ".csv";
 
-    download(url, file_name);
+    downloadCsv(url, file_name);
 
     return parseIntradayCsv(file_name);
 }
 
-time_series Quote::getTimeDataSeries(const function &func, const size_t &n_last)
+// Get a "func" time_series from last_n with each time_pair being:
+//
+// time_t unix_timestamp, vector([open, high, low, close, volume])
+//
+// func: avapi::DAILY avapi::WEEKLY avapi::MONTHLY
+// last_n: last n days, weeks, or months
+time_series Quote::getTimeSeries(const function &func, const size_t &last_n)
 {
     std::string url, file_name;
     switch (func) {
-
     case function::DAILY:
         url = url_base + "TIME_SERIES_DAILY" + url_symbol_api;
-        string_replace(url, "{symbol}", this->m_symbol);
-        string_replace(url, "{api}", this->m_api_key);
-
         file_name = "..\\..\\data\\daily_" + this->m_symbol + ".csv";
-
-        download(url, file_name);
-        return parseTimeDataSeries(file_name, n_last);
+        downloadCsv(url, file_name);
+        return parseTimeSeriesCsv(file_name, last_n);
 
     case function::WEEKLY:
         url = url_base + "TIME_SERIES_WEEKLY" + url_symbol_api;
-        string_replace(url, "{symbol}", this->m_symbol);
-        string_replace(url, "{api}", this->m_api_key);
-
         file_name = "..\\..\\data\\weekly_" + this->m_symbol + ".csv";
-
-        download(url, file_name);
-        return parseTimeDataSeries(file_name, n_last);
+        downloadCsv(url, file_name);
+        return parseTimeSeriesCsv(file_name, last_n);
 
     case function::MONTHLY:
         url = url_base + "TIME_SERIES_MONTHLY" + url_symbol_api;
-        string_replace(url, "{symbol}", this->m_symbol);
-        string_replace(url, "{api}", this->m_api_key);
-
         file_name = "..\\..\\data\\monthly_" + this->m_symbol + ".csv";
-
-        download(url, file_name);
-        return parseTimeDataSeries(file_name, n_last);
+        downloadCsv(url, file_name);
+        return parseTimeSeriesCsv(file_name, last_n);
 
     default:
-        std::cout << "Error: Incorrect function passed." << std::endl;
+        std::cout << "Error: Incorrect time_series function passed."
+                  << std::endl;
         time_series fail;
         return fail;
     }
 }
 
-// Get latest global quote for stock
+// Get time_pair for latest global quote
+// pair(time_t, open,high,low,price,volume,previousClose,change,changePercent)
 time_pair Quote::getGlobalQuote()
 {
     std::string url = url_base + "GLOBAL_QUOTE" + url_symbol_api;
-
-    string_replace(url, "{symbol}", this->m_symbol);
-    string_replace(url, "{api}", this->m_api_key);
-
     std::string file_name =
         "..\\..\\data\\global_quote_" + this->m_symbol + ".csv";
-    download(url, file_name);
+    downloadCsv(url, file_name);
 
-    rapidcsv::Document doc("../../data/global_quote.csv",
-                           rapidcsv::LabelParams(0, 0));
+    rapidcsv::Document doc(file_name, rapidcsv::LabelParams(0, 0));
 
     std::vector<float> data = doc.GetRow<float>(this->m_symbol);
     data.erase(data.begin() + 5);
@@ -139,6 +134,7 @@ time_pair Quote::getGlobalQuote()
     return global_quote;
 }
 
+// Construct time_series from intraday data csv
 time_series Quote::parseIntradayCsv(const std::string &file_name)
 {
     rapidcsv::Document doc(file_name);
@@ -170,13 +166,21 @@ time_series Quote::parseIntradayCsv(const std::string &file_name)
     return series;
 }
 
-time_series Quote::parseTimeDataSeries(const std::string &file_name,
-                                       const size_t &n_last)
+// Construct time_series from a data csv (non intraday)
+time_series Quote::parseTimeSeriesCsv(const std::string &file_name,
+                                      const size_t &last_n)
 {
     rapidcsv::Document doc(file_name);
 
     std::vector<std::string> date = doc.GetColumn<std::string>(0);
     size_t n_data = date.size();
+
+    if (last_n > n_data) {
+        std::cout << "Error: Not enough data in in file for last_n series"
+                  << '\n';
+        time_series fail;
+        return fail;
+    }
 
     std::vector<float> open = doc.GetColumn<float>(1);
     std::vector<float> high = doc.GetColumn<float>(2);
@@ -186,7 +190,7 @@ time_series Quote::parseTimeDataSeries(const std::string &file_name,
 
     time_series series;
 
-    for (int i = 0; i < n_data; ++i) {
+    for (int i = 0; i < last_n; ++i) {
 
         std::vector<float> data;
 
@@ -204,7 +208,7 @@ time_series Quote::parseTimeDataSeries(const std::string &file_name,
 // Helper Functions -----------------------
 
 // Curls .csv data file using "t_url" and saves it to .csv "file_name"
-void download(const std::string &t_url, const std::string &file_name)
+void downloadCsv(const std::string &t_url, const std::string &file_name)
 {
     const char *url = t_url.c_str();
     const char *file = file_name.c_str();
@@ -226,8 +230,8 @@ void download(const std::string &t_url, const std::string &file_name)
 }
 
 // Replaces string "from" to "to" within "str"
-bool string_replace(std::string &str, const std::string from,
-                    const std::string to)
+bool stringReplace(std::string &str, const std::string from,
+                   const std::string to)
 {
     size_t start = str.find(from);
     if (start == std::string::npos) {
@@ -237,8 +241,8 @@ bool string_replace(std::string &str, const std::string from,
     return true;
 }
 
-// Reads the first line from provided file
-// Used mainly for reading an api key
+// Reads the first line from provided file, used mainly for reading an api key
+// .txt file
 std::string readFirstLineFromFile(const std::string &file_name)
 {
     std::string api_key;
@@ -253,8 +257,8 @@ std::string readFirstLineFromFile(const std::string &file_name)
     return api_key;
 }
 
-// Converts string "%Y-%m-%d %H:%M:%S" to Unix Timestamp (seconds since
-// epoch)
+// Converts date + time string "%Y-%m-%d %H:%M:%S" to Unix Timestamp (seconds
+// since epoch)
 std::time_t dateTimeToUnixTimestamp(std::string input)
 {
     std::tm t{};
@@ -263,13 +267,35 @@ std::time_t dateTimeToUnixTimestamp(std::string input)
     return mktime(&t);
 }
 
-// Converts string "%Y-%m-%d" to Unix Timestamp (seconds since epoch)
+// Converts date string "%Y-%m-%d" to Unix Timestamp (seconds since epoch)
 std::time_t dateToUnixTimestamp(std::string input)
 {
     std::tm t{};
     std::istringstream ss(input);
     ss >> std::get_time(&t, "%Y-%m-%d");
     return mktime(&t);
+}
+
+// Prints the data within time_series to console
+void printSeries(const time_series &series)
+{
+    for (auto &pair : series) {
+        std::cout << pair.first << ':';
+        for (auto &val : pair.second) {
+            std::cout << ' ' << val;
+        }
+        std::cout << '\n';
+    }
+}
+
+// Prints the data within time_pair to console
+void printPair(const time_pair &pair)
+{
+    std::cout << pair.first << ':';
+    for (auto &val : pair.second) {
+        std::cout << ' ' << val;
+    }
+    std::cout << '\n';
 }
 
 } // namespace avapi
