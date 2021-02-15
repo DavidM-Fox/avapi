@@ -50,7 +50,7 @@ This gives the following output:
 ...
 ```
 ## Getting weekly data
-In this example, we will get weekly data from the last 10 weeks for the stock "TSLA".
+In this example, we will get weekly data from the last 10 weeks for the stock "AAPL".
 ```C++
 #include "../inc/avapi.h"
 
