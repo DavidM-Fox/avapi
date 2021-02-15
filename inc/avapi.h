@@ -1,6 +1,6 @@
 #ifndef AVAPI_H
 #define AVAPI_H
-#include "../inc/rapidcsv.h"
+#include "rapidcsv.h"
 #include <curl/curl.h>
 #include <fstream>
 #include <iomanip>
@@ -10,8 +10,6 @@
 
 namespace avapi {
 
-// Pair of time_t and vector<float>:
-// UNIX TIMESTAMP, [DATA]
 typedef std::pair<std::time_t, std::vector<float>> time_pair;
 typedef std::vector<time_pair> time_series;
 
@@ -25,11 +23,14 @@ std::time_t dateToUnixTimestamp(std::string input);
 void printSeries(const time_series &series);
 void printPair(const time_pair &pair);
 
+// Alpha Vantage API url placeholders
 std::string url_base = "https://www.alphavantage.co/query?function=";
 std::string url_symbol_api = "&symbol={symbol}&apikey={api}&datatype=csv";
 
+// enum for getTimeSeries()
 enum function { DAILY, WEEKLY, MONTHLY };
 
+// Main class of avapi
 class Quote {
 public:
     Quote(std::string symbol, std::string api_key);
@@ -114,8 +115,10 @@ time_series Quote::getTimeSeries(const function &func, const size_t &last_n)
     }
 }
 
-// Get time_pair for latest global quote
-// pair(time_t, open,high,low,price,volume,previousClose,change,changePercent)
+// Get time_pair for latest global quote:
+//
+// time_t timestamp,
+// vector([open,high,low,price,volume,prevClose,change,change%])
 time_pair Quote::getGlobalQuote()
 {
     std::string url = url_base + "GLOBAL_QUOTE" + url_symbol_api;
