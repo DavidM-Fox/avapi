@@ -52,6 +52,7 @@ This gives the following output:
 ## Getting weekly data
 In this example, we will get weekly data from the last 10 weeks for the stock "AAPL".
 ```C++
+
 #include "../inc/avapi.h"
 
 int main()
@@ -61,6 +62,7 @@ int main()
     avapi::time_series series = quote.getTimeSeries(avapi::WEEKLY, 10);
     avapi::printSeries(series);
 }
+
 ```
 
 ```
@@ -75,3 +77,23 @@ int main()
 1608271200: 122.6 129.58 121.54 126.655 6.21758e+08
 1607666400: 122.31 125.95 120.15 122.41 4.52279e+08
 ```
+## Getting a global quote
+In this example, we get will a global quote for the stock "GME". The returned time pair is ordered as:
+```time_t unix_t, vector<float> data{open,high,low,price,volume,prevClose,change,change%}```
+```C++
+
+#include "../inc/avapi.h"
+
+int main()
+{
+    std::string api_key = avapi::readFirstLineFromFile("../../api.key");
+    avapi::Quote quote("GME", api_key);
+    avapi::time_pair pair = quote.getGlobalQuote();
+    avapi::printPair(pair);
+}
+
+```
+```
+1613109600: 50.75 55.24 48.05 52.4 1.45733e+07 51.1 1.3 2.544
+```
+
