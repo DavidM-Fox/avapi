@@ -23,7 +23,7 @@ avapi::time_series series = quote.getIntradayDataSeries("15min");
 
 ```
 
-The ```avapi::time_series``` object is a vector of pairs with each pair containing a Unix timestamp and a vector of data associated with said timestamp. For a time_series, the data is ordered as [open, high, low, close, volume].
+The ```avapi::time_series``` object is a vector of pairs with each pair containing a Unix timestamp and a vector of data associated with said timestamp. For a time_series, the data is ordered as ```[open, high, low, close, volume]```.
 
 ```C++
 
@@ -78,8 +78,8 @@ int main()
 1607666400: 122.31 125.95 120.15 122.41 4.52279e+08
 ```
 ## Getting a global quote
-In this example, we get will a global quote for the stock "GME". The returned time pair is ordered as:
-```time_t unix_t, vector<float> data{open,high,low,price,volume,prevClose,change,change%}```
+In this example, we get will a global quote for the stock "GME". For a global quote, the data is ordered as
+```[open, high, low, price, volume, prevClose, change, change%]```
 ```C++
 
 #include "../inc/avapi.h"
