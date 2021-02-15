@@ -78,7 +78,7 @@ int main()
 1607666400: 122.31 125.95 120.15 122.41 4.52279e+08
 ```
 ## Getting a global quote
-In this example, we get will a global quote for the stock "GME". For a global quote, the data is ordered as
+In this example, we get will a global quote for the stock "GME". For a global quote, only a single time_pair object is returned with the data being ordered as
 ```[open, high, low, price, volume, prevClose, change, change%]```
 ```C++
 
