@@ -27,7 +27,8 @@ The ```avapi::time_series``` object is a vector of pairs with each pair containi
 
 ```C++
 
-typedef std::vector<std::pair<std::time_t, std::vector<float>>> time_series
+typedef std::pair<std::time_t, std::vector<float>> time_pair
+typedef std::vector<time_pair> time_series
 
 ```
 
