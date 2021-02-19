@@ -40,32 +40,45 @@ Output:
 ...
 ```
 
-## Getting weekly data
-In this example, we will get the last 10 rows of weekly data for "AAPL".
+## Getting daily, weekly, and monthly data
+In this example, we will get the last 10 rows of daily, weekly, and monthly data for "AAPL".
 
 ```C++
 
 std::string api_key = avapi::readFirstLineFromFile("../../api.key");
 std::string symbol = "AAPL";
 avapi::Quote quote(symbol, api_key);
-avapi::time_series series = quote.getTimeSeries(avapi::WEEKLY, 10);
-avapi::printSeries(series);
+avapi::time_series daily_series = quote.getTimeSeries(avapi::DAILY, 10);
+avapi::time_series weekly_series = quote.getTimeSeries(avapi::WEEKLY, 10);
+avapi::time_series monthly_series = quote.getTimeSeries(avapi::MONTHLY, 10);
+
+std::cout << "Daily Series ----------\n";
+avapi::printSeries(daily_series);
+std::cout << "Weekly Series ---------\n";
+avapi::printSeries(weekly_series);
+std::cout << "Monthly Series --------\n";
+avapi::printSeries(monthly_series);
 
 ```
 
 Output:
 
 ```
-1613109600: 136.03 137.877 133.692 135.37 3.44357e+08
-1612504800: 133.75 137.42 130.93 136.76 4.38264e+08
-1611900000: 143.07 145.09 130.21 131.96 7.16991e+08
-1611295200: 127.78 139.85 126.938 139.07 4.30066e+08
-1610690400: 129.19 131.45 126.86 127.14 4.81518e+08
-1610085600: 133.52 133.612 126.382 132.05 6.10791e+08
-1609394400: 133.99 138.789 131.72 132.69 4.39741e+08
-1608789600: 125.02 134.405 123.449 131.97 4.33757e+08
-1608271200: 122.6 129.58 121.54 126.655 6.21758e+08
-1607666400: 122.31 125.95 120.15 122.41 4.52279e+08
+Daily Series ----------
+1612418400: 91.19 91.5 53.33 53.5 6.24273e+07
+1612504800: 54.04 95 51.09 63.77 8.1345e+07
+1612764000: 72.41 72.66 58.02 60 2.56873e+07
+...
+Weekly Series ---------
+1608271200: 13.34 16.3 12.14 15.63 4.88787e+07
+1608789600: 15.81 22.3499 15.28 20.15 7.26563e+07
+1609394400: 21.31 21.97 18.56 18.84 3.10228e+07
+...
+Monthly Series --------
+1590732000: 5.65 6.18 3.96 4.06 5.34699e+07
+1593496800: 4.12 5.53 4.02 4.34 9.99262e+07
+1596175200: 4.31 4.55 3.77 4.01 5.55194e+07
+...
 ```
 
 ## Getting a global quote
