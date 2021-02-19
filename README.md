@@ -11,7 +11,7 @@ To use Avapi, the following is required:
 
 # Example Usage
 ## Getting intraday data
-In this example, we will get intraday data on a 15 minute interval for the stock "TSLA". We will begin by creating an ```avapi::Quote``` object which needs a ```symbol``` and ```api_key``` to be constructed. If we saved the API key to a .txt file, Avapi provides a helper function to easily read it. 
+In this example, we will get intraday data for "TSLA" on a 15 minute interval. We will begin by creating an ```avapi::Quote``` object which needs a ```symbol``` and ```api_key``` to be constructed. If we saved the API key to a .txt file, Avapi provides a helper function to easily read it. 
 
 ```C++
 
@@ -23,11 +23,12 @@ avapi::time_series series = quote.getIntradayDataSeries("15min");
 
 ```
 
-The ```avapi::time_series``` object is a vector of pairs with each pair containing a Unix timestamp and a vector of data associated with said timestamp. For a time_series, the data is ordered as ```[open, high, low, close, volume]```.
+The ```avapi::time_series``` object is a vector of pairs with each pair containing a Unix timestamp and a vector of data. For an ```avapi::time_series``` object, the data vector within each pair is ordered as ```[open, high, low, close, volume]```.
 
 ```C++
 
-typedef std::vector<std::pair<std::time_t, std::vector<float>>> time_series
+typedef std::pair<std::time_t, std::vector<float>> time_pair
+typedef std::vector<time_pair> time_series
 
 ```
 
@@ -50,7 +51,7 @@ This gives the following output:
 ...
 ```
 ## Getting weekly data
-In this example, we will get weekly data from the last 10 weeks for the stock "AAPL".
+In this example, we will get weekly data for "AAPL" from the last 10 weeks.
 ```C++
 
 #include "../inc/avapi.h"
@@ -78,7 +79,7 @@ int main()
 1607666400: 122.31 125.95 120.15 122.41 4.52279e+08
 ```
 ## Getting a global quote
-In this example, we get will a global quote for the stock "GME". For a global quote, only a single time_pair object is returned with the data being ordered as
+In this example, we will get a global quote for "GME". For a global quote, a single ```avapi::time_pair``` object is returned with the data being ordered as
 ```[open, high, low, price, volume, prevClose, change, change%]```
 ```C++
 
@@ -96,4 +97,3 @@ int main()
 ```
 1613109600: 50.75 55.24 48.05 52.4 1.45733e+07 51.1 1.3 2.544
 ```
-
