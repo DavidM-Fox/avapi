@@ -10,6 +10,7 @@ find_package(CURL CONFIG REQUIRED)
 
 set(PROJECT_SOURCES
         src/main.cpp
+        src/avapi.cpp
         inc/rapidcsv.h
         inc/avapi.h
 )

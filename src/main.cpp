@@ -3,7 +3,9 @@
 int main()
 {
     std::string api_key = avapi::readFirstLineFromFile("../../api.key");
-    avapi::Quote quote("GME", api_key);
-    avapi::time_pair pair = quote.getGlobalQuote();
-    avapi::printPair(pair);
+    std::string symbol = "GME";
+
+    avapi::Quote quote(symbol, api_key);
+    avapi::time_series series = quote.getTimeSeries(avapi::WEEKLY);
+    avapi::printSeries(series);
 }
