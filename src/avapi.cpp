@@ -29,7 +29,8 @@ Quote::~Quote() {}
 // func: avapi::INTRADAY/DAILY/WEEKLY/MONTHLY
 // last_n: last number of data rows since today (default=30)
 // interval: Interval for avapi::INTRADAY (default="30min")
-time_series Quote::getTimeSeries(const function &func, const size_t &last_n,
+time_series Quote::getTimeSeries(const function &func,
+                                 const size_t &last_n_rows,
                                  const std::string &interval)
 {
     // Create url query for getting said time series
@@ -46,7 +47,7 @@ time_series Quote::getTimeSeries(const function &func, const size_t &last_n,
 
     // Download and return parsed csv file as avapi::time_series
     downloadCsv(url, file_name);
-    return parseTimeSeriesCsv(file_name, last_n);
+    return parseTimeSeriesCsv(file_name, last_n_rows);
 }
 
 // Get time_pair for latest global quote:
@@ -80,18 +81,21 @@ time_pair Quote::getGlobalQuote()
 
 // Create time_series from a downloaded alpha vantage csv
 time_series parseTimeSeriesCsv(const std::string &file_name,
-                               const size_t &last_n)
+                               const size_t &last_n_rows)
 {
     rapidcsv::Document doc(file_name);
 
     std::vector<std::string> date_col = doc.GetColumn<std::string>(0);
-    size_t n_data = date_col.size();
+    size_t n_data = last_n_rows;
 
-    if (last_n > n_data) {
+    if (last_n_rows > date_col.size()) {
         std::cout << "Error: Not enough data rows in in file for last_n series"
                   << '\n';
         time_series fail;
         return fail;
+    }
+    else if (last_n_rows == 0) {
+        n_data = date_col.size();
     }
 
     std::vector<float> open = doc.GetColumn<float>(1);
@@ -101,10 +105,8 @@ time_series parseTimeSeriesCsv(const std::string &file_name,
     std::vector<float> volume = doc.GetColumn<float>(5);
 
     time_series series;
-    std::string format = "%Y-%m-%d %H:%M:%S";
-    // ss >> std::get_time(&t, "%Y-%m-%d");
 
-    for (size_t i = 0; i < last_n; ++i) {
+    for (size_t i = 0; i < n_data; ++i) {
 
         std::vector<float> data;
 

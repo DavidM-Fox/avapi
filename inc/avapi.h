@@ -23,8 +23,9 @@ public:
     Quote(std::string symbol, std::string api_key);
     ~Quote();
 
-    time_series getTimeSeries(const function &func, const size_t &last_n = 30,
-                              const std::string &interval = "30min");
+    time_series getTimeSeries(const function &func,
+                              const size_t &last_n_rows = 0,
+                              const std::string &interval = "15min");
     time_pair getGlobalQuote();
 
 private:
@@ -47,6 +48,6 @@ std::time_t toUnixTimestamp(const std::string &input);
 void printSeries(const time_series &series);
 void printPair(const time_pair &pair);
 time_series parseTimeSeriesCsv(const std::string &file_name,
-                               const size_t &last_n);
+                               const size_t &last_n_rows);
 } // namespace avapi
 #endif // AVAPI_H
