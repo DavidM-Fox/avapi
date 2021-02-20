@@ -2,7 +2,11 @@
 
 namespace avapi {
 
-// Quote class constructor
+/**
+ * @brief   Class constructor
+ * @param   symbol The stock symbol of interest
+ * @param   api_key The Alpha Vantage API key to use
+ */
 Quote::Quote(std::string symbol, std::string api_key)
     : m_symbol(symbol), m_api_key(api_key),
       m_url_base("https://www.alphavantage.co/query?function="),
@@ -19,16 +23,19 @@ Quote::Quote(std::string symbol, std::string api_key)
 {
 }
 
-// Quote deconstructor
+/**
+ * @brief   Class Deconstructor
+ */
 Quote::~Quote() {}
 
-// Get a "func" time_series from last_n with each time_pair being:
-//
-// (time_t unix_timestamp, vector[open, high, low, close, volume])
-//
-// func: avapi::INTRADAY/DAILY/WEEKLY/MONTHLY
-// last_n: last number of data rows since today (default=30)
-// interval: Interval for avapi::INTRADAY (default="30min")
+/**
+ * @brief   Returns a "func" time_series from last_n_rows;
+ * @param   func The avapi::function to use
+ * @param   last_n_rows Last number of rows to get - default = 0 (all)
+ * @param   interval Interval for avapi::INTRADAY - default = "30min"
+ * @returns An avapi::time_series with each pair.second =
+ * std::vector<float>[open, high, low, close, volume]
+ */
 time_series Quote::getTimeSeries(const function &func,
                                  const size_t &last_n_rows,
                                  const std::string &interval)
@@ -45,15 +52,16 @@ time_series Quote::getTimeSeries(const function &func,
     std::string file_name = this->m_fnames[func];
     stringReplace(file_name, "{symbol}", this->m_symbol);
 
-    // Download and return parsed csv file as avapi::time_series
-    downloadCsv(url, file_name);
-    return parseTimeSeriesCsv(file_name, last_n_rows);
+    // Download csv data for global quote
+    std::string data = downloadCsv(url);
+    return parseCsvString(data, last_n_rows);
 }
 
-// Get time_pair for latest global quote:
-//
-// (time_t unix_timestamp,
-// vector[open,high,low,price,volume,prevClose,change,change%])
+/**
+ * @brief   Returns an avapi::time_pair containing the latest global quote:
+ * @returns latest global quote as an avapi::time_pair with pair.second =
+ * std::vector<float>[open,high,low,price,volume,prevClose,change,change]
+ */
 time_pair Quote::getGlobalQuote()
 {
     // Create url query for getting global quote
@@ -65,26 +73,31 @@ time_pair Quote::getGlobalQuote()
     std::string file_name = "..\\..\\data\\global_quote_{symbol}.csv";
     stringReplace(file_name, "{symbol}", this->m_symbol);
 
-    // Download csv file for global quote
-    downloadCsv(url, file_name);
-    rapidcsv::Document doc(file_name, rapidcsv::LabelParams(0, 0));
-    std::vector<float> data = doc.GetRow<float>(this->m_symbol);
+    // Download csv data for global quote
+    std::stringstream data(downloadCsv(url));
+
+    rapidcsv::Document doc(data, rapidcsv::LabelParams(0, 0));
+    std::vector<float> quote_row = doc.GetRow<float>(this->m_symbol);
 
     // Erase final data column and put at the beginning as a unix_timestamp
-    data.erase(data.begin() + 5);
+    quote_row.erase(quote_row.begin() + 5);
     time_pair global_quote = std::make_pair(
-        toUnixTimestamp(doc.GetColumn<std::string>("latestDay")[0]), data);
+        toUnixTimestamp(doc.GetColumn<std::string>("latestDay")[0]), quote_row);
 
     // Return global quote as a avapi::time_pair
     return global_quote;
 }
 
-// Create time_series from a downloaded alpha vantage csv
-time_series parseTimeSeriesCsv(const std::string &file_name,
-                               const size_t &last_n_rows)
+/**
+ * @brief   Returns an avapi::time_series created from a csv file
+ * @param   file_path file path of the csv file to parse
+ * @param   last_n_rows last number of rows to return
+ * @returns avapi::time_series
+ */
+time_series parseCsvFile(const std::string &file_path,
+                         const size_t &last_n_rows)
 {
-    rapidcsv::Document doc(file_name);
-
+    rapidcsv::Document doc(file_path);
     std::vector<std::string> date_col = doc.GetColumn<std::string>(0);
     size_t n_data = last_n_rows;
 
@@ -122,31 +135,103 @@ time_series parseTimeSeriesCsv(const std::string &file_name,
     return series;
 }
 
-// Helper Functions -----------------------
-
-// Curls .csv data file using "t_url" and saves it to .csv "file_name"
-void downloadCsv(const std::string &t_url, const std::string &file_name)
+/**
+ * @brief   Returns an avapi::time_series created from a csv std::string
+ * @param   data the csv std::string to parse
+ * @param   last_n_rows last number of rows to return
+ * @returns avapi::time_series
+ */
+time_series parseCsvString(const std::string &data, const size_t &last_n_rows)
 {
-    const char *url = t_url.c_str();
-    const char *file = file_name.c_str();
+    std::stringstream sstream(data);
+    rapidcsv::Document doc(sstream);
+    std::vector<std::string> date_col = doc.GetColumn<std::string>(0);
+    size_t n_data = last_n_rows;
+
+    if (last_n_rows > date_col.size()) {
+        std::cout << "Error: Not enough data rows in in file for last_n series"
+                  << '\n';
+        time_series fail;
+        return fail;
+    }
+    else if (last_n_rows == 0) {
+        n_data = date_col.size();
+    }
+
+    std::vector<float> open = doc.GetColumn<float>(1);
+    std::vector<float> high = doc.GetColumn<float>(2);
+    std::vector<float> low = doc.GetColumn<float>(3);
+    std::vector<float> close = doc.GetColumn<float>(4);
+    std::vector<float> volume = doc.GetColumn<float>(5);
+
+    time_series series;
+
+    for (size_t i = 0; i < n_data; ++i) {
+
+        std::vector<float> data;
+
+        data.push_back(open[i]);
+        data.push_back(high[i]);
+        data.push_back(low[i]);
+        data.push_back(close[i]);
+        data.push_back(volume[i]);
+
+        series.push_back(std::make_pair(toUnixTimestamp(date_col[i]), data));
+    }
+    std::reverse(series.begin(), series.end());
+    return series;
+}
+
+/**
+ * @brief   Callback function for CURLOPT_WRITEFUNCTION
+ * @param   ptr The downloaded chunk members
+ * @param   size Member memory size
+ * @param   nmemb Number of members
+ * @param   data Current running chunk for data appension
+ * @returns The current running chunk's realsize
+ */
+size_t Quote::WriteMemoryCallback(void *ptr, size_t size, size_t nmemb,
+                                  void *data)
+{
+    size_t realsize = size * nmemb;
+
+    std::string *mem = reinterpret_cast<std::string *>(data);
+    mem->append(static_cast<char *>(ptr), realsize);
+    return realsize;
+}
+
+/**
+ * @brief   Curls csv data and uses WriteMemoryCallback to store data
+ * @param   t_url The url to be curled
+ * @returns The csv data as an std::string
+ */
+std::string Quote::downloadCsv(const std::string &t_url)
+{
     CURL *curl;
-    FILE *fp;
     CURLcode res;
+    std::string data;
+
     curl = curl_easy_init();
     if (curl) {
-        fp = fopen(file, "wb");
-        curl_easy_setopt(curl, CURLOPT_URL, url);
-        curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, NULL);
-        curl_easy_setopt(curl, CURLOPT_WRITEDATA, fp);
+        curl_easy_setopt(curl, CURLOPT_URL, t_url.c_str());
+        curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, WriteMemoryCallback);
+        curl_easy_setopt(curl, CURLOPT_WRITEDATA, &data);
         res = curl_easy_perform(curl);
 
         /* always cleanup */
         curl_easy_cleanup(curl);
-        fclose(fp);
+        curl_global_cleanup();
     }
+    return data;
 }
 
-// Replaces "from" to "to" within "str"
+/**
+ * @brief   Replaces a substring within a given string
+ * @param   str The given string
+ * @param   from The substring being replaced by "to"
+ * @param   to The substring replacing "from"
+ * @returns Success bool
+ */
 bool stringReplace(std::string &str, const std::string &from,
                    const std::string &to)
 {
@@ -158,24 +243,31 @@ bool stringReplace(std::string &str, const std::string &from,
     return true;
 }
 
-// Reads the first line from provided file, used mainly for reading an api key
-// .txt file
-std::string readFirstLineFromFile(const std::string &file_name)
+/**
+ * @brief   Reads the first line from a given file
+ * @param   file_path File to be read's path
+ * @returns first line as an std::string
+ */
+std::string readFirstLineFromFile(const std::string &file_path)
 {
     std::string api_key;
-    std::ifstream file(file_name);
+    std::ifstream file(file_path);
     if (file.is_open()) {
         std::getline(file, api_key);
         file.close();
     }
     else {
-        std::cout << "Unable to open file: " << file_name;
+        std::cout << "Unable to open file: " << file_path;
     }
     return api_key;
 }
 
-// Converts date + time string "%Y-%m-%d %H:%M:%S" to Unix Timestamp (seconds
-// since epoch)
+/**
+ * @brief   Converts date + time string "%Y-%m-%d %H:%M:%S" to Unix Timestamp
+ * (seconds since unic epoch)
+ * @param   input The input string to be converted
+ * @returns std::time_t timestamp
+ */
 std::time_t toUnixTimestamp(const std::string &input)
 {
     std::tm t{};
@@ -185,7 +277,10 @@ std::time_t toUnixTimestamp(const std::string &input)
     return mktime(&t);
 }
 
-// Prints the data within time_series to console
+/**
+ * @brief   Prints an avapi::time_series' data to console
+ * @param   series The avapi::time_series to be printed
+ */
 void printSeries(const time_series &series)
 {
     for (auto &pair : series) {
@@ -197,7 +292,10 @@ void printSeries(const time_series &series)
     }
 }
 
-// Prints the data within time_pair to console
+/**
+ * @brief   Prints an avapi::time_pair's data to console
+ * @param   pair The avapi::time_pair to be printed
+ */
 void printPair(const time_pair &pair)
 {
     std::cout << pair.first << ':';

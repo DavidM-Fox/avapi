@@ -6,6 +6,7 @@
 #include <fstream>
 #include <iomanip>
 #include <iostream>
+#include <sstream>
 #include <string>
 #include <vector>
 
@@ -29,6 +30,9 @@ public:
     time_pair getGlobalQuote();
 
 private:
+    static size_t WriteMemoryCallback(void *ptr, size_t size, size_t nmemb,
+                                      void *data);
+    std::string downloadCsv(const std::string &t_url);
     std::string m_symbol;
     std::string m_api_key;
 
@@ -40,14 +44,14 @@ private:
 };
 
 // avapi::Quote Helper functions
-void downloadCsv(const std::string &t_url, const std::string &file_name);
 bool stringReplace(std::string &str, const std::string &from,
                    const std::string &to);
-std::string readFirstLineFromFile(const std::string &file_name);
+std::string readFirstLineFromFile(const std::string &file_path);
 std::time_t toUnixTimestamp(const std::string &input);
 void printSeries(const time_series &series);
 void printPair(const time_pair &pair);
-time_series parseTimeSeriesCsv(const std::string &file_name,
-                               const size_t &last_n_rows);
+time_series parseCsvFile(const std::string &file_path,
+                         const size_t &last_n_rows);
+time_series parseCsvString(const std::string &data, const size_t &last_n_rows);
 } // namespace avapi
 #endif // AVAPI_H
