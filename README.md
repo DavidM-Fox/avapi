@@ -127,9 +127,9 @@ timestamp,open,high,low,close,volume
 ```C++
 
 // Get every row in daily_GME.csv
-avapi::time_series series_a = avapi::parseTimeSeriesCsv("../../data/daily_GME.csv");
+avapi::time_series series_a = avapi::parseCsvFile("../../data/daily_GME.csv");
 
 // Get last 20 rows in daily_GME.csv
-avapi::time_series series_b = avapi::parseTimeSeriesCsv("../../data/daily_GME.csv", 20);
+avapi::time_series series_b = avapi::parseCsvFile("../../data/daily_GME.csv", 20);
     
 ```
