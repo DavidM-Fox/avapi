@@ -62,19 +62,25 @@ time_pair Quote::getGlobalQuote()
     stringReplace(url, "{api}", this->m_api_key);
 
     // Download csv data for global quote
-    std::stringstream data(downloadCsv(url));
+    std::stringstream csv(downloadCsv(url));
 
-    rapidcsv::Document doc(data, rapidcsv::LabelParams(0, 0));
-    std::vector<float> quote_row = doc.GetRow<float>(this->m_symbol);
+    // Get global quote row from csv std::string
+    rapidcsv::Document doc(csv);
+    std::vector<std::string> data = doc.GetRow<std::string>(0);
 
-    // Remove lastestDay column from data and convert it to time_t Unix
-    // Timestamp
-    quote_row.erase(quote_row.begin() + 5);
-    time_pair global_quote = std::make_pair(
-        toUnixTimestamp(doc.GetColumn<std::string>("latestDay")[0]), quote_row);
+    // Erase symbol field
+    data.erase(data.begin());
 
-    // Return global quote as a avapi::time_pair
-    return global_quote;
+    // Convert latestDay field and then erase it
+    std::time_t timestamp = toUnixTimestamp(data[5]);
+    data.erase(data.begin() + 5);
+
+    // Convert to vector of floats
+    std::vector<float> data_f(data.size());
+    transform(data.begin(), data.end(), data_f.begin(),
+              [](std::string const &val) { return std::stof(val); });
+
+    return std::make_pair(timestamp, data_f);
 }
 
 /**
