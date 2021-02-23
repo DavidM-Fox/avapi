@@ -1,5 +1,5 @@
 # Avapi
-Avapi is a C++ library working with the [Alpha Vantage API](https://www.alphavantage.co/) for fetching historical stock data. This library is currently in a limited state and only implements 5 of the API functions. More can easily be added at any time.
+Avapi is a C++ library utilizing the [Alpha Vantage API](https://www.alphavantage.co/) for fetching historical stock data. This library currently implements a limited set of the API functions.
 
 
 # Prerequisites
@@ -127,9 +127,9 @@ timestamp,open,high,low,close,volume
 ```C++
 
 // Get every row in daily_GME.csv
-avapi::time_series series_a = avapi::parseTimeSeriesCsv("../../data/daily_GME.csv");
+avapi::time_series series_a = avapi::parseCsvFile("../../data/daily_GME.csv");
 
 // Get last 20 rows in daily_GME.csv
-avapi::time_series series_b = avapi::parseTimeSeriesCsv("../../data/daily_GME.csv", 20);
+avapi::time_series series_b = avapi::parseCsvFile("../../data/daily_GME.csv", 20);
     
 ```
