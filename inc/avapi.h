@@ -15,7 +15,7 @@ namespace avapi {
 typedef std::pair<std::time_t, std::vector<float>> time_pair;
 typedef std::vector<time_pair> time_series;
 
-// enum for m_url_funcs/m_file_funcs;
+// enum for std::vector<std::string> m_urls;
 enum function { INTRADAY = 0, DAILY, WEEKLY, MONTHLY };
 
 // Main class of avapi library "Quote"
@@ -40,7 +40,6 @@ private:
     std::string m_url_base;
     std::string m_url_end;
     std::vector<std::string> m_urls;
-    std::vector<std::string> m_fnames;
 };
 
 // avapi::Quote Helper functions

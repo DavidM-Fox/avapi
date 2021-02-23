@@ -15,11 +15,7 @@ Quote::Quote(std::string symbol, std::string api_key)
           {m_url_base + "TIME_SERIES_INTRADAY&interval={interval}" + m_url_end,
            m_url_base + "TIME_SERIES_DAILY" + m_url_end,
            m_url_base + "TIME_SERIES_WEEKLY" + m_url_end,
-           m_url_base + "TIME_SERIES_MONTHLY" + m_url_end}),
-      m_fnames({"..\\..\\data\\intraday_{symbol}.csv",
-                "..\\..\\data\\daily_{symbol}.csv",
-                "..\\..\\data\\weekly_{symbol}.csv",
-                "..\\..\\data\\monthly_{symbol}.csv"})
+           m_url_base + "TIME_SERIES_MONTHLY" + m_url_end})
 {
 }
 
@@ -48,10 +44,6 @@ time_series Quote::getTimeSeries(const function &func,
     stringReplace(url, "{symbol}", this->m_symbol);
     stringReplace(url, "{api}", this->m_api_key);
 
-    // Create filename for time series csv
-    std::string file_name = this->m_fnames[func];
-    stringReplace(file_name, "{symbol}", this->m_symbol);
-
     // Download csv data for global quote
     std::string data = downloadCsv(url);
     return parseCsvString(data, last_n_rows);
@@ -69,17 +61,14 @@ time_pair Quote::getGlobalQuote()
     stringReplace(url, "{symbol}", this->m_symbol);
     stringReplace(url, "{api}", this->m_api_key);
 
-    // Create url query for global quote csv
-    std::string file_name = "..\\..\\data\\global_quote_{symbol}.csv";
-    stringReplace(file_name, "{symbol}", this->m_symbol);
-
     // Download csv data for global quote
     std::stringstream data(downloadCsv(url));
 
     rapidcsv::Document doc(data, rapidcsv::LabelParams(0, 0));
     std::vector<float> quote_row = doc.GetRow<float>(this->m_symbol);
 
-    // Erase final data column and put at the beginning as a unix_timestamp
+    // Remove lastestDay column from data and convert it to time_t Unix
+    // Timestamp
     quote_row.erase(quote_row.begin() + 5);
     time_pair global_quote = std::make_pair(
         toUnixTimestamp(doc.GetColumn<std::string>("latestDay")[0]), quote_row);
@@ -138,46 +127,37 @@ time_series parseCsvFile(const std::string &file_path,
 /**
  * @brief   Returns an avapi::time_series created from a csv std::string
  * @param   data the csv std::string to parse
- * @param   last_n_rows last number of rows to return
+ * @param   last_n_rows last number of rows to return. Returns every row if
+ * parameter is greater than document row count.
  * @returns avapi::time_series
  */
 time_series parseCsvString(const std::string &data, const size_t &last_n_rows)
 {
+    // Create document object from CSV string and get row count
     std::stringstream sstream(data);
     rapidcsv::Document doc(sstream);
-    std::vector<std::string> date_col = doc.GetColumn<std::string>(0);
-    size_t n_data = last_n_rows;
+    size_t n_rows = doc.GetRowCount();
 
-    if (last_n_rows > date_col.size()) {
-        std::cout << "Error: Not enough data rows in in file for last_n series"
-                  << '\n';
-        time_series fail;
-        return fail;
-    }
-    else if (last_n_rows == 0) {
-        n_data = date_col.size();
-    }
+    // Iterate safely if user is asking for more rows than available
+    if (n_rows > last_n_rows)
+        n_rows = last_n_rows;
 
-    std::vector<float> open = doc.GetColumn<float>(1);
-    std::vector<float> high = doc.GetColumn<float>(2);
-    std::vector<float> low = doc.GetColumn<float>(3);
-    std::vector<float> close = doc.GetColumn<float>(4);
-    std::vector<float> volume = doc.GetColumn<float>(5);
-
-    time_series series;
-
-    for (size_t i = 0; i < n_data; ++i) {
+    // Iterate over n_rows, parsing data into the avapi::time_series
+    avapi::time_series series;
+    for (size_t i = 0; i < n_rows; ++i) {
+        std::vector<std::string> row = doc.GetRow<std::string>(i);
 
         std::vector<float> data;
+        data.push_back(std::stof(row[1]));
+        data.push_back(std::stof(row[2]));
+        data.push_back(std::stof(row[3]));
+        data.push_back(std::stof(row[4]));
+        data.push_back(std::stof(row[5]));
 
-        data.push_back(open[i]);
-        data.push_back(high[i]);
-        data.push_back(low[i]);
-        data.push_back(close[i]);
-        data.push_back(volume[i]);
-
-        series.push_back(std::make_pair(toUnixTimestamp(date_col[i]), data));
+        series.push_back(std::make_pair(toUnixTimestamp(row[0]), data));
     }
+
+    // Data coming from Alpha Vantage is reversed, lets reverse it for user
     std::reverse(series.begin(), series.end());
     return series;
 }

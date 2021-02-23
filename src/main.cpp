@@ -7,7 +7,7 @@ int main()
     std::string symbol = "AAPL";
 
     avapi::Quote quote(symbol, api_key);
-    avapi::time_series daily_series = quote.getTimeSeries(avapi::DAILY, 10);
+    avapi::time_series daily_series = quote.getTimeSeries(avapi::DAILY, 1000);
     std::cout << "Daily Series ----------\n";
     avapi::printSeries(daily_series);
 }
