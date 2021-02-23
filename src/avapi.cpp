@@ -32,7 +32,7 @@ Quote::~Quote() {}
  * @returns An avapi::time_series with each pair.second =
  * std::vector<float>[open, high, low, close, volume]
  */
-time_series Quote::getTimeSeries(const function &func,
+time_series Quote::getTimeSeries(const url_func &func,
                                  const size_t &last_n_rows,
                                  const std::string &interval)
 {
@@ -79,61 +79,50 @@ time_pair Quote::getGlobalQuote()
 
 /**
  * @brief   Returns an avapi::time_series created from a csv file
- * @param   file_path file path of the csv file to parse
+ * @param   file file path of the csv file to parse
  * @param   last_n_rows last number of rows to return
  * @returns avapi::time_series
  */
-time_series parseCsvFile(const std::string &file_path,
-                         const size_t &last_n_rows)
+time_series parseCsvFile(const std::string &file, const size_t &last_n_rows)
 {
-    rapidcsv::Document doc(file_path);
-    std::vector<std::string> date_col = doc.GetColumn<std::string>(0);
-    size_t n_data = last_n_rows;
+    // Create document object from CSV std::string or file path
+    rapidcsv::Document doc(file);
+    size_t n_rows = doc.GetRowCount();
 
-    if (last_n_rows > date_col.size()) {
-        std::cout << "Error: Not enough data rows in in file for last_n series"
-                  << '\n';
-        time_series fail;
-        return fail;
-    }
-    else if (last_n_rows == 0) {
-        n_data = date_col.size();
-    }
+    // Iterate safely if user is asking for more rows than available
+    if (n_rows > last_n_rows)
+        n_rows = last_n_rows;
 
-    std::vector<float> open = doc.GetColumn<float>(1);
-    std::vector<float> high = doc.GetColumn<float>(2);
-    std::vector<float> low = doc.GetColumn<float>(3);
-    std::vector<float> close = doc.GetColumn<float>(4);
-    std::vector<float> volume = doc.GetColumn<float>(5);
-
-    time_series series;
-
-    for (size_t i = 0; i < n_data; ++i) {
+    // Iterate over n_rows, parsing data into the avapi::time_series
+    avapi::time_series series;
+    for (size_t i = 0; i < n_rows; ++i) {
+        std::vector<std::string> row = doc.GetRow<std::string>(i);
 
         std::vector<float> data;
+        data.push_back(std::stof(row[1]));
+        data.push_back(std::stof(row[2]));
+        data.push_back(std::stof(row[3]));
+        data.push_back(std::stof(row[4]));
+        data.push_back(std::stof(row[5]));
 
-        data.push_back(open[i]);
-        data.push_back(high[i]);
-        data.push_back(low[i]);
-        data.push_back(close[i]);
-        data.push_back(volume[i]);
-
-        series.push_back(std::make_pair(toUnixTimestamp(date_col[i]), data));
+        series.push_back(std::make_pair(toUnixTimestamp(row[0]), data));
     }
+
+    // Data coming from Alpha Vantage is reversed, lets reverse it for user
     std::reverse(series.begin(), series.end());
     return series;
 }
 
 /**
  * @brief   Returns an avapi::time_series created from a csv std::string
- * @param   data the csv std::string to parse
+ * @param   data An csv std::string object
  * @param   last_n_rows last number of rows to return. Returns every row if
  * parameter is greater than document row count.
  * @returns avapi::time_series
  */
 time_series parseCsvString(const std::string &data, const size_t &last_n_rows)
 {
-    // Create document object from CSV string and get row count
+    // Create document object from CSV std::string or file path
     std::stringstream sstream(data);
     rapidcsv::Document doc(sstream);
     size_t n_rows = doc.GetRowCount();

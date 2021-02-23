@@ -16,7 +16,10 @@ typedef std::pair<std::time_t, std::vector<float>> time_pair;
 typedef std::vector<time_pair> time_series;
 
 // enum for std::vector<std::string> m_urls;
-enum function { INTRADAY = 0, DAILY, WEEKLY, MONTHLY };
+enum url_func { INTRADAY = 0, DAILY, WEEKLY, MONTHLY };
+
+// enum for std::vector<std::string> m_urls;
+enum csv_type { STDSTRING = 0, FILEPATH };
 
 // Main class of avapi library "Quote"
 class Quote {
@@ -24,7 +27,7 @@ public:
     Quote(std::string symbol, std::string api_key);
     ~Quote();
 
-    time_series getTimeSeries(const function &func,
+    time_series getTimeSeries(const url_func &func,
                               const size_t &last_n_rows = 0,
                               const std::string &interval = "15min");
     time_pair getGlobalQuote();
@@ -49,8 +52,7 @@ std::string readFirstLineFromFile(const std::string &file_path);
 std::time_t toUnixTimestamp(const std::string &input);
 void printSeries(const time_series &series);
 void printPair(const time_pair &pair);
-time_series parseCsvFile(const std::string &file_path,
-                         const size_t &last_n_rows);
+time_series parseCsvFile(const std::string &file, const size_t &last_n_rows);
 time_series parseCsvString(const std::string &data, const size_t &last_n_rows);
 } // namespace avapi
 #endif // AVAPI_H
