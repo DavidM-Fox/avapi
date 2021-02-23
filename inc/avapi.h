@@ -52,7 +52,9 @@ std::string readFirstLineFromFile(const std::string &file_path);
 std::time_t toUnixTimestamp(const std::string &input);
 void printSeries(const time_series &series);
 void printPair(const time_pair &pair);
-time_series parseCsvFile(const std::string &file, const size_t &last_n_rows);
-time_series parseCsvString(const std::string &data, const size_t &last_n_rows);
+time_series parseCsvFile(const std::string &file,
+                         const size_t &last_n_rows = 0);
+time_series parseCsvString(const std::string &data,
+                           const size_t &last_n_rows = 0);
 } // namespace avapi
 #endif // AVAPI_H

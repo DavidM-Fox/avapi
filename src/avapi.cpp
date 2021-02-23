@@ -96,8 +96,11 @@ time_series parseCsvFile(const std::string &file, const size_t &last_n_rows)
     size_t n_rows = doc.GetRowCount();
 
     // Iterate safely if user is asking for more rows than available
-    if (n_rows > last_n_rows)
+    if (last_n_rows == 0) {
+    }
+    else if (n_rows > last_n_rows) {
         n_rows = last_n_rows;
+    }
 
     // Iterate over n_rows, parsing data into the avapi::time_series
     avapi::time_series series;
@@ -134,8 +137,11 @@ time_series parseCsvString(const std::string &data, const size_t &last_n_rows)
     size_t n_rows = doc.GetRowCount();
 
     // Iterate safely if user is asking for more rows than available
-    if (n_rows > last_n_rows)
+    if (last_n_rows == 0) {
+    }
+    else if (n_rows > last_n_rows) {
         n_rows = last_n_rows;
+    }
 
     // Iterate over n_rows, parsing data into the avapi::time_series
     avapi::time_series series;
