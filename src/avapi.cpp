@@ -231,7 +231,7 @@ bool stringReplace(std::string &str, const std::string &from,
  */
 std::string readFirstLineFromFile(const std::string &file_path)
 {
-    std::string api_key;
+    std::string api_key = "";
     std::ifstream file(file_path);
     if (file.is_open()) {
         std::getline(file, api_key);
