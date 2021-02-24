@@ -56,5 +56,10 @@ time_series parseCsvFile(const std::string &file,
                          const size_t &last_n_rows = 0);
 time_series parseCsvString(const std::string &data,
                            const size_t &last_n_rows = 0);
+
+extern std::vector<float> null_vector;
+extern avapi::time_pair null_pair;
+extern avapi::time_series null_series;
+
 } // namespace avapi
 #endif // AVAPI_H

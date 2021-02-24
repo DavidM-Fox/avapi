@@ -91,9 +91,24 @@ time_pair Quote::getGlobalQuote()
  */
 time_series parseCsvFile(const std::string &file, const size_t &last_n_rows)
 {
-    // Create document object from CSV std::string or file path
-    rapidcsv::Document doc(file);
-    size_t n_rows = doc.GetRowCount();
+    // Create document object from csv file path
+    rapidcsv::Document doc;
+    size_t n_rows = 0;
+
+    try {
+        doc.Load(file);
+        n_rows = doc.GetRowCount();
+        if (n_rows == 0)
+            throw std::exception("CSV file contents are invalid.");
+    }
+    catch (std::exception &ex) {
+        std::cerr << "Exception caught within avapi::parseCsvFile() '"
+                  << ex.what() << "'.\n";
+        std::cerr << "File path or contents of '" << file
+                  << "' may be invalid. Returning a null avapi::time_series "
+                     "object.\n";
+        return null_series;
+    }
 
     // Iterate safely if user is asking for more rows than available
     if (last_n_rows == 0) {
@@ -131,10 +146,26 @@ time_series parseCsvFile(const std::string &file, const size_t &last_n_rows)
  */
 time_series parseCsvString(const std::string &data, const size_t &last_n_rows)
 {
-    // Create document object from CSV std::string or file path
+
+    // Create document object from csv string
     std::stringstream sstream(data);
-    rapidcsv::Document doc(sstream);
-    size_t n_rows = doc.GetRowCount();
+    rapidcsv::Document doc;
+    size_t n_rows = 0;
+
+    try {
+        doc.Load(sstream);
+        n_rows = doc.GetRowCount();
+        if (n_rows == 0)
+            throw std::exception("'const std::string &data is invalid.'");
+    }
+    catch (std::exception &ex) {
+        std::cerr << "Exception caught within avapi::parseCsvString(): "
+                  << ex.what() << '\n';
+        std::cerr << "Returning a null avapi::time_series "
+                     "object.\n";
+
+        return null_series;
+    }
 
     // Iterate safely if user is asking for more rows than available
     if (last_n_rows == 0) {
@@ -285,4 +316,8 @@ void printPair(const time_pair &pair)
     }
     std::cout << '\n';
 }
+
+std::vector<float> null_vector{NULL};
+avapi::time_pair null_pair = std::make_pair(NULL, null_vector);
+avapi::time_series null_series{null_pair};
 } // namespace avapi
