@@ -1,28 +1,43 @@
-#include "../inc/avapi.h"
+#include <algorithm>
+#include <curl/curl.h>
+#include <fstream>
+#include <iostream>
+#include <sstream>
+#include "avapi.h"
+#include "rapidcsv.h"
 
 namespace avapi {
+
+// Static helper variables
+static const std::string
+    api_urlBase("https://www.alphavantage.co/query?function=");
+static const std::string
+    api_urlEnd("&symbol={symbol}&apikey={api}&datatype=csv");
+static const std::vector<std::string> api_urlFuncs{
+    api_urlBase + "TIME_SERIES_INTRADAY" + api_urlEnd,
+    api_urlBase + "TIME_SERIES_DAILY" + api_urlEnd,
+    api_urlBase + "TIME_SERIES_WEEKLY" + api_urlEnd,
+    api_urlBase + "TIME_SERIES_MONTHLY" + api_urlEnd};
+static const std::vector<std::string> api_urlIntervals{"1min", "5min", "15min",
+                                                       "30min", "60min"};
+static const std::vector<float> null_vector{NULL};
+static const avapi::time_pair null_pair = std::make_pair(NULL, null_vector);
+static const avapi::time_series null_series{null_pair};
 
 /**
  * @brief   Class constructor
  * @param   symbol The stock symbol of interest
  * @param   api_key The Alpha Vantage API key to use
  */
-Quote::Quote(std::string symbol, std::string api_key)
-    : m_symbol(symbol), m_api_key(api_key),
-      m_url_base("https://www.alphavantage.co/query?function="),
-      m_url_end("&symbol={symbol}&apikey={api}&datatype=csv"),
-      m_urls(
-          {m_url_base + "TIME_SERIES_INTRADAY&interval={interval}" + m_url_end,
-           m_url_base + "TIME_SERIES_DAILY" + m_url_end,
-           m_url_base + "TIME_SERIES_WEEKLY" + m_url_end,
-           m_url_base + "TIME_SERIES_MONTHLY" + m_url_end})
+Stock::Stock(std::string symbol, std::string api_key)
+    : m_symbol(symbol), m_api_key(api_key)
 {
 }
 
 /**
  * @brief   Class Deconstructor
  */
-Quote::~Quote() {}
+Stock::~Stock() {}
 
 /**
  * @brief   Returns a "func" time_series from last_n_rows;
@@ -32,21 +47,21 @@ Quote::~Quote() {}
  * @returns An avapi::time_series with each pair.second =
  * std::vector<float>[open, high, low, close, volume]
  */
-time_series Quote::getTimeSeries(const url_func &func,
+time_series Stock::getTimeSeries(const api_func &func,
                                  const size_t &last_n_rows,
-                                 const std::string &interval)
+                                 const api_interval &interval)
 {
-    // Create url query for getting said time series
-    std::string url = this->m_urls[func];
-    if (func == avapi::INTRADAY) {
-        stringReplace(url, "{interval}", interval);
+    // Create url query for time series
+    std::string url = api_urlFuncs[func];
+    if (func == INTRADAY) {
+        url += "&interval=" + api_urlIntervals[interval];
     }
-    stringReplace(url, "{symbol}", this->m_symbol);
-    stringReplace(url, "{api}", this->m_api_key);
+    stringReplace(url, "{symbol}", m_symbol);
+    stringReplace(url, "{api}", m_api_key);
 
     // Download csv data for global quote
-    std::string data = downloadCsv(url);
-    return parseCsvString(data, last_n_rows);
+    std::string csv_string = downloadCsv(url);
+    return parseCsvString(csv_string, last_n_rows);
 }
 
 /**
@@ -54,12 +69,12 @@ time_series Quote::getTimeSeries(const url_func &func,
  * @returns latest global quote as an avapi::time_pair with pair.second =
  * std::vector<float>[open,high,low,price,volume,prevClose,change,change]
  */
-time_pair Quote::getGlobalQuote()
+time_pair Stock::getGlobalQuote()
 {
     // Create url query for getting global quote
-    std::string url = this->m_url_base + "GLOBAL_QUOTE" + this->m_url_end;
-    stringReplace(url, "{symbol}", this->m_symbol);
-    stringReplace(url, "{api}", this->m_api_key);
+    std::string url = api_urlBase + "GLOBAL_QUOTE" + api_urlEnd;
+    stringReplace(url, "{symbol}", m_symbol);
+    stringReplace(url, "{api}", m_api_key);
 
     // Download csv data for global quote
     std::stringstream csv(downloadCsv(url));
@@ -110,7 +125,7 @@ time_series parseCsvFile(const std::string &file, const size_t &last_n_rows)
         return null_series;
     }
 
-    // Iterate safely if user is asking for more rows than available
+    // Ensure safe iteration over data.
     if (last_n_rows == 0) {
     }
     else if (n_rows > last_n_rows) {
@@ -132,7 +147,7 @@ time_series parseCsvFile(const std::string &file, const size_t &last_n_rows)
         series.push_back(std::make_pair(toUnixTimestamp(row[0]), data));
     }
 
-    // Data coming from Alpha Vantage is reversed, lets reverse it for user
+    // Data coming from Alpha Vantage is reversed (Dates are reversed)
     std::reverse(series.begin(), series.end());
     return series;
 }
@@ -167,7 +182,7 @@ time_series parseCsvString(const std::string &data, const size_t &last_n_rows)
         return null_series;
     }
 
-    // Iterate safely if user is asking for more rows than available
+    // Ensure safe iteration over data.
     if (last_n_rows == 0) {
     }
     else if (n_rows > last_n_rows) {
@@ -189,7 +204,7 @@ time_series parseCsvString(const std::string &data, const size_t &last_n_rows)
         series.push_back(std::make_pair(toUnixTimestamp(row[0]), data));
     }
 
-    // Data coming from Alpha Vantage is reversed, lets reverse it for user
+    // Data coming from Alpha Vantage is reversed (Dates are reversed)
     std::reverse(series.begin(), series.end());
     return series;
 }
@@ -202,7 +217,7 @@ time_series parseCsvString(const std::string &data, const size_t &last_n_rows)
  * @param   data Current running chunk for data appension
  * @returns The current running chunk's realsize
  */
-size_t Quote::WriteMemoryCallback(void *ptr, size_t size, size_t nmemb,
+size_t Stock::WriteMemoryCallback(void *ptr, size_t size, size_t nmemb,
                                   void *data)
 {
     size_t realsize = size * nmemb;
@@ -217,7 +232,7 @@ size_t Quote::WriteMemoryCallback(void *ptr, size_t size, size_t nmemb,
  * @param   t_url The url to be curled
  * @returns The csv data as an std::string
  */
-std::string Quote::downloadCsv(const std::string &t_url)
+std::string Stock::downloadCsv(const std::string &t_url)
 {
     CURL *curl;
     CURLcode res;
@@ -293,7 +308,7 @@ std::time_t toUnixTimestamp(const std::string &input)
  * @brief   Prints an avapi::time_series' data to console
  * @param   series The avapi::time_series to be printed
  */
-void printSeries(const time_series &series)
+void print(const time_series &series)
 {
     for (auto &pair : series) {
         std::cout << pair.first << ':';
@@ -308,7 +323,7 @@ void printSeries(const time_series &series)
  * @brief   Prints an avapi::time_pair's data to console
  * @param   pair The avapi::time_pair to be printed
  */
-void printPair(const time_pair &pair)
+void print(const time_pair &pair)
 {
     std::cout << pair.first << ':';
     for (auto &val : pair.second) {
@@ -317,7 +332,4 @@ void printPair(const time_pair &pair)
     std::cout << '\n';
 }
 
-std::vector<float> null_vector{NULL};
-avapi::time_pair null_pair = std::make_pair(NULL, null_vector);
-avapi::time_series null_series{null_pair};
 } // namespace avapi
