@@ -10,7 +10,7 @@ To use Avapi, the following is required:
 
 # Example Usage
 ## Getting intraday data for a stock of interest
-In this example, we will get the last 10 rows of intraday data for Tesla ("TSLA") on a 15 minute interval. We will begin by creating an ```avapi::Stock``` object with a stock ```symbol``` and ```api_key```. If we saved the API key to a .txt file, Avapi provides a helper function to easily read it.  We can then call ```Stock::getIntradaySeries("15min", 10)``` to return an ```avapi::time_series``` object containing the data we want.
+In this example, we will get the last 10 rows of intraday data for Tesla stock ("TSLA") on a 15 minute interval. We will begin by creating an ```avapi::Stock``` object with a stock ```symbol``` and ```api_key```. If we saved the API key to a .txt file, Avapi provides a helper function to easily read it.  We can then call ```Stock::getIntradaySeries("15min", 10)``` to return an ```avapi::time_series``` object containing the data we want.
 
 The ```avapi::time_series``` object is a vector of pairs with each pair containing a Unix timestamp and a data vector. The data vector within each pair is ordered as ```[open, high, low, close, volume]```. Another helper function is used to print the series' contents.
 
@@ -49,44 +49,78 @@ Output:
   1614642300      721.50      721.50      720.50      720.90        4320
 ```
 
-## Getting daily, weekly, and monthly data
-In this example, we will get the last 10 rows of daily, weekly, and monthly data for "AAPL".
+## Getting daily, weekly, and monthly data for a stock of interest
+In this example, we will get the last 10 rows of non-adjusted daily, weekly, and monthly data for Apple stock ("AAPL"). For daily, weekly, and monthly data, we must specify whether or not we want an adjusted time series.
 
 ```C++
 
-std::string api_key = avapi::readFirstLineFromFile("../../api.key");
 std::string symbol = "AAPL";
-avapi::Quote quote(symbol, api_key);
-avapi::time_series daily_series = quote.getTimeSeries(avapi::DAILY, 10);
-avapi::time_series weekly_series = quote.getTimeSeries(avapi::WEEKLY, 10);
-avapi::time_series monthly_series = quote.getTimeSeries(avapi::MONTHLY, 10);
+std::string api_key = avapi::readFirstLineFromFile("../../api.key");
 
-std::cout << "Daily Series ----------\n";
-avapi::printSeries(daily_series);
-std::cout << "Weekly Series ---------\n";
-avapi::printSeries(weekly_series);
-std::cout << "Monthly Series --------\n";
-avapi::printSeries(monthly_series);
+avapi::Stock aapl(symbol, api_key);
+
+// Get last 10 rows of non-adjusted daily, weekly, and monthly time series
+avapi::time_series daily_series = aapl.getDailySeries(false, 10);
+avapi::time_series weekly_series = aapl.getWeeklySeries(false, 10);
+avapi::time_series monthly_series = aapl.getMonthlySeries(false, 10);
+
+std::cout << "Daily Series -------------------------\n\n";
+avapi::print(daily_series);
+std::cout << '\n' << "Weekly Series ------------------------\n\n";
+avapi::print(weekly_series);
+std::cout << '\n' << "Monthly Series-- ---------------------\n ";
+avapi::print(monthly_series);
+
 
 ```
 
 Output:
 
 ```
-Daily Series ----------
-1612504800: 137.35 137.42 135.86 136.76 7.56938e+07
-1612764000: 136.03 136.96 134.92 136.91 7.12972e+07
-1612850400: 136.62 137.877 135.85 136.01 7.5987e+07...
+Daily Series -------------------------
 
-Weekly Series ---------
-1608271200: 122.6 129.58 121.54 126.655 6.21758e+08
-1608789600: 125.02 134.405 123.449 131.97 4.33757e+08
-1609394400: 133.99 138.789 131.72 132.69 4.39741e+08...
+   Timestamp        Open        High         Low       Close      Volume
+------------------------------------------------------------------------
+  1614578400      123.75      127.93      122.79      127.79   116307888
+  1614319200      122.59      124.85      121.20      121.26   163424672
+  1614232800      124.68      126.46      120.54      120.99   144766928
+  1614146400      124.94      125.56      122.23      125.35   111039904
+  1614060000      123.76      126.71      118.39      125.86   158273024
+  1613973600      128.01      129.72      125.60      126.00   102886920
+  1613714400      130.24      130.71      128.80      129.87    87668832
+  1613628000      129.20      129.99      127.41      129.71    96856752
+  1613541600      131.25      132.22      129.47      130.84    97372200
+  1613455200      135.49      136.01      132.79      133.19    80576320
+ 
+Weekly Series ------------------------
 
-Monthly Series --------
-1590732000: 286.25 324.24 285.85 317.94 7.0166e+08
-1593496800: 317.75 372.38 317.21 364.8 8.10901e+08
-1596175200: 365.12 425.66 356.58 425.04 7.55162e+08...
+   Timestamp        Open        High         Low       Close      Volume
+------------------------------------------------------------------------
+  1614578400      123.75      127.93      122.79      127.79   116307888
+  1614319200      128.01      129.72      118.39      121.26   680391424
+  1613714400      135.49      136.01      127.41      129.87   362474112
+  1613109600      136.03      137.88      133.69      135.37   344357344
+  1612504800      133.75      137.42      130.93      136.76   438264064
+  1611900000      143.07      145.09      130.21      131.96   716990976
+  1611295200      127.78      139.85      126.94      139.07   430065728
+  1610690400      129.19      131.45      126.86      127.14   481518240
+  1610085600      133.52      133.61      126.38      132.05   610791168
+  1609394400      133.99      138.79      131.72      132.69   439740672
+  
+Monthly Series -----------------------
+
+   Timestamp        Open        High         Low       Close      Volume
+------------------------------------------------------------------------
+  1614578400      123.75      127.93      122.79      127.79   116307888
+  1614319200      133.75      137.88      118.39      121.26  1825486976
+  1611900000      133.52      145.09      126.38      131.96  2239366144
+  1609394400      121.01      138.79      120.01      132.69  2319687680
+  1606716000      109.11      121.99      107.32      119.05  2122724352
+  1604037600      117.64      125.39      107.72      108.86  2895317504
+  1601445600      132.76      137.98      103.10      115.81  3886792960
+  1598853600      432.80      515.14      126.00      129.04  1184207104
+  1596175200      365.12      425.66      356.58      425.04   755162240
+  1593496800      317.75      372.38      317.21      364.80   810900864
 ```
 
 ## Getting a global quote
