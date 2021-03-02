@@ -384,7 +384,7 @@ std::string readFirstLineFromFile(const std::string &file_path)
  * @brief   Converts date + time string "%Y-%m-%d %H:%M:%S" to Unix Timestamp
  * (seconds since unic epoch)
  * @param   input The input string to be converted
- * @returns std::time_t timestamp
+ * @returns The time as an std::time_t timestamp
  */
 std::time_t toUnixTimestamp(const std::string &input)
 {
