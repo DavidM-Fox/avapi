@@ -2,6 +2,7 @@
 #include <curl/curl.h>
 #include <fstream>
 #include <iostream>
+#include <iomanip>
 #include <sstream>
 #include "avapi.h"
 #include "rapidcsv.h"
@@ -446,15 +447,67 @@ std::time_t toUnixTimestamp(const std::string &input)
 /**
  * @brief   Prints an avapi::time_series' data to console
  * @param   series The avapi::time_series to be printed
+ * @param   adjusted Whether or not the data is adjusted (default = false)
  */
-void print(const time_series &series)
+void print(const time_series &series, const bool &adjusted)
 {
-    for (auto &pair : series) {
-        std::cout << pair.first << ':';
-        for (auto &val : pair.second) {
-            std::cout << ' ' << val;
+    std::vector<std::string> header;
+    std::string separator;
+    size_t n_data;
+
+    if (adjusted) {
+        header = {"open",      "high",   "low",      "close",
+                  "adj_close", "volume", "dividend", "split_coeff"};
+        separator = "----------------------------------------------------------"
+                    "------------------------------------------------";
+
+        std::cout << std::setw(12) << std::right << "Timestamp";
+        for (auto &label : header) {
+            std::cout << std::setw(12) << std::right << label;
         }
-        std::cout << '\n';
+
+        std::cout << '\n' << separator << '\n';
+
+        for (auto &pair : series) {
+            std::cout << std::setw(12) << std::right << pair.first;
+
+            for (size_t i = 0; i < 5; ++i) {
+                std::cout << std::setw(12) << std::right << std::fixed
+                          << std::setprecision(2) << pair.second[i];
+            }
+            std::cout << std::setw(12) << std::right << std::setprecision(0)
+                      << pair.second[5];
+
+            std::cout << std::setw(12) << std::right << std::fixed
+                      << std::setprecision(2) << pair.second[6];
+
+            std::cout << std::setw(12) << std::right << std::fixed
+                      << std::setprecision(2) << pair.second[7];
+            std::cout << '\n';
+        }
+    }
+    else {
+        header = {"Open", "High", "Low", "Close", "Volume"};
+        separator = "----------------------------------------------------------"
+                    "--------------";
+
+        std::cout << std::setw(12) << std::right << "Timestamp";
+        for (auto &label : header) {
+            std::cout << std::setw(12) << std::right << label;
+        }
+        std::cout << '\n' << separator << '\n';
+
+        for (auto &pair : series) {
+            std::cout << std::setw(12) << std::right << pair.first;
+
+            for (size_t i = 0; i < 4; ++i) {
+                std::cout << std::setw(12) << std::right << std::fixed
+                          << std::setprecision(2) << pair.second[i];
+            }
+            std::cout << std::setw(12) << std::right << std::setprecision(0)
+                      << pair.second[4];
+            std::cout << '\n';
+        }
     }
 }
 

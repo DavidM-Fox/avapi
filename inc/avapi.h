@@ -75,7 +75,7 @@ time_series parseCsvFile(const std::string &file,
 time_series parseCsvString(const std::string &data,
                            const size_t &last_n_rows = 0);
 
-void print(const time_series &series);
+void print(const time_series &series, const bool &adjusted = false);
 void print(const time_pair &pair);
 void reverseTimeSeries(avapi::time_series &series);
 
