@@ -227,7 +227,6 @@ time_series Crypto::getTimeSeries(const Crypto::function &func,
 
 /**
  * @brief Base crypto function calls for Alpha Vantage API
- * @param {config} can be "&datatype=csv" / &datatype=json"
  */
 const std::vector<std::string> Crypto::m_functions{"DIGITAL_CURRENCY_DAILY",
                                                    "DIGITAL_CURRENCY_WEEKLY",
