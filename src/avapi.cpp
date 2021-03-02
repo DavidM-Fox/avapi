@@ -27,7 +27,13 @@ std::string ApiCall::buildApiCallUrl(const std::string &function,
     stringReplace(url, "{func}", function);
     stringReplace(url, "{symbol}", m_symbol);
     stringReplace(url, "{api}", m_apiKey);
-    stringReplace(url, "{interval}", interval);
+    if (interval == "") {
+        stringReplace(url, "{interval}", "");
+    }
+    else {
+        std::string replace = "&interval=" + interval;
+        stringReplace(url, "{interval}", replace);
+    }
     stringReplace(url, "{config}", config);
     return url;
 }
@@ -453,7 +459,6 @@ void print(const time_series &series, const bool &adjusted)
 {
     std::vector<std::string> header;
     std::string separator;
-    size_t n_data;
 
     if (adjusted) {
         header = {"open",      "high",   "low",      "close",
@@ -495,6 +500,7 @@ void print(const time_series &series, const bool &adjusted)
         for (auto &label : header) {
             std::cout << std::setw(12) << std::right << label;
         }
+
         std::cout << '\n' << separator << '\n';
 
         for (auto &pair : series) {
