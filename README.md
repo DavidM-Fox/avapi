@@ -124,13 +124,13 @@ Monthly Series -----------------------
 ```
 
 ## Getting a global quote for a stock of interest
-In this example, we will get a global quote for "AAPL". For a global quote, a single ```avapi::time_pair``` object is returned with the data being ordered as ```[open, high, low, price, volume, prevClose, change, change%]```. The "latestDay" column from the csv is used as the timestamp.
+In this example, we will get a global quote for Apple stock ("AAPL"). For a global quote, a single ```avapi::time_pair``` object is returned with the data being ordered as ```[open, high, low, price, volume, prevClose, change, change%]```. The "latestDay" column from the csv is used as the timestamp.
+
 ```C++
 
 typedef time_pair global_quote;
 
 ```
-
 ```C++
 
 std::string symbol = "AAPL";
@@ -154,7 +154,7 @@ Output:
 
 ## Parsing an Alpha Vantage time series csv file
 
-Another helper function is provided to directly parse an Alpha Vantage time series csv file. 
+If we already have a csv file from Alpha Vantage, Avapi provides a helper function to directly parse it into an ```avapi::time_series```. 
 
 Example "daily_GME.csv" contents:
 
