@@ -348,7 +348,7 @@ time_series parseCsvString(const std::string &data, const size_t &last_n_rows)
  * @param   str The given string
  * @param   from The substring being replaced by "to"
  * @param   to The substring replacing "from"
- * @returns Success bool
+ * @returns A success/fail bool
  */
 bool stringReplace(std::string &str, const std::string &from,
                    const std::string &to)
