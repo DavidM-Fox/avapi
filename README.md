@@ -50,7 +50,20 @@ Output:
 ```
 
 ## Getting daily, weekly, and monthly data for a stock of interest
-In this example, we will get the last 10 rows of non-adjusted daily, weekly, and monthly data for Apple stock ("AAPL"). For daily, weekly, and monthly data, we must specify whether or not we want an adjusted time series.
+For daily, weekly, and monthly data, we must specify whether or not we want an adjusted time series. For ease of viewing, the declarations for the functions used in this example are shown below
+
+
+Note: If the parameter ```last_n_rows``` is defaulted to 0, the returned time_series will contain every row that Alpha Vantage supplies.
+```C++
+
+avapi::time_series Stock::getDailySeries(const bool &adjusted = false, const size_t &last_n_rows = 0);
+avapi::time_series Stock::getWeeklySeries(const bool &adjusted = false, const size_t &last_n_rows = 0);
+avapi::time_series Stock::getMonthlySeries(const bool &adjusted = false, const size_t &last_n_rows = 0);
+void avapi::printSeries(const time_series &series, const bool &adjusted = false);
+                           
+```
+
+In this first case, we will get non-adjusted daily, weekly, and monthly data for Apple stock ("AAPL").
 
 ```C++
 
@@ -122,6 +135,34 @@ Monthly Series -----------------------
   1596175200      365.12      425.66      356.58      425.04   755162240
   1593496800      317.75      372.38      317.21      364.80   810900864
 ```
+
+If we desire an adjusted time series, we can create one as such:
+
+```C++
+
+// Get last 10 rows of adjusted daily data
+avapi::time_series adj_dailySeries = aapl.getDailySeries(true, 10);
+avapi::printSeries(adj_dailySeries, true);
+
+```
+
+Output:
+
+```
+   Timestamp        open        high         low       close   adj_close      volume    dividend split_coeff
+------------------------------------------------------------------------------------------------------------
+  1614578400      123.75      127.93      122.79      127.79      127.79   116307888        0.00        1.00
+  1614319200      122.59      124.85      121.20      121.26      121.26   163424672        0.00        1.00
+  1614232800      124.68      126.46      120.54      120.99      120.99   144766928        0.00        1.00
+  1614146400      124.94      125.56      122.23      125.35      125.35   111039904        0.00        1.00
+  1614060000      123.76      126.71      118.39      125.86      125.86   158273024        0.00        1.00
+  1613973600      128.01      129.72      125.60      126.00      126.00   102886920        0.00        1.00
+  1613714400      130.24      130.71      128.80      129.87      129.87    87668832        0.00        1.00
+  1613628000      129.20      129.99      127.41      129.71      129.71    96856752        0.00        1.00
+  1613541600      131.25      132.22      129.47      130.84      130.84    97372200        0.00        1.00
+  1613455200      135.49      136.01      132.79      133.19      133.19    80576320        0.00        1.00
+```
+
 
 ## Getting a global quote for a stock of interest
 In this example, we will get a global quote for Apple stock ("AAPL"). For a global quote, a single ```avapi::time_pair``` object is returned with the data being ordered as ```[open, high, low, price, volume, prevClose, change, change%]```. The "latestDay" column from the csv is used as the timestamp.
