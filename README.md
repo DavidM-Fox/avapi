@@ -28,7 +28,7 @@ std::string api_key = avapi::readFirstLineFromFile("api_key.txt");
 avapi::Stock tsla(symbol, api_key);
 
 avapi::time_series series = tsla.getIntradaySeries("15min", 10);
-avapi::print(series);
+avapi::printSeries(series);
 
 ```
 
@@ -55,7 +55,7 @@ In this example, we will get the last 10 rows of non-adjusted daily, weekly, and
 ```C++
 
 std::string symbol = "AAPL";
-std::string api_key = avapi::readFirstLineFromFile("../../api.key");
+std::string api_key = avapi::readFirstLineFromFile("api.key");
 
 avapi::Stock aapl(symbol, api_key);
 
@@ -65,11 +65,11 @@ avapi::time_series weekly_series = aapl.getWeeklySeries(false, 10);
 avapi::time_series monthly_series = aapl.getMonthlySeries(false, 10);
 
 std::cout << "Daily Series -------------------------\n\n";
-avapi::print(daily_series);
+avapi::printSeries(daily_series);
 std::cout << '\n' << "Weekly Series ------------------------\n\n";
-avapi::print(weekly_series);
+avapi::printSeries(weekly_series);
 std::cout << '\n' << "Monthly Series-- ---------------------\n ";
-avapi::print(monthly_series);
+avapi::printSeries(monthly_series);
 
 
 ```
@@ -123,23 +123,32 @@ Monthly Series -----------------------
   1593496800      317.75      372.38      317.21      364.80   810900864
 ```
 
-## Getting a global quote
-In this example, we will get a global quote for "GME". For a global quote, a single ```avapi::time_pair``` object is returned with the data being ordered as ```[open, high, low, price, volume, prevClose, change, change%]```. The "latestDay" column from the csv is used as the timestamp.
+## Getting a global quote for a stock of interest
+In this example, we will get a global quote for "AAPL". For a global quote, a single ```avapi::time_pair``` object is returned with the data being ordered as ```[open, high, low, price, volume, prevClose, change, change%]```. The "latestDay" column from the csv is used as the timestamp.
+```C++
+
+typedef time_pair global_quote;
+
+```
 
 ```C++
 
-std::string api_key = avapi::readFirstLineFromFile("../../api.key");
-std::string symbol = "GME";
-avapi::Quote quote(symbol, api_key);
-avapi::time_pair pair = quote.getGlobalQuote();
-avapi::printPair(pair);
+std::string symbol = "AAPL";
+std::string api_key = avapi::readFirstLineFromFile("api.key");
+
+avapi::Stock aapl(symbol, api_key);
+
+avapi::global_quote quote = aapl.getGlobalQuote();
+avapi::printGlobalQuote(quote);
 
 ```
 
 Output:
 
 ```
-1613109600: 50.75 55.24 48.05 52.4 1.45733e+07 51.1 1.3 2.544
+   Timestamp        Open        High         Low       Close      Volume  Prev_Close      Change     Change%
+------------------------------------------------------------------------------------------------------------
+  1614578400      123.75      127.93      122.79      127.79   116307888      121.26        6.53        5.39
 ```
 
 
