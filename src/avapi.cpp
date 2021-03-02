@@ -8,28 +8,24 @@
 
 namespace avapi {
 
-static const std::vector<float> null_vector{NULL};
-static const avapi::time_pair null_pair = std::make_pair(NULL, null_vector);
-static const avapi::time_series null_series{null_pair};
-
 /**
- * @brief   Symbol Class constructor
+ * @brief   ApiCall Class constructor
  * @param   symbol The stock symbol of interest
  * @param   api_key The Alpha Vantage API key to use
  */
-Symbol::Symbol(std::string symbol, std::string api_key)
-    : m_symbol(symbol), m_api_key(api_key)
+ApiCall::ApiCall(std::string symbol, std::string api_key)
+    : m_symbol(symbol), m_apiKey(api_key)
 {
 }
 
-std::string Symbol::buildApiCallUrl(const std::string &function,
-                                    const std::string &interval,
-                                    const std::string &config)
+std::string ApiCall::buildApiCallUrl(const std::string &function,
+                                     const std::string &interval,
+                                     const std::string &config)
 {
-    std::string url = api_urlBase;
+    std::string url = m_urlBase;
     stringReplace(url, "{func}", function);
     stringReplace(url, "{symbol}", m_symbol);
-    stringReplace(url, "{api}", m_api_key);
+    stringReplace(url, "{api}", m_apiKey);
     stringReplace(url, "{interval}", interval);
     stringReplace(url, "{config}", config);
     return url;
@@ -37,9 +33,14 @@ std::string Symbol::buildApiCallUrl(const std::string &function,
 
 /**
  * @brief Base url for all Alpha Vantage API calls
- * @param {config} can be "&datatype=csv" / &datatype=json"
+ * "https://www.alphavantage.co/query?function={func}&symbol={symbol}&apikey={api}{interval}{config}"
+ * @param {func} e.g TIME_SERIES_INTRADAY
+ * @param {symbol} e.g TSLA
+ * @param {api} Alpha Vantage API Key
+ * @param {interval} Only used when func = TIME_SERIES_INTRADAY
+ * @param {config} Additional configuration (datatype, market)
  */
-const std::string Symbol::api_urlBase(
+const std::string ApiCall::m_urlBase(
     "https://www.alphavantage.co/"
     "query?function={func}&symbol={symbol}&apikey={api}{interval}{config}");
 
@@ -51,8 +52,8 @@ const std::string Symbol::api_urlBase(
  * @param   data Current running chunk for data appension
  * @returns The current running chunk's realsize
  */
-size_t Symbol::WriteMemoryCallback(void *ptr, size_t size, size_t nmemb,
-                                   void *data)
+size_t ApiCall::WriteMemoryCallback(void *ptr, size_t size, size_t nmemb,
+                                    void *data)
 {
     size_t realsize = size * nmemb;
 
@@ -66,7 +67,7 @@ size_t Symbol::WriteMemoryCallback(void *ptr, size_t size, size_t nmemb,
  * @param   t_url The url to be curled
  * @returns The csv data as an std::string
  */
-std::string Symbol::downloadCsv(const std::string &url)
+std::string ApiCall::downloadCsv(const std::string &url)
 {
     CURL *curl;
     CURLcode res;
@@ -92,28 +93,29 @@ std::string Symbol::downloadCsv(const std::string &url)
  * @param   api_key The Alpha Vantage API key to use
  */
 Stock::Stock(const std::string &symbol, const std::string &api_key)
-    : Symbol(symbol, api_key)
+    : ApiCall(symbol, api_key)
 {
 }
 
 /**
- * @brief   Returns a stock::function time_series from last_n_rows;
+ * @brief   Get a specified time series function for a symbol of interest.
  * @param   func The stock::function to use
- * @param   i interval for INTRADAY function. This argument is
- * ignored if func is not INTRADAY
+ * @param   interval interval for INTRADAY function. This argument is
+ * ignored if func is not INTRADAY. ("1min", "5min", "15min", "30min", or
+ * "60min", default = "30min")
  * @param   last_n_rows Last number of rows to get (default = 0 or all)
- * @returns An avapi::time_series with the data vector being ordered [open,
+ * @returns An \c avapi::time_series with the data vector being ordered [open,
  * high, low, close, volume]
  */
 time_series Stock::getTimeSeries(const Stock::function &func,
-                                 const Stock::interval &i,
+                                 const std::string &interval,
                                  const size_t &last_n_rows)
 {
     // Create url query
     std::string url;
     std::string config = "&datatype=csv";
     if (func == Stock::INTRADAY) {
-        url = buildApiCallUrl(m_functions[func], m_intervals[i], config);
+        url = buildApiCallUrl(m_functions[func], interval, config);
     }
     else {
         url = buildApiCallUrl(m_functions[func], "", config);
@@ -128,9 +130,9 @@ time_series Stock::getTimeSeries(const Stock::function &func,
 }
 
 /**
- * @brief   Returns a stock::function time_series from last_n_rows
- * @param   func The stock::function to use. If Intraday, the default interval
- * is 30min
+ * @brief   Get a specified time series function for a symbol of interest.
+ * @param   func The stock::function to use. If INTRADAY, the default interval
+ * is "30min"
  * @param   last_n_rows Last number of rows to get (default = 0 or all)
  * @returns An avapi::time_series with the data vector being ordered [open,
  * high, low, close, volume]
@@ -141,9 +143,9 @@ time_series Stock::getTimeSeries(const Stock::function &func,
     // Create url query
     std::string url;
     std::string config = "&datatype=csv";
+
     if (func == Stock::INTRADAY) {
-        url = buildApiCallUrl(m_functions[func], m_intervals[Stock::_30MIN],
-                              config);
+        url = buildApiCallUrl(m_functions[func], "30min", config);
     }
     else {
         url = buildApiCallUrl(m_functions[func], "", config);
@@ -192,19 +194,12 @@ const std::vector<std::string> Stock::m_functions{
     "TIME_SERIES_MONTHLY"};
 
 /**
- * @brief Stock interval calls for Alpha Vantage API
- */
-const std::vector<std::string> Stock::m_intervals{
-    "&interval=1min",  "&interval=5min",  "&interval=15min",
-    "&interval=30min", "&interval=60min", ""};
-
-/**
  * @brief   Crypto Class constructor
  * @param   symbol The stock symbol of interest
  * @param   api_key The Alpha Vantage API key to use
  */
 Crypto::Crypto(const std::string &symbol, const std::string &api_key)
-    : Symbol(symbol, api_key)
+    : ApiCall(symbol, api_key)
 {
 }
 
@@ -429,4 +424,10 @@ void print(const time_pair &pair)
     std::cout << '\n';
 }
 
+/// @brief Null object for exception handlers
+static const std::vector<float> null_vector{NULL};
+/// @brief Null object for exception handlers
+static const avapi::time_pair null_pair{NULL, null_vector};
+/// @brief Null object for exception handlers
+static const avapi::time_series null_series{null_pair};
 } // namespace avapi

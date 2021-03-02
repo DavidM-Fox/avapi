@@ -6,22 +6,18 @@
 
 namespace avapi {
 
+// Typedefs for Alpha Vantage API function return values
 typedef std::pair<std::time_t, std::vector<float>> time_pair;
 typedef time_pair global_quote;
 typedef std::vector<time_pair> time_series;
 
-extern const std::vector<std::string> api_urlIntervals;
-
-// Null objects for exception handlers
-extern const std::vector<float> null_vector;
-extern const avapi::time_pair null_pair;
-extern const avapi::time_series null_series;
-
-class Symbol {
+// Parent class of avapi::Stock and avapi::Crypto
+class ApiCall {
 public:
-    Symbol(std::string symbol, std::string api_key);
+    ApiCall(std::string symbol, std::string api_key);
+
     std::string m_symbol;
-    std::string m_api_key;
+    std::string m_apiKey;
 
 protected:
     std::string buildApiCallUrl(const std::string &function,
@@ -32,31 +28,26 @@ protected:
 private:
     static size_t WriteMemoryCallback(void *ptr, size_t size, size_t nmemb,
                                       void *data);
-    static const std::string api_urlBase;
+    static const std::string m_urlBase;
 };
 
-class Stock : private Symbol {
+class Stock : private ApiCall {
 public:
     explicit Stock(const std::string &symbol, const std::string &api_key);
-
     enum function { INTRADAY = 0, DAILY, WEEKLY, MONTHLY };
-    enum interval { _1MIN = 0, _5MIN, _15MIN, _30MIN, _60MIN, NONE };
 
     time_series getTimeSeries(const Stock::function &func,
-                              const Stock::interval &i,
+                              const std::string &interval = "30min",
                               const size_t &last_n_rows = 0);
-
     time_series getTimeSeries(const Stock::function &func,
                               const size_t &last_n_rows = 0);
-
     time_pair getGlobalQuote();
 
 private:
     static const std::vector<std::string> m_functions;
-    static const std::vector<std::string> m_intervals;
 };
 
-class Crypto : private Symbol {
+class Crypto : private ApiCall {
 public:
     explicit Crypto(const std::string &symbol, const std::string &api_key);
     enum function { DAILY, WEEKLY, MONTHLY };
@@ -83,5 +74,8 @@ time_series parseCsvFile(const std::string &file,
 time_series parseCsvString(const std::string &data,
                            const size_t &last_n_rows = 0);
 
+extern const std::vector<float> null_vector;
+extern const avapi::time_pair null_pair;
+extern const avapi::time_series null_series;
 } // namespace avapi
 #endif // AVAPI_H
