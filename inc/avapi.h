@@ -7,40 +7,66 @@
 namespace avapi {
 
 typedef std::pair<std::time_t, std::vector<float>> time_pair;
+typedef time_pair global_quote;
 typedef std::vector<time_pair> time_series;
 
-// Alpha Vantage API url placeholders
-extern const std::string api_urlBase;
-extern const std::string api_urlEnd;
-
-extern const std::vector<std::string> api_urlFuncs;
-enum api_func { INTRADAY = 0, DAILY, WEEKLY, MONTHLY };
-
 extern const std::vector<std::string> api_urlIntervals;
-enum api_interval { _1MIN = 0, _5MIN, _15MIN, _30MIN, _60MIN };
 
 // Null objects for exception handlers
 extern const std::vector<float> null_vector;
 extern const avapi::time_pair null_pair;
 extern const avapi::time_series null_series;
 
-class Stock {
+class Symbol {
 public:
-    Stock(std::string symbol, std::string api_key);
-    ~Stock();
-
+    Symbol(std::string symbol, std::string api_key);
     std::string m_symbol;
     std::string m_api_key;
 
-    time_series getTimeSeries(const api_func &func,
-                              const size_t &last_n_rows = 0,
-                              const api_interval &interval = _15MIN);
-    time_pair getGlobalQuote();
+protected:
+    std::string buildApiCallUrl(const std::string &function,
+                                const std::string &interval,
+                                const std::string &config);
+    std::string downloadCsv(const std::string &url);
 
 private:
     static size_t WriteMemoryCallback(void *ptr, size_t size, size_t nmemb,
                                       void *data);
-    std::string downloadCsv(const std::string &t_url);
+    static const std::string api_urlBase;
+};
+
+class Stock : private Symbol {
+public:
+    explicit Stock(const std::string &symbol, const std::string &api_key);
+
+    enum function { INTRADAY = 0, DAILY, WEEKLY, MONTHLY };
+    enum interval { _1MIN = 0, _5MIN, _15MIN, _30MIN, _60MIN, NONE };
+
+    time_series getTimeSeries(const Stock::function &func,
+                              const Stock::interval &i,
+                              const size_t &last_n_rows = 0);
+
+    time_series getTimeSeries(const Stock::function &func,
+                              const size_t &last_n_rows = 0);
+
+    time_pair getGlobalQuote();
+
+private:
+    static const std::vector<std::string> m_functions;
+    static const std::vector<std::string> m_intervals;
+};
+
+class Crypto : private Symbol {
+public:
+    explicit Crypto(const std::string &symbol, const std::string &api_key);
+    enum function { DAILY, WEEKLY, MONTHLY };
+
+    time_series getTimeSeries(const Crypto::function &func,
+                              const size_t &last_n_rows = 0,
+                              const std::string &market = "USD");
+
+private:
+    static const std::vector<std::string> m_functions;
 };
 
 // Helper methods
