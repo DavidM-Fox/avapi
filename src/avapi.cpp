@@ -318,14 +318,17 @@ time_series parseCsvFile(const std::string &file, const size_t &last_n_rows)
         n_rows = last_n_rows;
     }
 
+    std::vector<std::string> row = doc.GetRow<std::string>(0);
+    size_t n_rowData = row.size();
+
     // Iterate over n_rows, parsing data into the avapi::time_series
     avapi::time_series series;
     for (size_t i = 0; i < n_rows; ++i) {
         std::vector<std::string> row = doc.GetRow<std::string>(i);
 
         std::vector<float> data;
-        for (auto &val : row) {
-            data.push_back(std::stof(val));
+        for (size_t j = 1; j < n_rowData; ++j) {
+            data.push_back(std::stof(row[j]));
         }
 
         series.push_back(std::make_pair(toUnixTimestamp(row[0]), data));
@@ -370,14 +373,17 @@ time_series parseCsvString(const std::string &data, const size_t &last_n_rows)
         n_rows = last_n_rows;
     }
 
+    std::vector<std::string> row = doc.GetRow<std::string>(0);
+    size_t n_rowData = row.size();
+
     // Iterate over n_rows, parsing data into the avapi::time_series
     avapi::time_series series;
     for (size_t i = 0; i < n_rows; ++i) {
         std::vector<std::string> row = doc.GetRow<std::string>(i);
 
         std::vector<float> data;
-        for (auto &val : row) {
-            data.push_back(std::stof(val));
+        for (size_t j = 1; j < n_rowData; ++j) {
+            data.push_back(std::stof(row[j]));
         }
 
         series.push_back(std::make_pair(toUnixTimestamp(row[0]), data));
