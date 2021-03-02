@@ -32,19 +32,6 @@ std::string ApiCall::buildApiCallUrl(const std::string &function,
 }
 
 /**
- * @brief Base url for all Alpha Vantage API calls
- * "https://www.alphavantage.co/query?function={func}&symbol={symbol}&apikey={api}{interval}{config}"
- * @param {func} e.g TIME_SERIES_INTRADAY
- * @param {symbol} e.g TSLA
- * @param {api} Alpha Vantage API Key
- * @param {interval} Only used when func = TIME_SERIES_INTRADAY
- * @param {config} Additional configuration (datatype, market)
- */
-const std::string ApiCall::m_urlBase(
-    "https://www.alphavantage.co/"
-    "query?function={func}&symbol={symbol}&apikey={api}{interval}{config}");
-
-/**
  * @brief   Callback function for CURLOPT_WRITEFUNCTION
  * @param   ptr The downloaded chunk members
  * @param   size Member memory size
@@ -88,6 +75,19 @@ std::string ApiCall::downloadCsv(const std::string &url)
 }
 
 /**
+ * @brief Base url for all Alpha Vantage API calls
+ * "https://www.alphavantage.co/query?function={func}&symbol={symbol}&apikey={api}{interval}{config}"
+ * @param {func} e.g TIME_SERIES_INTRADAY
+ * @param {symbol} e.g TSLA
+ * @param {api} Alpha Vantage API Key
+ * @param {interval} Only used when func = TIME_SERIES_INTRADAY
+ * @param {config} Additional configuration (datatype, market)
+ */
+const std::string ApiCall::m_urlBase(
+    "https://www.alphavantage.co/"
+    "query?function={func}&symbol={symbol}&apikey={api}{interval}{config}");
+
+/**
  * @brief   Stock Class constructor
  * @param   symbol The stock symbol of interest
  * @param   api_key The Alpha Vantage API key to use
@@ -98,70 +98,104 @@ Stock::Stock(const std::string &symbol, const std::string &api_key)
 }
 
 /**
- * @brief   Get a specified time series function for a symbol of interest.
- * @param   func The stock::function to use
- * @param   interval interval for INTRADAY function. This argument is
- * ignored if func is not INTRADAY. ("1min", "5min", "15min", "30min", or
- * "60min", default = "30min")
- * @param   last_n_rows Last number of rows to get (default = 0 or all)
- * @returns An \c avapi::time_series with the data vector being ordered [open,
- * high, low, close, volume]
- */
-time_series Stock::getTimeSeries(const Stock::function &func,
-                                 const std::string &interval,
-                                 const size_t &last_n_rows)
-{
-    // Create url query
-    std::string url;
-    std::string config = "&datatype=csv";
-    if (func == Stock::INTRADAY) {
-        url = buildApiCallUrl(m_functions[func], interval, config);
-    }
-    else {
-        url = buildApiCallUrl(m_functions[func], "", config);
-    }
-
-    std::cout << url << std::endl;
-
-    // Download csv data for global quote
-    std::string csv_string = downloadCsv(url);
-
-    return parseCsvString(csv_string, last_n_rows);
-}
-
-/**
- * @brief   Get a specified time series function for a symbol of interest.
- * @param   func The stock::function to use. If INTRADAY, the default interval
- * is "30min"
+ * @brief   Get an intraday time series for a symbol of interest.
+ * @param   interval The intraday data interval ("1min", "5min", "15min",
+ * "30min", or "60min", default = "30min")
  * @param   last_n_rows Last number of rows to get (default = 0 or all)
  * @returns An avapi::time_series with the data vector being ordered [open,
  * high, low, close, volume]
  */
-time_series Stock::getTimeSeries(const Stock::function &func,
-                                 const size_t &last_n_rows)
+time_series Stock::getIntradaySeries(const std::string &interval,
+                                     const size_t &last_n_rows)
 {
     // Create url query
-    std::string url;
-    std::string config = "&datatype=csv";
+    std::string url =
+        buildApiCallUrl("TIME_SERIES_INTRADAY", interval, "&datatype=csv");
 
-    if (func == Stock::INTRADAY) {
-        url = buildApiCallUrl(m_functions[func], "30min", config);
-    }
-    else {
-        url = buildApiCallUrl(m_functions[func], "", config);
-    }
-
-    std::cout << url << std::endl;
-
-    // Download csv data for global quote
+    // Download csv data for time series
     std::string csv_string = downloadCsv(url);
-    return parseCsvString(csv_string, 0);
+    return parseCsvString(csv_string, last_n_rows);
+}
+
+/**
+ * @brief   Get a daily time series for a symbol of interest.
+ * @param   adjusted Whether or not the data should have adjusted values
+ * (default = false)
+ * @param   last_n_rows Last number of rows to get (default = 0 or all)
+ * @returns An avapi::time_series: [open,high,low,close,volume])
+ * or an adjusted avapi::time_series:
+ * [open,high,low,close,adjusted_close,volume,dividend_amount,split_coefficient])
+ */
+time_series Stock::getDailySeries(const bool &adjusted,
+                                  const size_t &last_n_rows)
+{
+    // Create url query
+    std::string function = "TIME_SERIES_DAILY";
+    if (adjusted) {
+        function += "_ADJUSTED";
+    }
+
+    std::string url = buildApiCallUrl(function, "", "&datatype=csv");
+
+    // Download csv data for time series
+    std::string csv_string = downloadCsv(url);
+    return parseCsvString(csv_string, last_n_rows);
+}
+
+/**
+ * @brief   Get a weekly time series for a symbol of interest.
+ * @param   adjusted Whether or not the data should have adjusted values
+ * (default = false)
+ * @param   last_n_rows Last number of rows to get (default = 0 or all)
+ * @returns An avapi::time_series: [open,high,low,close,volume])
+ * or an adjusted avapi::time_series:
+ * [open,high,low,close,adjusted_close,volume,dividend_amount,split_coefficient])
+ */
+time_series Stock::getWeeklySeries(const bool &adjusted,
+                                   const size_t &last_n_rows)
+{
+    // Create url query
+    std::string function = "TIME_SERIES_WEEKLY";
+    if (adjusted) {
+        function += "_ADJUSTED";
+    }
+
+    std::string url = buildApiCallUrl(function, "", "&datatype=csv");
+
+    // Download csv data for time series
+    std::string csv_string = downloadCsv(url);
+    return parseCsvString(csv_string, last_n_rows);
+}
+
+/**
+ * @brief   Get a monthly time series for a symbol of interest.
+ * @param   adjusted Whether or not the data should have adjusted values
+ * (default = false)
+ * @param   last_n_rows Last number of rows to get (default = 0 or all)
+ * @returns An avapi::time_series: [open,high,low,close,volume])
+ * or an adjusted avapi::time_series:
+ * [open,high,low,close,adjusted_close,volume,dividend_amount,split_coefficient])
+ */
+time_series Stock::getMonthlySeries(const bool &adjusted,
+                                    const size_t &last_n_rows)
+{
+    // Create url query
+    std::string function = "TIME_SERIES_MONTHLY";
+    if (adjusted) {
+        function += "_ADJUSTED";
+    }
+
+    std::string url = buildApiCallUrl(function, "", "&datatype=csv");
+
+    // Download csv data for time series
+    std::string csv_string = downloadCsv(url);
+    return parseCsvString(csv_string, last_n_rows);
 }
 
 /**
  * @brief   Returns an avapi::time_pair containing the latest global quote:
- * @returns latest global quote as an avapi::time_pair with pair.second =
- * std::vector<float>[open,high,low,price,volume,prevClose,change,change]
+ * @returns latest global quote as an avapi::time_pair:
+ * [open,high,low,price,volume,prevClose,change,change%]
  */
 time_pair Stock::getGlobalQuote()
 {
@@ -187,13 +221,6 @@ time_pair Stock::getGlobalQuote()
 }
 
 /**
- * @brief Stock function calls for Alpha Vantage API
- */
-const std::vector<std::string> Stock::m_functions{
-    "TIME_SERIES_INTRADAY", "TIME_SERIES_DAILY", "TIME_SERIES_WEEKLY",
-    "TIME_SERIES_MONTHLY"};
-
-/**
  * @brief   Crypto Class constructor
  * @param   symbol The stock symbol of interest
  * @param   api_key The Alpha Vantage API key to use
@@ -204,33 +231,58 @@ Crypto::Crypto(const std::string &symbol, const std::string &api_key)
 }
 
 /**
- * @brief   Returns a crypto::function time_series from last_n_rows;
- * @param   func The crypto::function to use
- * @param   market The exchange market for the cryptocurrency (default = "USD")
+ * @brief   Get a daily time series for a cryptocurrency of interest.
+ * @param   market The exchange market (default = "USD")
  * @param   last_n_rows Last number of rows to get (default = 0 or all)
- * @returns An avapi::time_series with the data vector being ordered [open,
- * high, low, close, volume]
+ * @returns An avapi::time_series: [open,high,low,close,volume])
  */
-time_series Crypto::getTimeSeries(const Crypto::function &func,
-                                  const size_t &last_n_rows,
-                                  const std::string &market)
+time_series Crypto::getDailySeries(const std::string &market,
+                                   const size_t &last_n_rows)
 {
     // Create url query
-    std::string config = "&market=" + market + "&datatype=csv";
-    std::string url = buildApiCallUrl(m_functions[func], "", config);
+    std::string url = buildApiCallUrl("DIGITAL_CURRENCY_DAILY", "",
+                                      "&market=" + market + "&datatype=csv");
 
     // Download csv data
     std::string csv_string = downloadCsv(url);
-
     return parseCsvString(csv_string, last_n_rows);
 }
 
 /**
- * @brief Base crypto function calls for Alpha Vantage API
+ * @brief   Get a daily time series for a cryptocurrency of interest.
+ * @param   market The exchange market (default = "USD")
+ * @param   last_n_rows Last number of rows to get (default = 0 or all)
+ * @returns An avapi::time_series: [open,high,low,close,volume])
  */
-const std::vector<std::string> Crypto::m_functions{"DIGITAL_CURRENCY_DAILY",
-                                                   "DIGITAL_CURRENCY_WEEKLY",
-                                                   "DIGITAL_CURRENCY_MONTHLY"};
+time_series Crypto::getWeeklySeries(const std::string &market,
+                                    const size_t &last_n_rows)
+{
+    // Create url query
+    std::string url = buildApiCallUrl("DIGITAL_CURRENCY_WEEKLY", "",
+                                      "&market=" + market + "&datatype=csv");
+
+    // Download csv data
+    std::string csv_string = downloadCsv(url);
+    return parseCsvString(csv_string, last_n_rows);
+}
+
+/**
+ * @brief   Get a weekly time series for a cryptocurrency of interest.
+ * @param   market The exchange market (default = "USD")
+ * @param   last_n_rows Last number of rows to get (default = 0 or all)
+ * @returns An avapi::time_series: [open,high,low,close,volume])
+ */
+time_series Crypto::getMonthlySeries(const std::string &market,
+                                     const size_t &last_n_rows)
+{
+    // Create url query
+    std::string url = buildApiCallUrl("DIGITAL_CURRENCY_MONTHLY", "",
+                                      "&market=" + market + "&datatype=csv");
+
+    // Download csv data
+    std::string csv_string = downloadCsv(url);
+    return parseCsvString(csv_string, last_n_rows);
+}
 
 /**
  * @brief   Returns an avapi::time_series created from a csv file
@@ -272,17 +324,12 @@ time_series parseCsvFile(const std::string &file, const size_t &last_n_rows)
         std::vector<std::string> row = doc.GetRow<std::string>(i);
 
         std::vector<float> data;
-        data.push_back(std::stof(row[1]));
-        data.push_back(std::stof(row[2]));
-        data.push_back(std::stof(row[3]));
-        data.push_back(std::stof(row[4]));
-        data.push_back(std::stof(row[5]));
+        for (auto &val : row) {
+            data.push_back(std::stof(val));
+        }
 
         series.push_back(std::make_pair(toUnixTimestamp(row[0]), data));
     }
-
-    // Data coming from Alpha Vantage is reversed (Dates are reversed)
-    std::reverse(series.begin(), series.end());
     return series;
 }
 
@@ -329,17 +376,12 @@ time_series parseCsvString(const std::string &data, const size_t &last_n_rows)
         std::vector<std::string> row = doc.GetRow<std::string>(i);
 
         std::vector<float> data;
-        data.push_back(std::stof(row[1]));
-        data.push_back(std::stof(row[2]));
-        data.push_back(std::stof(row[3]));
-        data.push_back(std::stof(row[4]));
-        data.push_back(std::stof(row[5]));
+        for (auto &val : row) {
+            data.push_back(std::stof(val));
+        }
 
         series.push_back(std::make_pair(toUnixTimestamp(row[0]), data));
     }
-
-    // Data coming from Alpha Vantage is reversed (Dates are reversed)
-    std::reverse(series.begin(), series.end());
     return series;
 }
 
@@ -421,6 +463,16 @@ void print(const time_pair &pair)
         std::cout << ' ' << val;
     }
     std::cout << '\n';
+}
+
+/**
+ * @brief   Reverses the orde of an avapi::time_series
+ * @param   series The avapi::time_series to be reversed
+ */
+void reverseTimeSeries(avapi::time_series &series)
+{
+    // Data coming from Alpha Vantage is reversed (Dates are reversed)
+    std::reverse(series.begin(), series.end());
 }
 
 /// @brief Null object for exception handlers

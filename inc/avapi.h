@@ -34,30 +34,34 @@ private:
 class Stock : private ApiCall {
 public:
     explicit Stock(const std::string &symbol, const std::string &api_key);
-    enum function { INTRADAY = 0, DAILY, WEEKLY, MONTHLY };
 
-    time_series getTimeSeries(const Stock::function &func,
-                              const std::string &interval = "30min",
-                              const size_t &last_n_rows = 0);
-    time_series getTimeSeries(const Stock::function &func,
-                              const size_t &last_n_rows = 0);
+    time_series getIntradaySeries(const std::string &interval = "30min",
+                                  const size_t &last_n_rows = 0);
+
+    time_series getDailySeries(const bool &adjusted = false,
+                               const size_t &last_n_rows = 0);
+
+    time_series getWeeklySeries(const bool &adjusted = false,
+                                const size_t &last_n_rows = 0);
+
+    time_series getMonthlySeries(const bool &adjusted = false,
+                                 const size_t &last_n_rows = 0);
+
     time_pair getGlobalQuote();
-
-private:
-    static const std::vector<std::string> m_functions;
 };
 
 class Crypto : private ApiCall {
 public:
     explicit Crypto(const std::string &symbol, const std::string &api_key);
-    enum function { DAILY, WEEKLY, MONTHLY };
 
-    time_series getTimeSeries(const Crypto::function &func,
-                              const size_t &last_n_rows = 0,
-                              const std::string &market = "USD");
+    time_series getDailySeries(const std::string &market = "USD",
+                               const size_t &last_n_rows = 0);
 
-private:
-    static const std::vector<std::string> m_functions;
+    time_series getWeeklySeries(const std::string &market = "USD",
+                                const size_t &last_n_rows = 0);
+
+    time_series getMonthlySeries(const std::string &market = "USD",
+                                 const size_t &last_n_rows = 0);
 };
 
 // Helper methods
@@ -66,13 +70,14 @@ bool stringReplace(std::string &str, const std::string &from,
 std::string readFirstLineFromFile(const std::string &file_path);
 std::time_t toUnixTimestamp(const std::string &input);
 
-void print(const time_series &series);
-void print(const time_pair &pair);
-
 time_series parseCsvFile(const std::string &file,
                          const size_t &last_n_rows = 0);
 time_series parseCsvString(const std::string &data,
                            const size_t &last_n_rows = 0);
+
+void print(const time_series &series);
+void print(const time_pair &pair);
+void reverseTimeSeries(avapi::time_series &series);
 
 extern const std::vector<float> null_vector;
 extern const avapi::time_pair null_pair;
