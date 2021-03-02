@@ -1,6 +1,5 @@
 # Avapi
-Avapi is a C++ library utilizing the [Alpha Vantage API](https://www.alphavantage.co/) for fetching historical stock data. This library currently implements a limited set of the API functions.
-
+Avapi is a C++ library utilizing the [Alpha Vantage API](https://www.alphavantage.co/) for fetching historical stock and cryptocurrency data. This library currently implements a limited set of the API functions.
 
 # Prerequisites
 To use Avapi, the following is required:
@@ -10,8 +9,8 @@ To use Avapi, the following is required:
 
 
 # Example Usage
-## Getting intraday data
-In this example, we will get the last 30 rows of intraday data for "TSLA" on a 15 minute interval. We will begin by creating an ```avapi::Quote``` object which needs a ```symbol``` and ```api_key``` to be constructed. If we saved the API key to a .txt file, Avapi provides a helper function to easily read it.
+## Getting intraday data for a stock of interest
+In this example, we will get the last 10 rows of intraday data for Tesla ("TSLA") on a 15 minute interval. We will begin by creating an ```avapi::Stock``` object with a stock ```symbol``` and ```api_key```. If we saved the API key to a .txt file, Avapi provides a helper function to easily read it.  We can then call ```Stock::getIntradaySeries("15min", 10)``` to return an ```avapi::time_series``` object containing the data we want.
 
 The ```avapi::time_series``` object is a vector of pairs with each pair containing a Unix timestamp and a data vector. The data vector within each pair is ordered as ```[open, high, low, close, volume]```. Another helper function is used to print the series' contents.
 
@@ -23,26 +22,31 @@ typedef std::vector<time_pair> time_series
 ```
 ```C++
 
-std::string api_key = avapi::readFirstLineFromFile("api_key.txt");
 std::string symbol = "TSLA";
-avapi::Quote quote(symbol, api_key);
-avapi::time_series series = quote.getTimeSeries(avapi::INTRADAY, 30, "15min");
-avapi::printSeries(series);
+std::string api_key = avapi::readFirstLineFromFile("api_key.txt");
+
+avapi::Stock tsla(symbol, api_key);
+
+avapi::time_series series = tsla.getIntradaySeries("15min", 10);
+avapi::print(series);
 
 ```
 
 Output:
 
 ```
-1613673900: 789.1 789.403 786.8 786.8 268074
-1613674800: 787.14 787.47 785.55 786.45 358952
-1613675700: 786.52 786.52 781.79 782.75 557231
-1613676600: 782.9 788.13 781.86 786.45 589063
-1613677500: 786.6 787.591 784.3 785.65 330470
-1613678400: 785.74 786.74 784.522 785.168 307168
-1613679300: 785.11 788 784.96 787.599 320274
-1613680200: 787.48 789.8 786.5 788.18 375217
-1613681100: 788.08 788.56 786.38 786.62 248809...
+   Timestamp        Open        High         Low       Close      Volume
+------------------------------------------------------------------------
+  1614650400      724.30      725.44      724.01      725.25       33508
+  1614649500      724.75      724.75      723.58      724.27       14049
+  1614648600      723.00      724.63      723.00      724.63       13770
+  1614647700      722.55      723.00      722.50      723.00        9691
+  1614646800      722.50      722.60      722.50      722.60       11364
+  1614645900      722.51      723.00      722.50      722.73       12976
+  1614645000      722.50      723.30      721.65      723.00       25562
+  1614644100      721.90      722.55      721.90      722.55       17208
+  1614643200      720.50      721.80      720.30      721.49       14681
+  1614642300      721.50      721.50      720.50      720.90        4320
 ```
 
 ## Getting daily, weekly, and monthly data
