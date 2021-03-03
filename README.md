@@ -1,18 +1,46 @@
+
 # Avapi
-Avapi is a C++ library utilizing the [Alpha Vantage API](https://www.alphavantage.co/) for fetching historical stock and cryptocurrency data. This library currently implements a limited set of the API functions.
+Avapi is a C++ library utilizing the [Alpha Vantage API](https://www.alphavantage.co/) for fetching historical stock and cryptocurrency data. This library aims to implement the most popular features from the API while providing an easy to use interface for the user.
 
 # Prerequisites
 To use Avapi, the following is required:
 * An Alpha Vantage API key from [here](https://www.alphavantage.co/support/#api-key)
 * [rapidcsv](https://github.com/d99kris/rapidcsv)
-* libcurl c++ libraries
+* [libcurl](https://curl.se/libcurl/) C++ libraries
 
 
-# Example Usage
-## Getting intraday data for a stock of interest
-In this example, we will get the last 10 rows of intraday data for Tesla stock ("TSLA") on a 15 minute interval. We will begin by creating an ```avapi::Stock``` object with a stock ```symbol``` and ```api_key```. If we saved the API key to a .txt file, Avapi provides a helper function to easily read it.  We can then call ```Stock::getIntradaySeries("15min", 10)``` to return an ```avapi::time_series``` object containing the data we want.
+# Example Usage - Historical Stock Data
+## Getting Historical Data for a Stock of Interest
+In this example, we will explore getting historical data for Tesla stock ("TSLA"). We will begin by creating an ```avapi::Stock``` object with the  ```symbol``` "TSLA" and our Alpha Vantage ```api_key```. The ```api_key``` can be saved to a text file and then read with a provided helper function.  
 
-The ```avapi::time_series``` object is a vector of pairs with each pair containing a Unix timestamp and a data vector. The data vector within each pair is ordered as ```[open, high, low, close, volume]```. Another helper function is used to print the series' contents.
+```C++
+
+std::string symbol = "TSLA";
+std::string api_key = avapi::readFirstLineFromFile("api_key.txt");
+avapi::Stock tsla(symbol, api_key);
+
+```
+
+The ```Stock``` object contains the following member methods for accessing different historical data sets:
+
+```C++
+
+// Intraday interval: "1min", "5min", "15min", "30min", or "60min" (default = "30min")
+// If parameter last_n_rows == 0, get every available row from Alpha Vantage
+
+time_series  getIntradaySeries(const  std::string  &interval = "30min",
+			       const  size_t &last_n_rows = 0);		       
+time_series  getDailySeries(const  bool  &adjusted = false,
+			    const  size_t  &last_n_rows = 0);
+time_series  getWeeklySeries(const  bool  &adjusted = false,
+			     const  size_t  &last_n_rows = 0);
+time_series  getMonthlySeries(const  bool  &adjusted = false,
+			      const  size_t  &last_n_rows = 0);
+time_pair  getGlobalQuote();
+
+```
+
+The ```time_series``` object is a vector of ```time_pairs``` with each pair containing a Unix timestamp and a data vector. 
 
 ```C++
 
@@ -20,20 +48,33 @@ typedef std::pair<std::time_t, std::vector<float>> time_pair
 typedef std::vector<time_pair> time_series
 
 ```
+
+The data vector within each ```time_pair``` is ordered according to the member method it is returned from:
+* Intraday data:
+	* ```[open, high, low, close, volume]```
+* Non-adjusted daily, weekly, and monthly data:
+	* ```[open, high, low, close, volume]```
+* Adjusted daily, weekly, and monthly data:
+	* ```[open, high, low, close, adjusted_close, volume, dividend, split_coefficient]```
+* Global quote:
+	* ```[open, high, low, price, volume, previous_close, change, change%]```
+
+## Intraday Data
+With our previously created ```Stock``` object (Tesla stock “TSLA”), let's look at getting **intraday**. In the following, we see two different ```time_series``` objects created for this example:
+
 ```C++
 
-std::string symbol = "TSLA";
-std::string api_key = avapi::readFirstLineFromFile("api_key.txt");
-
-avapi::Stock tsla(symbol, api_key);
-
-avapi::time_series series = tsla.getIntradaySeries("15min", 10);
-avapi::printSeries(series);
+avapi::time_series series_a = tsla.getIntradaySeries();
+avapi::time_series series_b = tsla.getIntradaySeries("15min", 10);
 
 ```
 
-Output:
+```series_a``` will be defaulted to an **intraday** ```time_series``` on a 30 minute interval containing every available row of data from Alpha Vantage. ```series_b``` is an **intraday** ```time_series``` on a 15 minute interval containing only the previous last 10 rows of data from today. Let's also print ```series_b``` using another helper function to view the series' contents.
+```C++
 
+avapi::printSeries(series_b);
+
+```
 ```
    Timestamp        Open        High         Low       Close      Volume
 ------------------------------------------------------------------------
@@ -49,48 +90,33 @@ Output:
   1614642300      721.50      721.50      720.50      720.90        4320
 ```
 
-## Getting daily, weekly, and monthly data for a stock of interest
-For daily, weekly, and monthly data, we must specify whether or not we want an adjusted time series. For ease of viewing, the declarations for the functions used in this example are shown below
-
-
-Note: If the parameter ```last_n_rows``` is defaulted to 0, the returned time_series will contain every row that Alpha Vantage supplies.
+## Adjusted/Non-Adjusted Daily, Weekly, and Monthly Data
+Let's now look at getting daily, weekly, and monthly data for a stock of interest. We begin as always by creating an ```avapi::Stock``` object, in this case using the ```symbol``` "AAPL" for Apple stock. In the following, we see 4 different ```time_series``` created for this example:
 ```C++
 
-avapi::time_series Stock::getDailySeries(const bool &adjusted = false, const size_t &last_n_rows = 0);
-avapi::time_series Stock::getWeeklySeries(const bool &adjusted = false, const size_t &last_n_rows = 0);
-avapi::time_series Stock::getMonthlySeries(const bool &adjusted = false, const size_t &last_n_rows = 0);
-void avapi::printSeries(const time_series &series, const bool &adjusted = false);
-                           
-```
+avapi::Stock aapl("AAPL", avapi::readFirstLineFromFile("api.key"));
 
-In this first case, we will get non-adjusted daily, weekly, and monthly data for Apple stock ("AAPL").
-
-```C++
-
-std::string symbol = "AAPL";
-std::string api_key = avapi::readFirstLineFromFile("api.key");
-
-avapi::Stock aapl(symbol, api_key);
-
-// Get last 10 rows of non-adjusted daily, weekly, and monthly time series
+// Get last 10 rows of non-adjusted daily, weekly, and monthly data
 avapi::time_series daily_series = aapl.getDailySeries(false, 10);
 avapi::time_series weekly_series = aapl.getWeeklySeries(false, 10);
 avapi::time_series monthly_series = aapl.getMonthlySeries(false, 10);
 
-std::cout << "Daily Series -------------------------\n\n";
+// Get last 10 rows of adjusted daily data
+avapi::time_series adj_dailySeries = aapl.getDailySeries(true, 10);
+
+// Print each time_series
+std::cout << "Non-Adjusted Daily Series -------------------------\n\n";
 avapi::printSeries(daily_series);
-std::cout << '\n' << "Weekly Series ------------------------\n\n";
+std::cout << '\n' << "Non-Adjusted Weekly Series ------------------------\n\n";
 avapi::printSeries(weekly_series);
-std::cout << '\n' << "Monthly Series-- ---------------------\n ";
+std::cout << '\n' << "Non-Adjusted Monthly Series -----------------------\n\n ";
 avapi::printSeries(monthly_series);
-
-
-```
-
-Output:
+std::cout << '\n' << "Adjusted Daily Series -----------------------------\n";
+avapi::printSeries(adj_dailySeries, true);
 
 ```
-Daily Series -------------------------
+```
+Non-Adjusted Daily Series -------------------------
 
    Timestamp        Open        High         Low       Close      Volume
 ------------------------------------------------------------------------
@@ -105,7 +131,7 @@ Daily Series -------------------------
   1613541600      131.25      132.22      129.47      130.84    97372200
   1613455200      135.49      136.01      132.79      133.19    80576320
  
-Weekly Series ------------------------
+Non-Adjusted Weekly Series ------------------------
 
    Timestamp        Open        High         Low       Close      Volume
 ------------------------------------------------------------------------
@@ -120,7 +146,7 @@ Weekly Series ------------------------
   1610085600      133.52      133.61      126.38      132.05   610791168
   1609394400      133.99      138.79      131.72      132.69   439740672
   
-Monthly Series -----------------------
+Non-Adjusted Monthly Series -----------------------
 
    Timestamp        Open        High         Low       Close      Volume
 ------------------------------------------------------------------------
@@ -134,21 +160,9 @@ Monthly Series -----------------------
   1598853600      432.80      515.14      126.00      129.04  1184207104
   1596175200      365.12      425.66      356.58      425.04   755162240
   1593496800      317.75      372.38      317.21      364.80   810900864
-```
 
-If we desire an adjusted time series, we can create one as such:
+Adjusted Monthly Series -----------------------
 
-```C++
-
-// Get last 10 rows of adjusted daily data
-avapi::time_series adj_dailySeries = aapl.getDailySeries(true, 10);
-avapi::printSeries(adj_dailySeries, true);
-
-```
-
-Output:
-
-```
    Timestamp        open        high         low       close   adj_close      volume    dividend split_coeff
 ------------------------------------------------------------------------------------------------------------
   1614578400      123.75      127.93      122.79      127.79      127.79   116307888        0.00        1.00
@@ -164,8 +178,8 @@ Output:
 ```
 
 
-## Getting a global quote for a stock of interest
-In this example, we will get a global quote for Apple stock ("AAPL"). For a global quote, a single ```avapi::time_pair``` object is returned with the data being ordered as ```[open, high, low, price, volume, prevClose, change, change%]```. The "latestDay" column from the csv is used as the timestamp.
+## Global Quote Data
+Using our previously created ```Stock``` object (Apple stock "AAPL"), let's look at getting a current global quote. For a global quote, a single ```time_pair``` object is returned with the data being ordered as ```[open, high, low, price, volume, previous_close, change, change%]```. The timestamp for this object is the last traded day for the stock of question.
 
 ```C++
 
@@ -174,18 +188,10 @@ typedef time_pair global_quote;
 ```
 ```C++
 
-std::string symbol = "AAPL";
-std::string api_key = avapi::readFirstLineFromFile("api.key");
-
-avapi::Stock aapl(symbol, api_key);
-
 avapi::global_quote quote = aapl.getGlobalQuote();
 avapi::printGlobalQuote(quote);
 
 ```
-
-Output:
-
 ```
    Timestamp        Open        High         Low       Close      Volume  Prev_Close      Change     Change%
 ------------------------------------------------------------------------------------------------------------
@@ -221,3 +227,4 @@ avapi::time_series series_a = avapi::parseCsvFile("../../data/daily_GME.csv");
 avapi::time_series series_b = avapi::parseCsvFile("../../data/daily_GME.csv", 20);
     
 ```
+
