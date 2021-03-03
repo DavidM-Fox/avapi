@@ -455,7 +455,7 @@ std::time_t toUnixTimestamp(const std::string &input)
  * @param   series The avapi::time_series to be printed
  * @param   adjusted Whether or not the data is adjusted (default = false)
  */
-void print(const time_series &series, const bool &adjusted)
+void printSeries(const time_series &series, const bool &adjusted)
 {
     std::vector<std::string> header;
     std::string separator;
@@ -518,15 +518,44 @@ void print(const time_series &series, const bool &adjusted)
 }
 
 /**
- * @brief   Prints an avapi::time_pair's data to console
- * @param   pair The avapi::time_pair to be printed
+ * @brief   Prints an avapi::global_quote to console
+ * @param   quote The avapi::global_quote to be printed
  */
-void print(const time_pair &pair)
+void printGlobalQuote(const global_quote &pair)
 {
-    std::cout << pair.first << ':';
-    for (auto &val : pair.second) {
-        std::cout << ' ' << val;
+    std::vector<std::string> header{"Open",   "High",   "Low",
+                                    "Close",  "Volume", "Prev_Close",
+                                    "Change", "Change%"};
+
+    std::string separator =
+        "----------------------------------------------------------------------"
+        "--------------------------------------";
+
+    std::cout << std::setw(12) << std::right << "Timestamp";
+
+    for (auto &label : header) {
+        std::cout << std::setw(12) << std::right << label;
     }
+
+    std::cout << '\n' << separator << '\n';
+
+    std::cout << std::setw(12) << std::right << pair.first;
+
+    for (size_t i = 0; i < 4; ++i) {
+        std::cout << std::setw(12) << std::right << std::fixed
+                  << std::setprecision(2) << pair.second[i];
+    }
+    std::cout << std::setw(12) << std::right << std::setprecision(0)
+              << pair.second[4];
+
+    std::cout << std::setw(12) << std::right << std::fixed
+              << std::setprecision(2) << pair.second[5];
+
+    std::cout << std::setw(12) << std::right << std::fixed
+              << std::setprecision(2) << pair.second[6];
+
+    std::cout << std::setw(12) << std::right << std::fixed
+              << std::setprecision(2) << pair.second[7];
     std::cout << '\n';
 }
 
