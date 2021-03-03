@@ -3,18 +3,12 @@
 
 int main()
 {
+    std::string symbol = "BTC";
     std::string api_key = avapi::readFirstLineFromFile("../../api.key");
 
-    std::string stock_symbol = "GME";
-    std::string crypto_symbol = "BTC";
+    avapi::Crypto btc(symbol, api_key);
 
-    avapi::Stock gme(stock_symbol, api_key);
-    avapi::Crypto btc(crypto_symbol, api_key);
+    avapi::time_series series = btc.getDailySeries();
 
-    avapi::time_series seriesA = gme.getDailySeries();
-    avapi::time_series seriesB = btc.getDailySeries();
-
-    avapi::print(seriesA);
-    std::cout << "---------------\n";
-    avapi::print(seriesB);
+    avapi::printSeries(series);
 }
