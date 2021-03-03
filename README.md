@@ -9,7 +9,7 @@ To use Avapi, the following is required:
 * [libcurl](https://curl.se/libcurl/) C++ libraries
 
 
-# Example Usage - Historical Stock Data
+# Example Usage - Stocks
 ## Getting Historical Data for a Stock of Interest
 In this example, we will explore getting historical data for Tesla stock ("TSLA"). We will begin by creating an ```avapi::Stock``` object with the  ```symbol``` "TSLA" and our Alpha Vantage ```api_key```. The ```api_key``` can be saved to a text file and then read with a provided helper function.  
 
@@ -197,11 +197,65 @@ avapi::printGlobalQuote(quote);
 ------------------------------------------------------------------------------------------------------------
   1614578400      123.75      127.93      122.79      127.79   116307888      121.26        6.53        5.39
 ```
+# Example Usage - Cryptocurrencies
+## Getting Historical Data for a Cryptocurrency of Interest
+In this example, we will explore getting historical data for Bitcoin ("BTC"). We will begin by creating an ```avapi::Crypto``` object with the  ```symbol``` "BTC".
+```C++
+
+avapi::Crypto  btc("BTC", avapi::readFirstLineFromFile("api.key"));
+
+```
+
+The ```Crypto``` object contains the following member methods:
+
+```C++
+// The parameter 'market' specifies the exchange market of interest (default = "USD")
+// If parameter last_n_rows == 0, get every available row from Alpha Vantage
+
+time_series getDailySeries(const std::string &market = "USD",
+			   const size_t &last_n_rows = 0);
+time_series getWeeklySeries(const std::string &market = "USD",
+			    const size_t &last_n_rows = 0);
+time_series getMonthlySeries(const std::string &market = "USD",
+			     const size_t &last_n_rows = 0);
+
+```
+
+Using the previously created ```Crypto``` object, lets get two different ```time_series``` of daily data:
+```C++
+
+avapi::time_series series_a = btc.getDailySeries();
+avapi::time_series series_b = btc.getDailySeries("USD", 10);
+
+```
+`series_a` will be defaulted to a daily `time_series` for the market "USD" containing every available row of data from Alpha Vantage. `series_b` is a daily `time_series` for the market "USD" containing only the previous last 10 rows of data from today.
+
+```C++
+
+avapi::printSeries(series_b);
+
+```
+```
+   Timestamp        Open        High         Low       Close      Volume
+------------------------------------------------------------------------
+  1614751200    48436.61    48745.13    48100.71    48578.41       48437
+  1614664800    49595.76    50200.00    47047.60    48440.65       49596
+  1614578400    45134.11    49790.00    44950.53    49587.03       45134
+  1614492000    46103.67    46638.46    43000.00    45135.66       46104
+  1614405600    46276.88    48394.00    45000.00    46106.43       46277
+  1614319200    47073.73    48424.11    44106.78    46276.87       47074
+  1614232800    49676.21    52041.73    46674.34    47073.73       49676
+  1614146400    48891.00    51374.99    46988.69    49676.20       48891
+  1614060000    54087.67    54183.59    44892.56    48891.00       54088
+  1613973600    57412.35    57508.47    47622.00    54087.67       57412
+
+```
 
 
+# Example Usage - Other
 ## Parsing an Alpha Vantage time series csv file
 
-If we already have a csv file from Alpha Vantage, Avapi provides a helper function to directly parse it into an ```avapi::time_series```. 
+If we already have a csv file from Alpha Vantage, Avapi provides a helper function to directly parse it.
 
 Example "daily_GME.csv" contents:
 
@@ -227,4 +281,3 @@ avapi::time_series series_a = avapi::parseCsvFile("../../data/daily_GME.csv");
 avapi::time_series series_b = avapi::parseCsvFile("../../data/daily_GME.csv", 20);
     
 ```
-
