@@ -2,6 +2,19 @@
 # Avapi
 Avapi is a C++ library utilizing the [Alpha Vantage API](https://www.alphavantage.co/) for fetching historical stock and cryptocurrency data. This library aims to implement the most popular features from the API while providing an easy to use interface for the user.
 
+- [Avapi](#avapi)
+- [Prerequisites](#prerequisites)
+- [Example Usage - Stocks](#example-usage---stocks)
+  * [Getting Historical Data for a Stock of Interest](#getting-historical-data-for-a-stock-of-interest)
+  * [Intraday Data](#intraday-data)
+  * [Daily, Weekly, and Monthly Data](#daily--weekly--and-monthly-data)
+  * [Global Quote Data](#global-quote-data)
+- [Example Usage - Cryptocurrencies](#example-usage---cryptocurrencies)
+  * [Getting Historical Data for a Cryptocurrency of Interest](#getting-historical-data-for-a-cryptocurrency-of-interest)
+- [Example Usage - Other](#example-usage---other)
+  * [Parsing an Alpha Vantage time series csv file](#parsing-an-alpha-vantage-time-series-csv-file)
+
+
 # Prerequisites
 To use Avapi, the following is required:
 * An Alpha Vantage API key from [here](https://www.alphavantage.co/support/#api-key)
@@ -90,7 +103,7 @@ avapi::printSeries(series_b);
   1614642300      721.50      721.50      720.50      720.90        4320
 ```
 
-## Adjusted/Non-Adjusted Daily, Weekly, and Monthly Data
+## Daily, Weekly, and Monthly Data
 Let's now look at getting daily, weekly, and monthly data for a stock of interest. We begin as always by creating an ```avapi::Stock``` object, in this case using the ```symbol``` "AAPL" for Apple stock. In the following, we see 4 different ```time_series``` created for this example:
 ```C++
 
