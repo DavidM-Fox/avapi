@@ -2,12 +2,13 @@
 # Avapi
 Avapi is a C++ library utilizing the [Alpha Vantage API](https://www.alphavantage.co/) for fetching historical stock and cryptocurrency data. This library aims to implement the most popular features from the API while providing an easy to use interface for the user.
 
+## Table of Contents
 - [Avapi](#avapi)
 - [Prerequisites](#prerequisites)
 - [Example Usage - Stocks](#example-usage---stocks)
   * [Getting Historical Data for a Stock of Interest](#getting-historical-data-for-a-stock-of-interest)
   * [Intraday Data](#intraday-data)
-  * [Daily, Weekly, and Monthly Data](#daily--weekly--and-monthly-data)
+  * [Daily, Weekly, and Monthly Data](#daily-weekly-and-monthly-data)
   * [Global Quote Data](#global-quote-data)
 - [Example Usage - Cryptocurrencies](#example-usage---cryptocurrencies)
   * [Getting Historical Data for a Cryptocurrency of Interest](#getting-historical-data-for-a-cryptocurrency-of-interest)
