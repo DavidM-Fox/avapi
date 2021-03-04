@@ -12,7 +12,6 @@ namespace avapi {
 
 /**
  * @brief   ApiCall Class constructor
- * @param   symbol The stock symbol of interest
  * @param   api_key The Alpha Vantage API key to use
  */
 ApiCall::ApiCall(const std::string &api_key) : m_apiKey(api_key) {}
@@ -60,6 +59,7 @@ std::string ApiCall::buildApiUrl()
     }
     return url + "&apikey=" + m_apiKey;
 }
+
 /**
  * @brief   Curls data from a specific API url query
  * @param   url The url to be curled
@@ -402,9 +402,7 @@ time_series parseCsvFile(const std::string &file, const size_t &last_n_rows)
         std::cerr << "File path or contents of '" << file
                   << "' may be invalid. Returning a null avapi::time_series "
                      "object.\n";
-        avapi::time_series null_series{
-            std::make_pair<std::time_t, std::vector<float>>(-1, {0})};
-        return null_series;
+        return {std::make_pair<std::time_t, std::vector<float>>(-1, {0})};
     }
 
     // Ensure safe iteration over data.
@@ -453,6 +451,7 @@ time_series parseCsvString(const std::string &data, const size_t &last_n_rows)
 
         // Test for JSON error response
         if (n_rows <= 2 && isJsonString(data)) {
+            // Data is not a CSV string, but a JSON error reponse
             throw "Alpha Vantage JSON Error Response: ";
         }
     }
@@ -463,9 +462,7 @@ time_series parseCsvString(const std::string &data, const size_t &last_n_rows)
         std::cerr << parser.dump(4);
         std::cerr << "\nReturning a null avapi::time_series "
                      "object.\n";
-        avapi::time_series null_series{
-            std::make_pair<std::time_t, std::vector<float>>(-1, {0})};
-        return null_series;
+        return {std::make_pair<std::time_t, std::vector<float>>(-1, {0})};
     }
 
     // Ensure safe iteration over data.
@@ -624,7 +621,7 @@ void printSeries(const time_series &series, const bool &adjusted)
 
 /**
  * @brief   Prints an avapi::global_quote to console
- * @param   pair The avapi::global_quote to be printed
+ * @param   pair The avapi::global_quote/avapi::time_pair to be printed
  */
 void printGlobalQuote(const time_pair &pair)
 {
@@ -633,7 +630,7 @@ void printGlobalQuote(const time_pair &pair)
             throw "Invalid avapi::time_pair object";
     }
     catch (char *ex) {
-        std::cerr << "Exception caught within avapi::printSeries(): " << ex
+        std::cerr << "Exception caught within avapi::printGlobalQuote(): " << ex
                   << '\n';
         return;
     }
