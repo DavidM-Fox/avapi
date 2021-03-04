@@ -21,13 +21,14 @@ public:
     std::string m_apiKey;
 
 protected:
-    enum function {
+    enum api_function {
         TIME_SERIES_INTRADAY,
         TIME_SERIES_INTRADAY_EXTENDED,
         TIME_SERIES_DAILY,
         TIME_SERIES_DAILY_ADJUSTED,
         TIME_SERIES_WEEKLY,
         TIME_SERIES_WEEKLY_ADJUSTED,
+        TIME_SERIES_MONTHLY,
         TIME_SERIES_MONTHLY_ADJUSTED,
         GLOBAL_QUOTE,
         OVERVIEW,
@@ -38,11 +39,13 @@ protected:
         DIGITAL_CURRENCY_MONTHLY
     };
 
+    void setIntradayInterval(const std::string &interval);
     void setOutputSize(const std::string &size = "compact");
-    void setAdjusted(const bool &adjusted = false);
+    void setExchange(const std::string &from, const std::string &to);
+    void setMarket(const std::string &market = "USD");
 
-    std::string buildApiUrl(const function &func, const std::string &interval,
-                            const std::string &config);
+
+    std::string buildApiUrl(const api_function &func);
     std::string queryApiUrl(const std::string &url);
 
 private:
@@ -52,6 +55,9 @@ private:
     static const std::vector<std::string> m_funcStrVec;
 
     std::string m_outputSize;
+    std::string m_interval;
+    std::pair<std::string, std::string> m_exchange;
+    std::string m_market;
 };
 
 class Stock : private ApiCall {

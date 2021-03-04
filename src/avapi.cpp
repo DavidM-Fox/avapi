@@ -26,73 +26,66 @@ ApiCall::ApiCall(std::string symbol, std::string api_key)
 {
 }
 
-std::string ApiCall::buildApiUrl(const function &func,
-                                 const std::string &interval,
-                                 const std::string &config)
-{
-    std::string func = "&function=" + m_funcStrVec[func];
-    std::string key = "&apikey=" + m_apiKey;
 
-    switch (func) {
+void ApiCall::setIntradayInterval(const std::string &interval)
+{
+    m_interval = "&interval=" + interval;
+}
+
+void ApiCall::setOutputSize(const std::string &size)
+{
+    m_outputSize = "&outputsize=" + size;
+}
+
+void ApiCall::setExchange(const std::string &from, const std::string &to)
+{
+    m_exchange = std::make_pair("&from_currency=" + from, "&to_currency=" + to);
+}
+
+void ApiCall::setMarket(const std::string &market)
+{
+    m_market = "&market=" + market;
+}
+
+std::string ApiCall::buildApiUrl(const api_function &f)
+{
+    std::string func = "&function=" + m_funcStrVec[f];
+    std::string key = "&apikey=" + m_apiKey;
+    std::string symbol = "&symbol=" + m_symbol;
+    std::string data_type = "&datatype=csv";
+
+    std::string url;
+
+    switch (f) {
     case TIME_SERIES_INTRADAY:
-        break;
+        url = m_urlBase + func + symbol + m_interval + m_outputSize + key + data_type;
+        return url;
 
     case TIME_SERIES_INTRADAY_EXTENDED:
-        break;
+        return "NOT IMPLEMENTED";
 
     case TIME_SERIES_DAILY:
-        break;
-
     case TIME_SERIES_DAILY_ADJUSTED:
-        break;
-
     case TIME_SERIES_WEEKLY:
-        break;
-
     case TIME_SERIES_WEEKLY_ADJUSTED:
-        break;
-
+    case TIME_SERIES_MONTHLY:
     case TIME_SERIES_MONTHLY_ADJUSTED:
-        break;
+        return m_urlBase + func + symbol + m_outputSize + key + data_type;
 
     case GLOBAL_QUOTE:
-        break;
-
-    case OVERVIEW:
-        break;
+        return m_urlBase + func + symbol + key + data_type;
 
     case CURRENCY_EXCHANGE_RATE:
-        break;
-
-    case CRYPTO_RATING:
-        break;
+        return m_urlBase + m_exchange.first + m_exchange.second + key;
+    
+    case OVERVIEW: case CRYPTO_RATING:
+        return m_urlBase + func + symbol + key;
 
     case DIGITAL_CURRENCY_DAILY:
-        break;
-
     case DIGITAL_CURRENCY_WEEKLY:
-        break;
-
     case DIGITAL_CURRENCY_MONTHLY:
-        break;
+        return m_urlBase + func + symbol + m_market + key;
     }
-    std::string func = "&function=" + function;
-    std::string key = "&apikey=" + m_apiKey;
-
-    std::string url = m_urlBase;
-
-    stringReplace(url, "{func}", function);
-    stringReplace(url, "{symbol}", m_symbol);
-    stringReplace(url, "{api}", m_apiKey);
-    if (interval == "") {
-        stringReplace(url, "{interval}", "");
-    }
-    else {
-        std::string replace = "&interval=" + interval;
-        stringReplace(url, "{interval}", replace);
-    }
-    stringReplace(url, "{config}", config);
-    return url;
 }
 
 /**
@@ -159,6 +152,7 @@ const std::vector<std::string> ApiCall::m_funcStrVec{
     "TIME_SERIES_DAILY_ADJUSTED",
     "TIME_SERIES_WEEKLY",
     "TIME_SERIES_WEEKLY_ADJUSTED",
+    "TIME_SERIES_MONTHLY",
     "TIME_SERIES_MONTHLY_ADJUSTED",
     "GLOBAL_QUOTE",
     "OVERVIEW",
@@ -166,7 +160,7 @@ const std::vector<std::string> ApiCall::m_funcStrVec{
     "CRYPTO_RATING",
     "DIGITAL_CURRENCY_DAILY",
     "DIGITAL_CURRENCY_WEEKLY",
-    "DIGITAL_CURRENCY_MONTHL"};
+    "DIGITAL_CURRENCY_MONTHLY"};
 
 /**
  * @brief   Stock Class constructor
@@ -189,9 +183,12 @@ Stock::Stock(const std::string &symbol, const std::string &api_key)
 time_series Stock::getIntradaySeries(const std::string &interval,
                                      const size_t &last_n_rows)
 {
+    // Configuration
+    setIntradayInterval(interval);
+    setOutputSize("compact");
+
     // Create url query
-    std::string url =
-        buildApiUrl("TIME_SERIES_INTRADAY", interval, "&datatype=csv");
+    std::string url = buildApiUrl(TIME_SERIES_INTRADAY);
 
     // Download csv data for time series
     std::string csv_string = queryApiUrl(url);
@@ -210,13 +207,15 @@ time_series Stock::getIntradaySeries(const std::string &interval,
 time_series Stock::getDailySeries(const bool &adjusted,
                                   const size_t &last_n_rows)
 {
-    // Create url query
-    std::string function = "TIME_SERIES_DAILY";
+    // Configuration
+    setOutputSize("compact");
+    api_function func= TIME_SERIES_DAILY;
     if (adjusted) {
-        function += "_ADJUSTED";
+        func = TIME_SERIES_DAILY_ADJUSTED;
     }
 
-    std::string url = buildApiUrl(function, "", "&datatype=csv");
+    // Create url query
+    std::string url = buildApiUrl(func);
 
     // Download csv data for time series
     std::string csv_string = queryApiUrl(url);
@@ -235,13 +234,15 @@ time_series Stock::getDailySeries(const bool &adjusted,
 time_series Stock::getWeeklySeries(const bool &adjusted,
                                    const size_t &last_n_rows)
 {
-    // Create url query
-    std::string function = "TIME_SERIES_WEEKLY";
+    // Configuration
+    setOutputSize("compact");
+    api_function func = TIME_SERIES_WEEKLY;
     if (adjusted) {
-        function += "_ADJUSTED";
+        func = TIME_SERIES_WEEKLY_ADJUSTED;
     }
 
-    std::string url = buildApiUrl(function, "", "&datatype=csv");
+    // Create url query
+    std::string url = buildApiUrl(func);
 
     // Download csv data for time series
     std::string csv_string = queryApiUrl(url);
@@ -260,13 +261,15 @@ time_series Stock::getWeeklySeries(const bool &adjusted,
 time_series Stock::getMonthlySeries(const bool &adjusted,
                                     const size_t &last_n_rows)
 {
-    // Create url query
-    std::string function = "TIME_SERIES_MONTHLY";
+    // Configuration
+    setOutputSize("compact");
+    api_function func = TIME_SERIES_MONTHLY;
     if (adjusted) {
-        function += "_ADJUSTED";
+        func = TIME_SERIES_MONTHLY_ADJUSTED;
     }
 
-    std::string url = buildApiUrl(function, "", "&datatype=csv");
+    // Create url query
+    std::string url = buildApiUrl(func);
 
     // Download csv data for time series
     std::string csv_string = queryApiUrl(url);
@@ -281,8 +284,7 @@ time_series Stock::getMonthlySeries(const bool &adjusted,
 time_pair Stock::getGlobalQuote()
 {
     // Download csv data for global quote
-    std::stringstream csv(
-        queryApiUrl(buildApiUrl("GLOBAL_QUOTE", "", "&datatype=csv")));
+    std::stringstream csv(queryApiUrl(buildApiUrl(GLOBAL_QUOTE)));
 
     // Get global quote row from csv std::string
     rapidcsv::Document doc(csv);
@@ -320,9 +322,12 @@ Crypto::Crypto(const std::string &symbol, const std::string &api_key)
 time_series Crypto::getDailySeries(const std::string &market,
                                    const size_t &last_n_rows)
 {
+    // Configuration
+    setMarket(market);
+    setOutputSize("compact");
+
     // Create url query
-    std::string url = buildApiUrl("DIGITAL_CURRENCY_DAILY", "",
-                                  "&market=" + market + "&datatype=csv");
+    std::string url = buildApiUrl(DIGITAL_CURRENCY_DAILY);
 
     // Download csv data
     std::string csv_string = queryApiUrl(url);
@@ -338,9 +343,12 @@ time_series Crypto::getDailySeries(const std::string &market,
 time_series Crypto::getWeeklySeries(const std::string &market,
                                     const size_t &last_n_rows)
 {
+    // Configuration
+    setMarket(market);
+    setOutputSize("compact");
+    
     // Create url query
-    std::string url = buildApiUrl("DIGITAL_CURRENCY_WEEKLY", "",
-                                  "&market=" + market + "&datatype=csv");
+    std::string url = buildApiUrl(DIGITAL_CURRENCY_WEEKLY);
 
     // Download csv data
     std::string csv_string = queryApiUrl(url);
@@ -356,9 +364,12 @@ time_series Crypto::getWeeklySeries(const std::string &market,
 time_series Crypto::getMonthlySeries(const std::string &market,
                                      const size_t &last_n_rows)
 {
+    // Configuration
+    setMarket(market);
+    setOutputSize("compact");
+    
     // Create url query
-    std::string url = buildApiUrl("DIGITAL_CURRENCY_MONTHLY", "",
-                                  "&market=" + market + "&datatype=csv");
+    std::string url = buildApiUrl(DIGITAL_CURRENCY_MONTHLY);
 
     // Download csv data
     std::string csv_string = queryApiUrl(url);
@@ -372,7 +383,9 @@ time_series Crypto::getMonthlySeries(const std::string &market,
  */
 time_pair Crypto::getExchangeRate(const std::string &market)
 {
-    std::string url = buildApiUrl("CURRENCY_EXCHANGE_RATE", "");
+    setExchange(m_symbol, market);
+    std::string url = buildApiUrl(CURRENCY_EXCHANGE_RATE);
+    return null_pair;
 }
 
 /**
@@ -391,11 +404,11 @@ time_series parseCsvFile(const std::string &file, const size_t &last_n_rows)
         doc.Load(file);
         n_rows = doc.GetRowCount();
         if (n_rows == 0)
-            throw std::exception("CSV file contents are invalid.");
+            throw "CSV file contents are invalid.";
     }
-    catch (std::exception &ex) {
+    catch (char *ex) {
         std::cerr << "Exception caught within avapi::parseCsvFile() '"
-                  << ex.what() << "'.\n";
+                  << ex << "'.\n";
         std::cerr << "File path or contents of '" << file
                   << "' may be invalid. Returning a null avapi::time_series "
                      "object.\n";
@@ -446,11 +459,11 @@ time_series parseCsvString(const std::string &data, const size_t &last_n_rows)
         doc.Load(sstream);
         n_rows = doc.GetRowCount();
         if (n_rows == 0)
-            throw std::exception("'const std::string &data is invalid.'");
+            throw "const std::string &data is invalid.";
     }
-    catch (std::exception &ex) {
+    catch (char * ex) {
         std::cerr << "Exception caught within avapi::parseCsvString(): "
-                  << ex.what() << '\n';
+                  << ex << '\n';
         std::cerr << "Returning a null avapi::time_series "
                      "object.\n";
 
@@ -654,9 +667,9 @@ void reverseTimeSeries(avapi::time_series &series)
 }
 
 /// @brief Null object for exception handlers
-static const std::vector<float> null_vector{NULL};
+const std::vector<float> null_vector{NULL};
 /// @brief Null object for exception handlers
-static const avapi::time_pair null_pair{NULL, null_vector};
+const avapi::time_pair null_pair{NULL, null_vector};
 /// @brief Null object for exception handlers
-static const avapi::time_series null_series{null_pair};
+const avapi::time_series null_series{null_pair};
 } // namespace avapi
