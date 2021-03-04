@@ -14,21 +14,44 @@ typedef std::vector<time_pair> time_series;
 // Parent class of avapi::Stock and avapi::Crypto
 class ApiCall {
 public:
+    ApiCall();
     ApiCall(std::string symbol, std::string api_key);
 
     std::string m_symbol;
     std::string m_apiKey;
 
 protected:
-    std::string buildApiCallUrl(const std::string &function,
-                                const std::string &interval,
-                                const std::string &config);
-    std::string downloadCsv(const std::string &url);
+    enum function {
+        TIME_SERIES_INTRADAY,
+        TIME_SERIES_INTRADAY_EXTENDED,
+        TIME_SERIES_DAILY,
+        TIME_SERIES_DAILY_ADJUSTED,
+        TIME_SERIES_WEEKLY,
+        TIME_SERIES_WEEKLY_ADJUSTED,
+        TIME_SERIES_MONTHLY_ADJUSTED,
+        GLOBAL_QUOTE,
+        OVERVIEW,
+        CURRENCY_EXCHANGE_RATE,
+        CRYPTO_RATING,
+        DIGITAL_CURRENCY_DAILY,
+        DIGITAL_CURRENCY_WEEKLY,
+        DIGITAL_CURRENCY_MONTHLY
+    };
+
+    void setOutputSize(const std::string &size = "compact");
+    void setAdjusted(const bool &adjusted = false);
+
+    std::string buildApiUrl(const function &func, const std::string &interval,
+                            const std::string &config);
+    std::string queryApiUrl(const std::string &url);
 
 private:
     static size_t WriteMemoryCallback(void *ptr, size_t size, size_t nmemb,
                                       void *data);
     static const std::string m_urlBase;
+    static const std::vector<std::string> m_funcStrVec;
+
+    std::string m_outputSize;
 };
 
 class Stock : private ApiCall {
@@ -37,16 +60,12 @@ public:
 
     time_series getIntradaySeries(const std::string &interval = "30min",
                                   const size_t &last_n_rows = 0);
-
     time_series getDailySeries(const bool &adjusted = false,
                                const size_t &last_n_rows = 0);
-
     time_series getWeeklySeries(const bool &adjusted = false,
                                 const size_t &last_n_rows = 0);
-
     time_series getMonthlySeries(const bool &adjusted = false,
                                  const size_t &last_n_rows = 0);
-
     time_pair getGlobalQuote();
 };
 
@@ -56,12 +75,11 @@ public:
 
     time_series getDailySeries(const std::string &market = "USD",
                                const size_t &last_n_rows = 0);
-
     time_series getWeeklySeries(const std::string &market = "USD",
                                 const size_t &last_n_rows = 0);
-
     time_series getMonthlySeries(const std::string &market = "USD",
                                  const size_t &last_n_rows = 0);
+    time_pair getExchangeRate(const std::string &market = "USD");
 };
 
 // Helper methods

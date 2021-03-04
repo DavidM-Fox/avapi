@@ -10,6 +10,13 @@
 namespace avapi {
 
 /**
+ * @brief   ApiCall Default Class constructor
+ * @param   symbol The stock symbol of interest
+ * @param   api_key The Alpha Vantage API key to use
+ */
+ApiCall::ApiCall() {}
+
+/**
  * @brief   ApiCall Class constructor
  * @param   symbol The stock symbol of interest
  * @param   api_key The Alpha Vantage API key to use
@@ -19,11 +26,61 @@ ApiCall::ApiCall(std::string symbol, std::string api_key)
 {
 }
 
-std::string ApiCall::buildApiCallUrl(const std::string &function,
-                                     const std::string &interval,
-                                     const std::string &config)
+std::string ApiCall::buildApiUrl(const function &func,
+                                 const std::string &interval,
+                                 const std::string &config)
 {
+    std::string func = "&function=" + m_funcStrVec[func];
+    std::string key = "&apikey=" + m_apiKey;
+
+    switch (func) {
+    case TIME_SERIES_INTRADAY:
+        break;
+
+    case TIME_SERIES_INTRADAY_EXTENDED:
+        break;
+
+    case TIME_SERIES_DAILY:
+        break;
+
+    case TIME_SERIES_DAILY_ADJUSTED:
+        break;
+
+    case TIME_SERIES_WEEKLY:
+        break;
+
+    case TIME_SERIES_WEEKLY_ADJUSTED:
+        break;
+
+    case TIME_SERIES_MONTHLY_ADJUSTED:
+        break;
+
+    case GLOBAL_QUOTE:
+        break;
+
+    case OVERVIEW:
+        break;
+
+    case CURRENCY_EXCHANGE_RATE:
+        break;
+
+    case CRYPTO_RATING:
+        break;
+
+    case DIGITAL_CURRENCY_DAILY:
+        break;
+
+    case DIGITAL_CURRENCY_WEEKLY:
+        break;
+
+    case DIGITAL_CURRENCY_MONTHLY:
+        break;
+    }
+    std::string func = "&function=" + function;
+    std::string key = "&apikey=" + m_apiKey;
+
     std::string url = m_urlBase;
+
     stringReplace(url, "{func}", function);
     stringReplace(url, "{symbol}", m_symbol);
     stringReplace(url, "{api}", m_apiKey);
@@ -57,11 +114,11 @@ size_t ApiCall::WriteMemoryCallback(void *ptr, size_t size, size_t nmemb,
 }
 
 /**
- * @brief   Curls csv data and uses WriteMemoryCallback to store data
- * @param   t_url The url to be curled
- * @returns The csv data as an std::string
+ * @brief   Curls data from a specific API url query
+ * @param   url The url to be curled
+ * @returns The data as an std::string
  */
-std::string ApiCall::downloadCsv(const std::string &url)
+std::string ApiCall::queryApiUrl(const std::string &url)
 {
     CURL *curl;
     CURLcode res;
@@ -90,9 +147,26 @@ std::string ApiCall::downloadCsv(const std::string &url)
  * @param {interval} Only used when func = TIME_SERIES_INTRADAY
  * @param {config} Additional configuration (datatype, market)
  */
-const std::string ApiCall::m_urlBase(
-    "https://www.alphavantage.co/"
-    "query?function={func}&symbol={symbol}&apikey={api}{interval}{config}");
+const std::string
+    ApiCall::m_urlBase("https://www.alphavantage.co/query?function=");
+
+//{func}&symbol={symbol}&apikey={api}{interval}{config}");
+
+const std::vector<std::string> ApiCall::m_funcStrVec{
+    "TIME_SERIES_INTRADAY",
+    "TIME_SERIES_INTRADAY_EXTENDED",
+    "TIME_SERIES_DAILY",
+    "TIME_SERIES_DAILY_ADJUSTED",
+    "TIME_SERIES_WEEKLY",
+    "TIME_SERIES_WEEKLY_ADJUSTED",
+    "TIME_SERIES_MONTHLY_ADJUSTED",
+    "GLOBAL_QUOTE",
+    "OVERVIEW",
+    "CURRENCY_EXCHANGE_RATE",
+    "CRYPTO_RATING",
+    "DIGITAL_CURRENCY_DAILY",
+    "DIGITAL_CURRENCY_WEEKLY",
+    "DIGITAL_CURRENCY_MONTHL"};
 
 /**
  * @brief   Stock Class constructor
@@ -117,10 +191,10 @@ time_series Stock::getIntradaySeries(const std::string &interval,
 {
     // Create url query
     std::string url =
-        buildApiCallUrl("TIME_SERIES_INTRADAY", interval, "&datatype=csv");
+        buildApiUrl("TIME_SERIES_INTRADAY", interval, "&datatype=csv");
 
     // Download csv data for time series
-    std::string csv_string = downloadCsv(url);
+    std::string csv_string = queryApiUrl(url);
     return parseCsvString(csv_string, last_n_rows);
 }
 
@@ -142,10 +216,10 @@ time_series Stock::getDailySeries(const bool &adjusted,
         function += "_ADJUSTED";
     }
 
-    std::string url = buildApiCallUrl(function, "", "&datatype=csv");
+    std::string url = buildApiUrl(function, "", "&datatype=csv");
 
     // Download csv data for time series
-    std::string csv_string = downloadCsv(url);
+    std::string csv_string = queryApiUrl(url);
     return parseCsvString(csv_string, last_n_rows);
 }
 
@@ -167,10 +241,10 @@ time_series Stock::getWeeklySeries(const bool &adjusted,
         function += "_ADJUSTED";
     }
 
-    std::string url = buildApiCallUrl(function, "", "&datatype=csv");
+    std::string url = buildApiUrl(function, "", "&datatype=csv");
 
     // Download csv data for time series
-    std::string csv_string = downloadCsv(url);
+    std::string csv_string = queryApiUrl(url);
     return parseCsvString(csv_string, last_n_rows);
 }
 
@@ -192,10 +266,10 @@ time_series Stock::getMonthlySeries(const bool &adjusted,
         function += "_ADJUSTED";
     }
 
-    std::string url = buildApiCallUrl(function, "", "&datatype=csv");
+    std::string url = buildApiUrl(function, "", "&datatype=csv");
 
     // Download csv data for time series
-    std::string csv_string = downloadCsv(url);
+    std::string csv_string = queryApiUrl(url);
     return parseCsvString(csv_string, last_n_rows);
 }
 
@@ -208,7 +282,7 @@ time_pair Stock::getGlobalQuote()
 {
     // Download csv data for global quote
     std::stringstream csv(
-        downloadCsv(buildApiCallUrl("GLOBAL_QUOTE", "", "&datatype=csv")));
+        queryApiUrl(buildApiUrl("GLOBAL_QUOTE", "", "&datatype=csv")));
 
     // Get global quote row from csv std::string
     rapidcsv::Document doc(csv);
@@ -247,11 +321,11 @@ time_series Crypto::getDailySeries(const std::string &market,
                                    const size_t &last_n_rows)
 {
     // Create url query
-    std::string url = buildApiCallUrl("DIGITAL_CURRENCY_DAILY", "",
-                                      "&market=" + market + "&datatype=csv");
+    std::string url = buildApiUrl("DIGITAL_CURRENCY_DAILY", "",
+                                  "&market=" + market + "&datatype=csv");
 
     // Download csv data
-    std::string csv_string = downloadCsv(url);
+    std::string csv_string = queryApiUrl(url);
     return parseCsvString(csv_string, last_n_rows);
 }
 
@@ -265,11 +339,11 @@ time_series Crypto::getWeeklySeries(const std::string &market,
                                     const size_t &last_n_rows)
 {
     // Create url query
-    std::string url = buildApiCallUrl("DIGITAL_CURRENCY_WEEKLY", "",
-                                      "&market=" + market + "&datatype=csv");
+    std::string url = buildApiUrl("DIGITAL_CURRENCY_WEEKLY", "",
+                                  "&market=" + market + "&datatype=csv");
 
     // Download csv data
-    std::string csv_string = downloadCsv(url);
+    std::string csv_string = queryApiUrl(url);
     return parseCsvString(csv_string, last_n_rows);
 }
 
@@ -283,12 +357,22 @@ time_series Crypto::getMonthlySeries(const std::string &market,
                                      const size_t &last_n_rows)
 {
     // Create url query
-    std::string url = buildApiCallUrl("DIGITAL_CURRENCY_MONTHLY", "",
-                                      "&market=" + market + "&datatype=csv");
+    std::string url = buildApiUrl("DIGITAL_CURRENCY_MONTHLY", "",
+                                  "&market=" + market + "&datatype=csv");
 
     // Download csv data
-    std::string csv_string = downloadCsv(url);
+    std::string csv_string = queryApiUrl(url);
     return parseCsvString(csv_string, last_n_rows);
+}
+
+/**
+ * @brief   Get the current exchange rate for a specific market
+ * @param   market The exchange market (default = "USD")
+ * @returns An avapi::time_pair: [Exchange_Rate, Bid Price, Ask Price]
+ */
+time_pair Crypto::getExchangeRate(const std::string &market)
+{
+    std::string url = buildApiUrl("CURRENCY_EXCHANGE_RATE", "");
 }
 
 /**
