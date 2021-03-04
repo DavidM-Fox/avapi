@@ -14,7 +14,11 @@ namespace avapi {
  * @brief   ApiCall Class constructor
  * @param   api_key The Alpha Vantage API key to use
  */
-ApiCall::ApiCall(const std::string &api_key) : m_apiKey(api_key) {}
+ApiCall::ApiCall(const std::string &api_key) : m_apiKey(api_key)
+{
+    if (api_key == "")
+        throw "Empty api_key provided to ApiCall constructor";
+}
 
 /**
  * @brief   Set a field and value within m_fieldValueMap
@@ -37,7 +41,10 @@ std::string ApiCall::getApiField(const api_field &field)
     std::string key = m_apiFieldVec[field];
     if (m_fieldValueMap.count(key) == 1)
         return m_fieldValueMap.find(key)->second;
-    return "Field (" + key + ") not found within m_fieldValueMap\n";
+
+    std::string error = "Avapi Exception: Field \"" + key +
+                        "\" not found within m_fieldValueMap";
+    throw error;
 }
 
 /**
@@ -393,15 +400,15 @@ time_series parseCsvFile(const std::string &file, const size_t &last_n_rows)
     try {
         doc.Load(file);
         n_rows = doc.GetRowCount();
-        if (n_rows == 0)
-            throw "Invalid CSV File:";
+        if (n_rows == 0) {
+            std::string error = "Invalid CSV File \"" + file + "\"";
+            throw error;
+        }
     }
-    catch (char *ex) {
-        std::cerr << "Exception caught within avapi::parseCsvFile(): " << ex
-                  << "\n";
-        std::cerr << "File path or contents of '" << file
-                  << "' may be invalid. Returning a null avapi::time_series "
-                     "object.\n";
+    catch (std::string &ex) {
+        std::cerr << "Exception caught within avapi::parseCsvFile(), returning "
+                     "a null time_series: "
+                  << ex << ".\n";
         return {std::make_pair<std::time_t, std::vector<float>>(-1, {0})};
     }
 
@@ -452,16 +459,15 @@ time_series parseCsvString(const std::string &data, const size_t &last_n_rows)
         // Test for JSON error response
         if (n_rows <= 2 && isJsonString(data)) {
             // Data is not a CSV string, but a JSON error reponse
-            throw "Alpha Vantage JSON Error Response: ";
+            throw "Alpha Vantage JSON Error Response:";
         }
     }
     catch (char *ex) {
-        std::cerr << "Exception caught within avapi::parseCsvString(): " << ex
-                  << '\n';
+        std::cerr << "Exception caught within avapi::parseCsvString(), "
+                     "returning a null time_series: "
+                  << ex << '\n';
         parser = nlohmann::json::parse(data);
         std::cerr << parser.dump(4);
-        std::cerr << "\nReturning a null avapi::time_series "
-                     "object.\n";
         return {std::make_pair<std::time_t, std::vector<float>>(-1, {0})};
     }
 
@@ -517,12 +523,20 @@ std::string readFirstLineFromFile(const std::string &file_path)
 {
     std::string api_key = "";
     std::ifstream file(file_path);
-    if (file.is_open()) {
-        std::getline(file, api_key);
-        file.close();
+    try {
+        if (file.is_open()) {
+            std::getline(file, api_key);
+            file.close();
+        }
+        else {
+            std::string error = "Cannot open file \"" + file_path + "\"";
+            throw error;
+        }
     }
-    else {
-        std::cout << "Unable to open file: " << file_path;
+    catch (std::string &ex) {
+        std::cerr << "Exception caught within readFirstLineFromFile(): " << ex
+                  << ", returning an empty API Key.\n";
+        return "";
     }
     return api_key;
 }
@@ -555,7 +569,7 @@ void printSeries(const time_series &series, const bool &adjusted)
     }
     catch (char *ex) {
         std::cerr << "Exception caught within avapi::printSeries(): " << ex
-                  << '\n';
+                  << ".\n";
         return;
     }
 
@@ -631,7 +645,7 @@ void printGlobalQuote(const time_pair &pair)
     }
     catch (char *ex) {
         std::cerr << "Exception caught within avapi::printGlobalQuote(): " << ex
-                  << '\n';
+                  << ".\n";
         return;
     }
 
