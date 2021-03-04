@@ -19,7 +19,8 @@ Avapi is a C++ library utilizing the [Alpha Vantage API](https://www.alphavantag
 # Prerequisites
 To use Avapi, the following is required:
 * An Alpha Vantage API key from [here](https://www.alphavantage.co/support/#api-key)
-* [rapidcsv](https://github.com/d99kris/rapidcsv)
+* [d99kris/rapidcsv](https://github.com/d99kris/rapidcsv)
+* [nlohmann/json](https://github.com/nlohmann/json)
 * [libcurl](https://curl.se/libcurl/) C++ libraries
 
 
