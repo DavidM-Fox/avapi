@@ -85,13 +85,15 @@ bool stringReplace(std::string &str, const std::string &from,
 std::string readFirstLineFromFile(const std::string &file_path);
 std::time_t toUnixTimestamp(const std::string &input);
 
-time_series parseCsvFile(const std::string &file,
-                         const size_t &last_n_rows = 0);
+time_series parseCsvFile(const std::string &file, const size_t &last_n_rows = 0,
+                         const bool &crypto = false);
 time_series parseCsvString(const std::string &data,
-                           const size_t &last_n_rows = 0);
+                           const size_t &last_n_rows = 0,
+                           const bool &crypto = false);
 
 void printSeries(const time_series &series, const bool &adjusted = false);
 void printGlobalQuote(const time_pair &pair);
+
 void reverseTimeSeries(avapi::time_series &series);
 bool isJsonString(const std::string &data);
 

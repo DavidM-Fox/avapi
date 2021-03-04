@@ -315,7 +315,7 @@ time_series Crypto::getDailySeries(const std::string &market,
 
     // Download csv data for time series
     std::string csv_string = queryApiUrl(url);
-    return parseCsvString(csv_string, last_n_rows);
+    return parseCsvString(csv_string, last_n_rows, true);
 }
 
 /**
@@ -341,7 +341,7 @@ time_series Crypto::getWeeklySeries(const std::string &market,
 
     // Download csv data for time series
     std::string csv_string = queryApiUrl(url);
-    return parseCsvString(csv_string, last_n_rows);
+    return parseCsvString(csv_string, last_n_rows, true);
 }
 
 /**
@@ -366,7 +366,7 @@ time_series Crypto::getMonthlySeries(const std::string &market,
 
     // Download csv data for time series
     std::string csv_string = queryApiUrl(url);
-    return parseCsvString(csv_string, last_n_rows);
+    return parseCsvString(csv_string, last_n_rows, true);
 }
 
 /**
@@ -381,8 +381,27 @@ time_pair Crypto::getExchangeRate(const std::string &market)
     setApiField(FUNCTION, "CURRENCY_EXCHANGE_RATE");
     setApiField(FROM_CURRENCY, m_symbol);
     setApiField(TO_CURRENCY, market);
-    std::string url = buildApiUrl();
-    return std::make_pair<std::time_t, std::vector<float>>(-1, {0});
+
+    std::string data = queryApiUrl(buildApiUrl());
+
+    nlohmann::json json =
+        nlohmann::json::parse(data)["Realtime Currency Exchange Rate"];
+
+    std::time_t timestamp = toUnixTimestamp(json["6. Last Refreshed"]);
+
+    std::string exchange_rate = json["5. Exchange Rate"];
+    std::string bid_price = json["8. Bid Price"];
+    std::string ask_price = json["9. Ask Price"];
+
+    std::vector<float> exchange_data;
+
+    exchange_data.push_back(std::stof(exchange_rate));
+    exchange_data.push_back(std::stof(bid_price));
+    exchange_data.push_back(std::stof(ask_price));
+
+    avapi::time_pair exchange = std::make_pair(timestamp, exchange_data);
+
+    return exchange;
 }
 
 /**
@@ -391,7 +410,8 @@ time_pair Crypto::getExchangeRate(const std::string &market)
  * @param   last_n_rows last number of rows to return
  * @returns avapi::time_series
  */
-time_series parseCsvFile(const std::string &file, const size_t &last_n_rows)
+time_series parseCsvFile(const std::string &file, const size_t &last_n_rows,
+                         const bool &crypto)
 {
     // Create document object from csv file path
     rapidcsv::Document doc;
@@ -444,7 +464,8 @@ time_series parseCsvFile(const std::string &file, const size_t &last_n_rows)
  * parameter is greater than document row count.
  * @returns avapi::time_series
  */
-time_series parseCsvString(const std::string &data, const size_t &last_n_rows)
+time_series parseCsvString(const std::string &data, const size_t &last_n_rows,
+                           const bool &crypto)
 {
     // Create document object from csv string
     std::stringstream sstream(data);
@@ -483,15 +504,32 @@ time_series parseCsvString(const std::string &data, const size_t &last_n_rows)
 
     // Iterate over n_rows, parsing data into the avapi::time_series
     avapi::time_series series;
-    for (size_t i = 0; i < n_rows; ++i) {
-        std::vector<std::string> row = doc.GetRow<std::string>(i);
 
-        std::vector<float> data;
-        for (size_t j = 1; j < n_rowData; ++j) {
-            data.push_back(std::stof(row[j]));
+    if (crypto) {
+        for (size_t i = 0; i < n_rows; ++i) {
+            std::vector<std::string> row = doc.GetRow<std::string>(i);
+
+            std::vector<float> data;
+            for (size_t j = 1; j < 5; ++j) {
+                data.push_back(std::stof(row[j]));
+            }
+            // Skip needless rows 5-8
+            data.push_back(std::stof(row[9]));
+
+            series.push_back(std::make_pair(toUnixTimestamp(row[0]), data));
         }
+    }
+    else {
+        for (size_t i = 0; i < n_rows; ++i) {
+            std::vector<std::string> row = doc.GetRow<std::string>(i);
 
-        series.push_back(std::make_pair(toUnixTimestamp(row[0]), data));
+            std::vector<float> data;
+            for (size_t j = 1; j < n_rowData; ++j) {
+                data.push_back(std::stof(row[j]));
+            }
+
+            series.push_back(std::make_pair(toUnixTimestamp(row[0]), data));
+        }
     }
     return series;
 }
