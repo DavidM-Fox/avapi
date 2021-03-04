@@ -8,6 +8,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 find_package(CURL CONFIG REQUIRED)
 find_package(Catch2 CONFIG REQUIRED)
+find_package(nlohmann_json CONFIG REQUIRED)
 
 include_directories(inc)
 
@@ -27,10 +28,7 @@ set(TESTS
 )
 
 add_executable(avapi src/main.cpp ${PROJECT_SOURCES})
-target_link_libraries(avapi PRIVATE Catch2::Catch2 CURL::libcurl)
-
-set(TEST_DIRECTORY "tests")
-file(GLOB TEST_FILES test*.cpp)
+target_link_libraries(avapi PRIVATE Catch2::Catch2 CURL::libcurl nlohmann_json nlohmann_json::nlohmann_json)
 
 add_executable(avapi_test ${TESTS} ${PROJECT_SOURCES})
 target_link_libraries(avapi_test PRIVATE CURL::libcurl)
