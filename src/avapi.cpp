@@ -22,7 +22,7 @@ ApiCall::ApiCall(const std::string &api_key) : m_apiKey(api_key)
 }
 
 /// @brief   Set a field and value within m_fieldValueMap
-/// @param   field The ApiCall::api_field
+/// @param   field The Api::field
 /// @param   value The value to be set as a string
 void ApiCall::setApiField(const API::field &field, const std::string &value)
 {
@@ -31,7 +31,7 @@ void ApiCall::setApiField(const API::field &field, const std::string &value)
 }
 
 /// @brief   Get a value from a field within m_fieldValueMap
-/// @param   field The ApiCall::api_field
+/// @param   field The API::field
 /// @returns The value corresponding to the field parameter
 std::string ApiCall::getApiField(const API::field &field)
 {
@@ -59,8 +59,8 @@ std::string ApiCall::buildApiUrl()
     return url + "&apikey=" + m_apiKey;
 }
 
-/// @brief   Curls data from a specific API url query
-/// @param   url The url to be curled
+/// @brief   Curls data from a specific API query URL
+/// @param   url The API query URL to be curled
 /// @returns The data as an std::string
 std::string ApiCall::queryApiUrl(const std::string &url)
 {
@@ -103,7 +103,7 @@ size_t ApiCall::WriteMemoryCallback(void *ptr, size_t size, size_t nmemb,
     return realsize;
 }
 
-/// @brief   Stock Class constructor
+/// @brief   avapi::Stock constructor
 /// @param   symbol The stock symbol of interest
 /// @param   api_key The Alpha Vantage API key to use
 Stock::Stock(const std::string &symbol, const std::string &api_key)
@@ -115,14 +115,14 @@ Stock::Stock(const std::string &symbol, const std::string &api_key)
     setOutputSize("compact");
 }
 
-/// @brief   Get a TimeSeries for a stock symbol of interest.
+/// @brief   Get an avapi::TimeSeries for a stock symbol of interest.
 /// @param   type enum avapi::series::type for TimeSeries type
 /// @param   adjusted Whether or not the data should have adjusted values
-/// @param   interval The interval for Stock::INTRADAY, ignored otherwise
-/// (default = "30min")
-/// @returns An avapi::TimeSeries: [open,high,low,close,volume])
+/// @param   interval The interval for avapi::series::INTRADAY, ignored
+/// otherwise (default = "30min")
+/// @returns An avapi::TimeSeries: [open,high,low,close,volume]
 /// or an adjusted avapi::TimeSeries:
-/// [open,high,low,close,adjusted_close,volume,dividend_amount,split_coefficient])
+/// [open,high,low,close,adjusted_close,volume,dividend_amount,split_coefficient]
 TimeSeries Stock::getTimeSeries(const avapi::series::type &type,
                                 const bool &adjusted,
                                 const std::string &interval)
@@ -206,7 +206,7 @@ TimeSeries Stock::getTimeSeries(const avapi::series::type &type,
 /// @param size The output size: "compact" or "full" (default = "compact")
 void Stock::setOutputSize(const std::string &size) { m_outputSize = size; }
 
-/// @brief   Return the symbol's latest global quote:
+/// @brief   Return the symbol's latest global quote
 /// @returns The symbol's global quote as an avapi::GlobalQuote object
 GlobalQuote Stock::getGlobalQuote()
 {
@@ -238,7 +238,7 @@ GlobalQuote Stock::getGlobalQuote()
     return global_quote;
 }
 
-/// @brief   Crypto Class constructor
+/// @brief   avapi::Crypto constructor
 /// @param   symbol The crypto symbol of interest
 /// @param   api_key The Alpha Vantage API key to use
 Crypto::Crypto(const std::string &symbol, const std::string &api_key)
@@ -250,7 +250,7 @@ Crypto::Crypto(const std::string &symbol, const std::string &api_key)
     setOutputSize("compact");
 }
 
-/// @brief   Get a TimeSeries for a crypto symbol of interest.
+/// @brief   Get an avapi::TimeSeries for a crypto symbol of interest.
 /// @param   type enum avapi::series::type for TimeSeries type
 /// @param   market The exchange market (default = "USD")
 /// @returns An avapi::TimeSeries: [open,high,low,close,volume]
@@ -345,8 +345,8 @@ TimeSeries::TimeSeries() {}
 /// @param pair An avapi::TimePair to be pushed back
 void TimeSeries::pushBack(const TimePair &pair) { m_data.push_back(pair); }
 
-/// @brief Set the avapi::TimeSeries' Series::type
-/// @param type avapi::Series::type
+/// @brief Set the avapi::TimeSeries' type
+/// @param type avapi::series::type
 void TimeSeries::setType(const series::type &type) { m_type = type; }
 
 /// @brief Set the avapi::TimeSeries' symbol
@@ -365,14 +365,22 @@ const size_t TimeSeries::rowCount() { return m_nRows; }
 /// @return size_t column count
 const size_t TimeSeries::colCount() { return m_nCols; }
 
-/// @brief Set the TimeSeries' column headers
+/// @brief Set the avapi::TimeSeries' column headers
 /// @param headers A vector of header strings
 void TimeSeries::setHeaders(const std::vector<std::string> &headers)
 {
     m_headers = headers;
 }
 
-/// @brief push formated contents to ostream
+/// @brief   Reverses the avapi::TimeSeries' data, useful for when the data is
+/// desired to be plotted
+void TimeSeries::reverseData()
+{
+    // Data coming from Alpha Vantage is reversed (Dates are reversed)
+    std::reverse(m_data.begin(), m_data.end());
+}
+
+/// @brief push formated avapi::TimeSeries' contents to ostream
 std::ostream &operator<<(std::ostream &os, const TimeSeries &series)
 {
     size_t sep_count = 0;
@@ -380,18 +388,18 @@ std::ostream &operator<<(std::ostream &os, const TimeSeries &series)
     size_t width = 15;
 
     for (auto &heading : series.m_headers) {
-        os << std::setw(12) << heading;
-        sep_count += 12;
+        os << std::setw(width) << heading;
+        sep_count += width;
     }
 
-    std::string separator(sep_count, '-');
+    std::string separator(sep_count + 6, '-');
 
     os << '\n' << separator << '\n';
 
     for (auto &pair : series.m_data) {
-        os << std::setw(12) << std::left << pair.m_time;
+        os << std::setw(width) << std::right << pair.m_time;
         for (auto &value : pair.m_data) {
-            os << std::setw(12) << std::left << std::fixed
+            os << std::setw(width) << std::right << std::fixed
                << std::setprecision(2) << value;
         }
         os << '\n';
@@ -610,14 +618,6 @@ std::time_t toUnixTimestamp(const std::string &input)
     std::string format = "%Y-%m-%d %H:%M:%S";
     ss >> std::get_time(&t, format.c_str());
     return mktime(&t);
-}
-
-/// @brief   Reverses the orde of an avapi::time_series
-/// @param   series The avapi::time_series to be reversed
-void reverseTimeSeries(TimePairVec &series)
-{
-    // Data coming from Alpha Vantage is reversed (Dates are reversed)
-    std::reverse(series.begin(), series.end());
 }
 
 /// @brief   Test if a string is in JSON format

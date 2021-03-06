@@ -113,6 +113,7 @@ public:
     void setType(const avapi::series::type &type);
     void setTitle(const std::string &title);
     void setHeaders(const std::vector<std::string> &headers);
+    void reverseData();
 
     std::string symbol();
 
