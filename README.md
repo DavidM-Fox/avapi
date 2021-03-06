@@ -48,7 +48,7 @@ The ```Stock``` object contains the following member methods for fetching histor
 /// @param interval	The interval for avapi::series::INTRADAY
 /// @returns		An avapi::TimeSeries of the specified type
 TimeSeries Stock::getTimeSeries(const series::type &type, const bool &adjusted,
-							    const std::string &interval = "30min");
+				const std::string &interval = "30min");
 			  
 /// @brief Return the symbol's latest global quote
 /// @returns the symbol's global quote as an avapi::GlobalQuote object
@@ -65,7 +65,6 @@ public:
 	TimePair(const std::time_t  &time, const std::vector<float> &data) 
 		: m_time(time), m_data(data) {}
         
-
 	std::time_t m_time;
 	std::vector<float> m_data;
 	float &operator[](size_t i) { return m_data[i]; }
@@ -93,8 +92,8 @@ public:
 	GlobalQuote(const std::string& symbol, const std::time_t &timestamp, 
 	            const std::vector<float> &data);   
 	
-    const std::string symbol;
-    const std::time_t timestamp;
+    	const std::string symbol;
+    	const std::time_t timestamp;
         
 	const float open;
 	const float high;
