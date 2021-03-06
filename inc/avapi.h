@@ -17,49 +17,52 @@ class ExchangeRate;
 // Typedefs for Alpha Vantage API function return values
 typedef std::vector<TimePair> TimePairVec;
 
+namespace API {
+enum field {
+    FUNCTION,
+    SYMBOL,
+    INTERVAL,
+    ADJUSTED,
+    MARKET,
+    DATA_TYPE,
+    FROM_CURRENCY,
+    TO_CURRENCY,
+    OUTPUT_SIZE,
+};
+}
+
 // Parent class of avapi::Stock and avapi::Crypto
 class ApiCall {
 public:
     explicit ApiCall(const std::string &api_key);
 
-    enum api_field {
-        FUNCTION,
-        SYMBOL,
-        INTERVAL,
-        ADJUSTED,
-        MARKET,
-        DATA_TYPE,
-        FROM_CURRENCY,
-        TO_CURRENCY,
-        OUTPUT_SIZE,
-    };
-
-    void setApiField(const api_field &field, const std::string &value);
-    std::string getApiField(const api_field &field);
+protected:
+    void setApiField(const API::field &field, const std::string &value);
+    std::string getApiField(const API::field &field);
     void clearApiFields();
 
     std::string buildApiUrl();
     std::string queryApiUrl(const std::string &url);
 
+private:
     std::string m_apiKey;
 
-private:
     std::map<std::string, std::string> m_fieldValueMap;
-
-    static const std::string m_urlBase;
     static const std::vector<std::string> m_apiFieldVec;
 
     static size_t WriteMemoryCallback(void *ptr, size_t size, size_t nmemb,
                                       void *data);
 };
 
+namespace series {
+enum type { INTRADAY, DAILY, WEEKLY, MONTHLY };
+}
+
 class Stock : private ApiCall {
 public:
     explicit Stock(const std::string &symbol, const std::string &api_key);
 
-    enum function { INTRADAY, DAILY, WEEKLY, MONTHLY };
-    TimeSeries getTimeSeries(const avapi::Stock::function &function,
-                             const bool &adjusted,
+    TimeSeries getTimeSeries(const series::type &type, const bool &adjusted,
                              const std::string &interval = "30min");
 
     void setOutputSize(const std::string &size = "compact");
@@ -75,8 +78,7 @@ class Crypto : private ApiCall {
 public:
     explicit Crypto(const std::string &symbol, const std::string &api_key);
 
-    enum function { DAILY, WEEKLY, MONTHLY };
-    TimeSeries getTimeSeries(const avapi::Crypto::function &function,
+    TimeSeries getTimeSeries(const series::type &type,
                              const std::string &market = "USD");
 
     void setOutputSize(const std::string &size = "compact");
@@ -102,35 +104,35 @@ public:
 
 class TimeSeries {
 public:
-    enum series_type { ADJUSTED, NON_ADJUSTED, CRYPTO, EMPTY };
-    TimeSeries(const TimePairVec &data);
+    TimeSeries(const std::vector<avapi::TimePair> &data);
+    TimeSeries();
 
     void pushBack(const TimePair &pair);
+
     void setSymbol(const std::string &symbol);
-    void setSeriesTitle(const std::string &title);
+    void setType(const avapi::series::type &type);
+    void setTitle(const std::string &title);
     void setHeaders(const std::vector<std::string> &headers);
+
+    std::string symbol();
 
     const size_t rowCount();
     const size_t colCount();
-    const bool isAdjusted();
-    const bool isCrypto();
 
     TimePair &operator[](size_t i) { return m_data[i]; }
     friend std::ostream &operator<<(std::ostream &os, const TimeSeries &series);
 
 private:
+    std::string m_symbol;
+    series::type m_type;
+    std::string m_title;
+    std::vector<std::string> m_headers;
+
     TimePairVec m_data;
     size_t m_nRows;
     size_t m_nCols;
 
-    std::string m_symbol;
-    series_type m_type;
-    bool m_isAdjusted;
-    bool m_isCrypto;
     std::string m_market;
-
-    std::string m_title;
-    std::vector<std::string> m_headers;
 };
 
 class GlobalQuote {
@@ -170,9 +172,6 @@ std::time_t toUnixTimestamp(const std::string &input);
 
 TimeSeries parseCsvFile(const std::string &file, const bool &crypto = false);
 TimeSeries parseCsvString(const std::string &data, const bool &crypto = false);
-
-TimeSeries::series_type
-discernSeriesType(const std::vector<std::string> &headers);
 
 void reverseTimeSeries(TimePairVec &series);
 bool isJsonString(const std::string &data);
