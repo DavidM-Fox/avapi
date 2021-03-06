@@ -389,7 +389,7 @@ timestamp,open,high,low,close,volume
 ```
 ```C++
 
-avapi::TimeSeries series = avapi::parseCsvFile("data/daily_GME.csv", false);
+avapi::TimeSeries series = avapi::parseCsvFile("daily_GME.csv", false);
 series.printData(2);
     
 ```
