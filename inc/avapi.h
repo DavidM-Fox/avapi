@@ -57,19 +57,27 @@ class Stock : private ApiCall {
 public:
     explicit Stock(const std::string &symbol, const std::string &api_key);
 
-    TimeSeries getIntradaySeries(const std::string &interval = "30min",
-                                 const bool &adjusted = false);
-    TimeSeries getDailySeries(const bool &adjusted = false);
-    TimeSeries getWeeklySeries(const bool &adjusted = false);
-    TimeSeries getMonthlySeries(const bool &adjusted = false);
-    GlobalQuote getGlobalQuote();
+    enum function { INTRADAY, DAILY, WEEKLY, MONTHLY };
+    TimeSeries getTimeSeries(const avapi::Stock::function &function,
+                             const bool &adjusted,
+                             const std::string &interval = "30min");
 
+    void setOutputSize(const std::string &size = "compact");
+
+private:
     std::string m_symbol;
+    std::string m_outputSize;
 };
 
 class Crypto : private ApiCall {
 public:
     explicit Crypto(const std::string &symbol, const std::string &api_key);
+
+    enum function { DAILY, WEEKLY, MONTHLY };
+    TimeSeries getTimeSeries(const avapi::Crypto::function &function,
+                             const std::string &market = "USD");
+
+    void setOutputSize(const std::string &size = "compact");
 
     TimeSeries getDailySeries(const std::string &market = "USD");
     TimeSeries getWeeklySeries(const std::string &market = "USD");
@@ -77,6 +85,9 @@ public:
     ExchangeRate getExchangeRate(const std::string &market = "USD");
 
     std::string m_symbol;
+
+private:
+    std::string m_outputSize;
 };
 
 class TimePair {

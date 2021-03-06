@@ -3,6 +3,7 @@
 #include <fstream>
 #include <iostream>
 #include <iomanip>
+#include <stdexcept>
 #include <sstream>
 #include <nlohmann/json.hpp>
 #include <regex>
@@ -127,95 +128,7 @@ Stock::Stock(const std::string &symbol, const std::string &api_key)
     // Force symbol to be capitalized
     std::transform(m_symbol.begin(), m_symbol.end(), m_symbol.begin(),
                    ::toupper);
-}
-
-/**
- * @brief   Get an intraday time series for a symbol of interest.
- * @param   interval The intraday data interval ("1min", "5min", "15min",
- * "30min", or "60min", default = "30min")
- * @param   last_n_rows Last number of rows to get (default = 0 or all)
- * @returns An avapi::time_series with the data vector being ordered [open,
- * high, low, close, volume]
- */
-TimeSeries Stock::getIntradaySeries(const std::string &interval,
-                                    const bool &is_adjusted)
-{
-    // Clear and configure API fields
-    clearApiFields();
-    setApiField(FUNCTION, "TIME_SERIES_INTRADAY");
-    setApiField(SYMBOL, m_symbol);
-    setApiField(INTERVAL, interval);
-
-    if (is_adjusted)
-        setApiField(ADJUSTED, "true");
-    else
-        setApiField(ADJUSTED, "false");
-
-    setApiField(OUTPUT_SIZE, "compact");
-    setApiField(DATA_TYPE, "csv");
-
-    // Download, parse, and create TimeSeries from csv data
-    TimeSeries series = parseCsvString(queryApiUrl(buildApiUrl()));
-    series.setSymbol(m_symbol);
-    return series;
-}
-
-/**
- * @brief   Get a daily time series for a symbol of interest.
- * @param   adjusted Whether or not the data should have adjusted values
- * (default = false)
- * @param   last_n_rows Last number of rows to get (default = 0 or all)
- * @returns An avapi::time_series: [open,high,low,close,volume])
- * or an adjusted avapi::time_series:
- * [open,high,low,close,adjusted_close,volume,dividend_amount,split_coefficient])
- */
-TimeSeries Stock::getDailySeries(const bool &is_adjusted)
-{
-    // Clear and configure API fields
-    clearApiFields();
-
-    if (is_adjusted)
-        setApiField(FUNCTION, "TIME_SERIES_DAILY_ADJUSTED");
-    else
-        setApiField(FUNCTION, "TIME_SERIES_DAILY");
-
-    setApiField(SYMBOL, m_symbol);
-    setApiField(OUTPUT_SIZE, "compact");
-    setApiField(DATA_TYPE, "csv");
-
-    // Download, parse, and create TimeSeries from csv data
-    TimeSeries series = parseCsvString(queryApiUrl(buildApiUrl()));
-    series.setSymbol(m_symbol);
-    return series;
-}
-
-/**
- * @brief   Get a weekly time series for a symbol of interest.
- * @param   adjusted Whether or not the data should have adjusted values
- * (default = false)
- * @param   last_n_rows Last number of rows to get (default = 0 or all)
- * @returns An avapi::time_series: [open,high,low,close,volume])
- * or an adjusted avapi::time_series:
- * [open,high,low,close,adjusted_close,volume,dividend_amount,split_coefficient])
- */
-TimeSeries Stock::getWeeklySeries(const bool &is_adjusted)
-{
-    // Configure API url
-    clearApiFields();
-
-    if (is_adjusted)
-        setApiField(FUNCTION, "TIME_SERIES_WEEKLY_ADJUSTED");
-    else
-        setApiField(FUNCTION, "TIME_SERIES_WEEKLY");
-
-    setApiField(SYMBOL, m_symbol);
-    setApiField(OUTPUT_SIZE, "compact");
-    setApiField(DATA_TYPE, "csv");
-
-    // Download, parse, and create TimeSeries from csv data
-    TimeSeries series = parseCsvString(queryApiUrl(buildApiUrl()));
-    series.setSymbol(m_symbol);
-    return series;
+    setOutputSize("compact");
 }
 
 /**
@@ -227,18 +140,52 @@ TimeSeries Stock::getWeeklySeries(const bool &is_adjusted)
  * or an adjusted avapi::time_series:
  * [open,high,low,close,adjusted_close,volume,dividend_amount,split_coefficient])
  */
-TimeSeries Stock::getMonthlySeries(const bool &is_adjusted)
+TimeSeries Stock::getTimeSeries(const avapi::Stock::function &function,
+                                const bool &adjusted,
+                                const std::string &interval)
 {
-    // Configure API url
+    // Clear API fields for new configuration
     clearApiFields();
 
-    if (is_adjusted)
-        setApiField(FUNCTION, "TIME_SERIES_MONTHLY_ADJUSTED");
-    else
-        setApiField(FUNCTION, "TIME_SERIES_MONTHLY");
+    // Set API function field
+    switch (function) {
+    case INTRADAY:
+        setApiField(FUNCTION, "TIME_SERIES_INTRADAY");
+        setApiField(INTERVAL, interval);
+        if (adjusted)
+            setApiField(ADJUSTED, "true");
+        else
+            setApiField(ADJUSTED, "false");
+        break;
 
+    case DAILY:
+        if (adjusted)
+            setApiField(FUNCTION, "TIME_SERIES_DAILY_ADJUSTED");
+        else
+            setApiField(FUNCTION, "TIME_SERIES_DAILY");
+        break;
+
+    case WEEKLY:
+        if (adjusted)
+            setApiField(FUNCTION, "TIME_SERIES_WEEKLY_ADJUSTED");
+        else
+            setApiField(FUNCTION, "TIME_SERIES_WEEKLY");
+        break;
+    case MONTHLY:
+        if (adjusted)
+            setApiField(FUNCTION, "TIME_SERIES_WEEKLY_ADJUSTED");
+        else
+            setApiField(FUNCTION, "TIME_SERIES_WEEKLY");
+        break;
+
+    default:
+        std::invalid_argument ex("Incorrect avapi::Stock::function argument");
+        throw ex;
+    }
+
+    // Set other needed API fields
     setApiField(SYMBOL, m_symbol);
-    setApiField(OUTPUT_SIZE, "compact");
+    setApiField(OUTPUT_SIZE, m_outputSize);
     setApiField(DATA_TYPE, "csv");
 
     // Download, parse, and create TimeSeries from csv data
@@ -246,6 +193,12 @@ TimeSeries Stock::getMonthlySeries(const bool &is_adjusted)
     series.setSymbol(m_symbol);
     return series;
 }
+
+/**
+ * @brief Set the output size for Alpha Vantage
+ * @param size The output size "compact" or "full" (default = "compact")
+ */
+void Stock::setOutputSize(const std::string &size) { m_outputSize = size; }
 
 /**
  * @brief   Returns an avapi::time_pair containing the latest global quote:
@@ -293,6 +246,17 @@ Crypto::Crypto(const std::string &symbol, const std::string &api_key)
     std::transform(m_symbol.begin(), m_symbol.end(), m_symbol.begin(),
                    ::toupper);
 }
+
+TimeSeries Crypto::getTimeSeries(const avapi::Crypto::function &function,
+                                 const std::string &market)
+{
+}
+
+/**
+ * @brief Set the output size for Alpha Vantage
+ * @param size The output size "compact" or "full" (default = "compact")
+ */
+void Stock::setOutputSize(const std::string &size) { m_outputSize = size; }
 
 /**
  * @brief   Get a daily time series for a cryptocurrency of interest.
