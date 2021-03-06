@@ -28,7 +28,7 @@ To use Avapi, the following is required:
 
 # Example Usage - Stocks
 ## Getting Historical Data for a Stock of Interest
-In this example, we will explore getting historical time series data for Tesla stock ("TSLA"). We will begin by creating an ```avapi::Stock``` object with the  ```symbol``` "TSLA" and our Alpha Vantage ```api_key```. The ```api_key``` can be saved to a text file and then read with a provided helper function.  
+In this example, we will explore getting historical data for Tesla stock ("TSLA"). We will begin by creating an ```avapi::Stock``` object with the  ```symbol``` "TSLA" and our Alpha Vantage ```api_key```. The ```api_key``` can be saved to a text file and then read with a provided helper function.  
 
 ```C++
 
@@ -47,8 +47,8 @@ The ```Stock``` object contains the following member methods for fetching histor
 /// @param adjusted 	Whether or not the data should have adjusted values
 /// @param interval 	The interval for avapi::series::INTRADAY
 /// @returns 		An avapi::TimeSeries of the specified type
-TimeSeries  Stock::getTimeSeries(const series::type &type, const bool &adjusted,
-			         const std::string &interval = "30min");
+TimeSeries Stock::getTimeSeries(const series::type &type, const bool &adjusted,
+							    const std::string &interval = "30min");
 			  
 /// @brief Return the symbol's latest global quote
 /// @returns the symbol's global quote as an avapi::GlobalQuote object
@@ -62,8 +62,9 @@ The ```avapi::TimeSeries``` object is a class comprising of an ```std::vector```
 
 class  TimePair {
 public:
-	TimePair(const  std::time_t  &time, const  std::vector<float> &data)
-            : m_time(time), m_data(data) {}
+	TimePair(const std::time_t  &time, 
+	         const std::vector<float> &data)
+        : m_time(time), m_data(data) {}
             
 	std::time_t m_time;
 	std::vector<float> m_data;
@@ -89,10 +90,11 @@ The ```avapi::GlobalQuote``` object is a class containing the stock of interest'
 ```C++
 class  GlobalQuote {
 public:
-	GlobalQuote(const std::string& symbol, const std::time_t &timestamp, const std::vector<float> &data);   
+	GlobalQuote(const std::string& symbol, const std::time_t &timestamp, 
+	            const std::vector<float> &data);   
 	
-	const std::string symbol;
-        const std::time_t timestamp;
+    const std::string symbol;
+    const std::time_t timestamp;
         
 	const float open;
 	const float high;
@@ -106,15 +108,13 @@ public:
 };
 ```
 
-
-
 ## Intraday Data
 With our previously created ```avapi::Stock``` object (Tesla stock “TSLA”), let's look at getting an **intraday** data set. In the following, we see an ```avapi::TimeSeries``` object created with the ```Stock::getTimeSeries()``` member method:
 
 ```C++
 
 avapi::TimeSeries tsla_intraday = 
-    tsla.getTimeSeries(avapi::series::INTRADAY, true, "15min");
+	tsla.getTimeSeries(avapi::series::INTRADAY, true, "15min");
 
 ```
 The first parameter specifies that we want an **intraday** time series. The second parameter specifies that the data should be adjusted by historical split and dividend events. The third parameter sets the **intraday** interval to 15 minutes.  We can call the member method ```TimeSeries::printData(10)``` to print the last 10 rows of data to the console:
@@ -291,9 +291,9 @@ ExchangeRate Crypto::getExchangeRate(const std::string &market)
 Using the previously created ```Crypto``` object ("BTC"), we will create and print three different ```TimeSeries```:
 ```C++
 
-avapi::TimeSeries daily  = btc.getTimeSeries(avapi::series::DAILY, "USD");
-avapi::TimeSeries weekly  = btc.getTimeSeries(avapi::series::WEEKLY, "USD");
-avapi::TimeSeries monthly  = btc.getTimeSeries(avapi::series::MONTHLY, "USD");
+avapi::TimeSeries daily = btc.getTimeSeries(avapi::series::DAILY, "USD");
+avapi::TimeSeries weekly = btc.getTimeSeries(avapi::series::WEEKLY, "USD");
+avapi::TimeSeries monthly = btc.getTimeSeries(avapi::series::MONTHLY, "USD");
 
 // Print last 5 rows of data from each TimeSeries
 std::cout << "Daily Series\n";
