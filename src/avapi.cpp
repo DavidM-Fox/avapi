@@ -19,7 +19,8 @@ namespace avapi {
 ApiCall::ApiCall(const std::string &api_key) : m_apiKey(api_key)
 {
     if (api_key == "")
-        throw "Empty api_key provided to ApiCall constructor";
+        throw std::invalid_argument(
+            "Invalid API Key fed to constructor ApiCall()");
 }
 
 /**
@@ -44,9 +45,9 @@ std::string ApiCall::getApiField(const api_field &field)
     if (m_fieldValueMap.count(key) == 1)
         return m_fieldValueMap.find(key)->second;
 
-    std::string error = "Avapi Exception: Field \"" + key +
+    std::string error = "'avapi::ApiCall::getApiField: Field \"" + key +
                         "\" not found within m_fieldValueMap";
-    throw error;
+    throw std::exception(error.c_str());
 }
 
 /**
@@ -271,17 +272,18 @@ TimeSeries Crypto::getTimeSeries(const avapi::Crypto::function &function,
         break;
 
     default:
-        std::invalid_argument ex("Incorrect avapi::Stock::function argument");
+        std::invalid_argument ex("Incorrect avapi::Crypto::function argument");
         throw ex;
     }
 
+    // Set other needed API fields
     setApiField(SYMBOL, m_symbol);
     setApiField(MARKET, market);
     setApiField(OUTPUT_SIZE, m_outputSize);
     setApiField(DATA_TYPE, "csv");
 
     // Download, parse, and create TimeSeries from csv data
-    TimeSeries series = parseCsvString(queryApiUrl(buildApiUrl()));
+    TimeSeries series = parseCsvString(queryApiUrl(buildApiUrl()), true);
     series.setSymbol(m_symbol);
     return series;
 }
@@ -290,7 +292,7 @@ TimeSeries Crypto::getTimeSeries(const avapi::Crypto::function &function,
  * @brief Set the output size for Alpha Vantage
  * @param size The output size "compact" or "full" (default = "compact")
  */
-void Stock::setOutputSize(const std::string &size) { m_outputSize = size; }
+void Crypto::setOutputSize(const std::string &size) { m_outputSize = size; }
 
 /**
  * @brief   Get the current exchange rate for a specific market
@@ -326,26 +328,7 @@ ExchangeRate Crypto::getExchangeRate(const std::string &market)
     return exchange;
 }
 
-TimeSeries::TimeSeries(const TimePairVec &data, const std::string &symbol,
-                       const series_type &type, const bool &is_adjusted,
-                       const bool &is_crypto, const std::string &market)
-    : m_data(data), m_nRows(data.size()), m_nCols(data[0].m_data.size()),
-      m_symbol(symbol), m_type(type), m_isAdjusted(is_adjusted),
-      m_isCrypto(is_crypto), m_market(market)
-{
-}
-
-TimeSeries::TimeSeries(const TimePairVec &data, const std::string &symbol,
-                       const bool &is_crypto)
-    : m_data(data), m_nRows(data.size()), m_nCols(data[0].m_data.size()),
-      m_symbol(symbol)
-{
-}
-
-TimeSeries::TimeSeries(const TimePairVec &data, const series_type &type)
-    : m_data(data), m_type(type)
-{
-}
+TimeSeries::TimeSeries(const TimePairVec &data) : m_data(data) {}
 
 void TimeSeries::pushBack(const TimePair &pair) { m_data.push_back(pair); }
 
@@ -379,51 +362,23 @@ std::ostream &operator<<(std::ostream &os, const TimeSeries &series)
     size_t volume_index = 0;
     size_t width = 15;
 
-    // Check if need to print crypto headers
-    if (series.m_isCrypto) {
-
-        // print headers, ignoring extra columns
-        for (size_t i = 0; i < 5; ++i) {
-            os << std::setw(width) << series.m_headers[i];
-            sep_count += width;
-        }
-
-        os << std::setw(width) << "volume";
-        sep_count += width;
-
-        os << '\n' << std::string(sep_count, '-') << '\n';
-
-        for (auto &pair : series.m_data) {
-            os << std::setw(width) << std::right << pair.m_time;
-            for (size_t i = 0; i < 4; ++i) {
-                os << std::setw(width) << std::right << std::fixed
-                   << std::setprecision(2) << pair.m_data[i];
-            }
-            os << std::setw(width) << std::right << std::fixed
-               << std::setprecision(2) << pair.m_data[4] << '\n';
-        }
-    }
-    else {
-
-        for (auto &heading : series.m_headers) {
-            os << std::setw(12) << heading;
-            sep_count += 12;
-        }
-
-        std::string separator(sep_count, '-');
-
-        os << '\n' << separator << '\n';
-
-        for (auto &pair : series.m_data) {
-            os << std::setw(12) << std::left << pair.m_time;
-            for (auto &value : pair.m_data) {
-                os << std::setw(12) << std::left << std::fixed
-                   << std::setprecision(2) << value;
-            }
-            os << '\n';
-        }
+    for (auto &heading : series.m_headers) {
+        os << std::setw(12) << heading;
+        sep_count += 12;
     }
 
+    std::string separator(sep_count, '-');
+
+    os << '\n' << separator << '\n';
+
+    for (auto &pair : series.m_data) {
+        os << std::setw(12) << std::left << pair.m_time;
+        for (auto &value : pair.m_data) {
+            os << std::setw(12) << std::left << std::fixed
+               << std::setprecision(2) << value;
+        }
+        os << '\n';
+    }
     return os;
 }
 
@@ -447,57 +402,64 @@ ExchangeRate::ExchangeRate(const std::string &from, const std::string &to,
 /**
  * @brief   Returns an avapi::time_series created from a csv file
  * @param   file file path of the csv file to parse
- * @param   last_n_rows last number of rows to return
- * @returns avapi::time_series
+ * @param   crypto Wheter the csv data is from a crypto symbol
+ * @returns avapi::TimeSeries
  */
-TimeSeries parseCsvFile(const std::string &file)
+TimeSeries parseCsvFile(const std::string &file_path, const bool &crypto)
 {
-    // Create document object from csv file path
-    rapidcsv::Document doc(file);
+
+    // Try to open file first
+    std::ifstream file(file_path.c_str());
+    if (file.is_open()) {
+        file.close();
+    }
+    else {
+        std::string error =
+            "'avapi::parseCsvFile': \"" + file_path + "\" cannot be opened.";
+        throw std::exception(error.c_str());
+    }
+
+    // File exists, create rapidcsv::Document object
+    rapidcsv::Document doc(file_path);
     size_t n_rows = doc.GetRowCount();
 
-    try {
-        if (n_rows == 0) {
-            std::string error = "Invalid CSV File \"" + file + "\"";
-            throw error;
-        }
-    }
-    catch (std::string &ex) {
-        std::cerr << "Exception caught within avapi::parseCsvFile(), returning "
-                     "a null TimeSeries: "
-                  << ex << ".\n";
-        TimePair pair(-1, {0});
-        TimeSeries er_series({pair}, TimeSeries::EMPTY);
-        return er_series;
+    // Test if rapidcsv failed to parse file
+    if (n_rows == 0) {
+        std::string error = "'avapi::parseCsvFile': \"" + file_path +
+                            "\" is of invalid csv type.";
+        throw std::exception(error.c_str());
     }
 
-    std::vector<std::string> headers = doc.GetColumnNames();
-    TimeSeries::series_type type = discernSeriesType(headers);
-
+    // Successful parse (Cells could still be invalid...)
     TimePairVec series;
-    if (type == TimeSeries::CRYPTO) {
-        // TimePairVec is Crypto, iterate over every row and neccessary cols
-        for (size_t i = 0; i < n_rows; ++i) {
+    if (crypto) {
 
+        //// Remove useless columns
+        // Volume = Market Cap (Dont know why.. free version?)
+        doc.RemoveColumn(10);
+
+        // Redundant USD columns
+        doc.RemoveColumn(8);
+        doc.RemoveColumn(7);
+        doc.RemoveColumn(6);
+        doc.RemoveColumn(5);
+
+        for (size_t i = 0; i < n_rows; ++i) {
             std::vector<std::string> row = doc.GetRow<std::string>(i);
 
-            // Transform vector into floats, skip timestamp col and uneeded cols
+            // Transform vector into floats, skip timestamp column
             std::vector<float> data;
-            for (size_t i = 1; i < 5; ++i) {
-                data.push_back(std::stof(row[i]));
-            }
-            data.push_back(std::stof(row[9]));
+            std::transform(row.begin() + 1, row.end(), std::back_inserter(data),
+                           [](std::string &value) { return std::stof(value); });
             TimePair pair(toUnixTimestamp(row[0]), data);
             series.push_back(pair);
         }
     }
     else {
-        // TimePairVec is not Crypto, iterate over each row/col
         for (size_t i = 0; i < n_rows; ++i) {
-
             std::vector<std::string> row = doc.GetRow<std::string>(i);
 
-            // Transform row vector into floats (skip timestamp col)
+            // Transform vector into floats, skip timestamp column
             std::vector<float> data;
             std::transform(row.begin() + 1, row.end(), std::back_inserter(data),
                            [](std::string &value) { return std::stof(value); });
@@ -507,7 +469,9 @@ TimeSeries parseCsvFile(const std::string &file)
         }
     }
 
-    TimeSeries time_series(series, type);
+    TimeSeries time_series(series);
+    std::vector<std::string> headers = doc.GetColumnNames();
+
     time_series.setHeaders(headers);
 
     return time_series;
@@ -516,55 +480,64 @@ TimeSeries parseCsvFile(const std::string &file)
 /**
  * @brief   Returns an avapi::time_series created from a csv std::string
  * @param   data An csv std::string object
- * @param   last_n_rows last number of rows to return. Returns every row if
- * parameter is greater than document row count.
- * @returns avapi::time_series
+ * @param   crypto Wheter the csv data is from a crypto symbol
+ * @returns avapi::TimeSeries
  */
-TimeSeries parseCsvString(const std::string &data)
+TimeSeries parseCsvString(const std::string &data, const bool &crypto)
 {
-    // Create document object from csv string
+    // Create rapidcsv::Document object from csv string
     std::stringstream sstream(data);
     rapidcsv::Document doc(sstream);
     size_t n_rows = doc.GetRowCount();
 
     // Test if data is really a JSON response
-    if (n_rows <= 2) {
-        try {
-            if (isJsonString(data))
-                throw "Alpha Vantage JSON Response:";
-        }
-        catch (const char *ex) {
-            std::cerr << "Exception caught within avapi::parseCsvString(), "
-                         "returning a null time_series: "
-                      << ex << '\n';
-            nlohmann::json parser = nlohmann::json::parse(data);
-            std::cerr << parser.dump(4);
-            TimePair pair(-1, {0});
-            TimeSeries er_series({pair}, TimeSeries::EMPTY);
-            return er_series;
-        }
+    if (n_rows <= 2 && isJsonString(data)) {
+        nlohmann::json parser = nlohmann::json::parse(data);
+        std::string error =
+            "'avapi::parseCsvString': Json Response:" + parser.dump(4);
+        throw std::exception(error.c_str());
     }
 
-    // Get Series type through regex function
-    std::vector<std::string> headers = doc.GetColumnNames();
-    TimeSeries::series_type type = discernSeriesType(headers);
-
-    // Iterate over each row, parsing data into a TimePairVec
+    // Successful parse (Cells could still be invalid...)
     TimePairVec series;
-    for (size_t i = 0; i < n_rows; ++i) {
+    if (crypto) {
+        //// Remove useless columns
+        // Volume = Market Cap (Dont know why.. free version?)
+        doc.RemoveColumn(10);
 
-        std::vector<std::string> row = doc.GetRow<std::string>(i);
+        // Redundant USD columns
+        doc.RemoveColumn(8);
+        doc.RemoveColumn(7);
+        doc.RemoveColumn(6);
+        doc.RemoveColumn(5);
 
-        // Transform row into floats (skip timestamp col)
-        std::vector<float> data;
-        std::transform(row.begin() + 1, row.end(), std::back_inserter(data),
-                       [](std::string &value) { return std::stof(value); });
+        for (size_t i = 0; i < n_rows; ++i) {
+            std::vector<std::string> row = doc.GetRow<std::string>(i);
 
-        TimePair pair(toUnixTimestamp(row[0]), data);
-        series.push_back(pair);
+            // Transform vector into floats, skip timestamp column
+            std::vector<float> data;
+            std::transform(row.begin() + 1, row.end(), std::back_inserter(data),
+                           [](std::string &value) { return std::stof(value); });
+            TimePair pair(toUnixTimestamp(row[0]), data);
+            series.push_back(pair);
+        }
+    }
+    else {
+        for (size_t i = 0; i < n_rows; ++i) {
+            std::vector<std::string> row = doc.GetRow<std::string>(i);
+
+            // Transform vector into floats, skip timestamp column
+            std::vector<float> data;
+            std::transform(row.begin() + 1, row.end(), std::back_inserter(data),
+                           [](std::string &value) { return std::stof(value); });
+
+            TimePair pair(toUnixTimestamp(row[0]), data);
+            series.push_back(pair);
+        }
     }
 
-    TimeSeries time_series(series, type);
+    TimeSeries time_series(series);
+    std::vector<std::string> headers = doc.GetColumnNames();
     time_series.setHeaders(headers);
     return time_series;
 }
@@ -595,21 +568,17 @@ bool stringReplace(std::string &str, const std::string &from,
 std::string readFirstLineFromFile(const std::string &file_path)
 {
     std::string api_key = "";
-    std::ifstream file(file_path);
-    try {
-        if (file.is_open()) {
-            std::getline(file, api_key);
-            file.close();
-        }
-        else {
-            std::string error = "Cannot open file \"" + file_path + "\"";
-            throw error;
-        }
+    std::ifstream file(file_path.c_str());
+
+    if (file.is_open()) {
+        std::getline(file, api_key);
+        file.close();
     }
-    catch (std::string &ex) {
-        std::cerr << "Exception caught within readFirstLineFromFile(): " << ex
-                  << ", returning an empty API Key.\n";
-        return "";
+    else {
+
+        std::exception ex(
+            std::string("\"" + file_path + "\" cannot be opened").c_str());
+        throw ex;
     }
     return api_key;
 }

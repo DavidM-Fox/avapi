@@ -83,9 +83,8 @@ public:
 
     ExchangeRate getExchangeRate(const std::string &market = "USD");
 
-    std::string m_symbol;
-
 private:
+    std::string m_symbol;
     std::string m_outputSize;
 };
 
@@ -104,12 +103,7 @@ public:
 class TimeSeries {
 public:
     enum series_type { ADJUSTED, NON_ADJUSTED, CRYPTO, EMPTY };
-    TimeSeries(const TimePairVec &data, const std::string &symbol,
-               const series_type &type, const bool &is_adjusted,
-               const bool &is_crypto, const std::string &market = "USD");
-    TimeSeries(const TimePairVec &data, const std::string &symbol,
-               const bool &is_crypto);
-    TimeSeries(const TimePairVec &data, const series_type &type);
+    TimeSeries(const TimePairVec &data);
 
     void pushBack(const TimePair &pair);
     void setSymbol(const std::string &symbol);
@@ -174,8 +168,8 @@ bool stringReplace(std::string &str, const std::string &from,
 std::string readFirstLineFromFile(const std::string &file_path);
 std::time_t toUnixTimestamp(const std::string &input);
 
-TimeSeries parseCsvFile(const std::string &file);
-TimeSeries parseCsvString(const std::string &data);
+TimeSeries parseCsvFile(const std::string &file, const bool &crypto = false);
+TimeSeries parseCsvString(const std::string &data, const bool &crypto = false);
 
 TimeSeries::series_type
 discernSeriesType(const std::vector<std::string> &headers);
