@@ -143,9 +143,11 @@ private:
 
 class GlobalQuote {
 public:
-    GlobalQuote(const std::time_t &timestamp, const std::vector<float> &data);
-    const std::time_t timestamp;
+    GlobalQuote(const std::string &symbol, const std::time_t &timestamp,
+                const std::vector<float> &data);
 
+    const std::time_t timestamp;
+    const std::string symbol;
     const float open;
     const float high;
     const float low;
@@ -154,8 +156,11 @@ public:
     const float close_previous;
     const float change;
     const float change_percent;
+    void printData();
 
-    const std::vector<std::string> headers;
+private:
+    const std::vector<float> m_data;
+    const std::vector<std::string> m_headers;
 };
 
 class ExchangeRate {
@@ -168,6 +173,7 @@ public:
     const float exchange_rate;
     const float bid_price;
     const float ask_price;
+    void printData();
 };
 
 // Helper methods

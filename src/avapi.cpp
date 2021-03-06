@@ -208,7 +208,7 @@ TimeSeries Stock::getTimeSeries(const avapi::series::type &type,
 void Stock::setOutputSize(const std::string &size) { m_outputSize = size; }
 
 /// @brief   Return the symbol's latest global quote
-/// @returns The symbol's global quote as an avapi::GlobalQuote object
+/// @returns The symbol's global quote as an avapi::GlobalQuote objecta
 GlobalQuote Stock::getGlobalQuote()
 {
     // Clear API fields for new configuration
@@ -235,7 +235,7 @@ GlobalQuote Stock::getGlobalQuote()
     transform(data.begin(), data.end(), data_f.begin(),
               [](std::string const &val) { return std::stof(val); });
 
-    GlobalQuote global_quote(timestamp, data_f);
+    GlobalQuote global_quote(m_symbol, timestamp, data_f);
     return global_quote;
 }
 
@@ -385,6 +385,7 @@ void TimeSeries::reverseData()
     std::reverse(m_data.begin(), m_data.end());
 }
 
+/// @brief print formatted avapi::TimeSeries' contents
 void TimeSeries::printData(const size_t &count)
 {
     size_t volume_index = 0;
@@ -395,7 +396,7 @@ void TimeSeries::printData(const size_t &count)
     std::cout << separator << '\n';
 
     for (auto &heading : m_headers) {
-        std::cout << std::setw(width) << (heading + "|");
+        std::cout << std::setw(width) << ("|" + heading + "|");
         sep_count += width;
     }
 
@@ -412,7 +413,7 @@ void TimeSeries::printData(const size_t &count)
     std::cout << std::endl;
 }
 
-/// @brief push formated avapi::TimeSeries' contents to ostream
+/// @brief push formatted avapi::TimeSeries' contents to ostream
 std::ostream &operator<<(std::ostream &os, const TimeSeries &series)
 {
     size_t sep_count = 5;
@@ -443,14 +444,30 @@ std::ostream &operator<<(std::ostream &os, const TimeSeries &series)
 /// @param timestamp A Unix timestamp
 /// @param data std::vector<float> ordered: [Open, High, Low, Close, Volume,
 /// Prev_Close, Change, Change%]
-GlobalQuote::GlobalQuote(const std::time_t &timestamp,
+GlobalQuote::GlobalQuote(const std::string &symbol,
+                         const std::time_t &timestamp,
                          const std::vector<float> &data)
-    : timestamp(timestamp), open(data[0]), high(data[1]), low(data[2]),
-      close(data[3]), volume(data[4]), close_previous(data[5]), change(data[6]),
-      change_percent(data[7]),
-      headers({"Open", "High", "Low", "Close", "Volume", "Prev_Close", "Change",
-               "Change%"})
+    : symbol(symbol), timestamp(timestamp), open(data[0]), high(data[1]),
+      low(data[2]), close(data[3]), volume(data[4]), close_previous(data[5]),
+      change(data[6]), change_percent(data[7]),
+      m_headers({"Open", "High", "Low", "Close", "Volume", "Prev_Close",
+                 "Change", "Change%"}),
+      m_data(data)
 {
+}
+
+/// @brief print formatted avapi::GlobalQuote data
+void GlobalQuote::printData()
+{
+    std::cout << std::setw(12) << std::left << "Timestamp:";
+    std::cout << std::setw(15) << std::right << timestamp << '\n';
+    for (size_t i = 0; i < m_data.size(); ++i) {
+        std::string header = m_headers[i] + ":";
+        std::cout << std::setw(12) << std::left << header;
+        std::cout << std::setw(15) << std::right << std::fixed
+                  << std::setprecision(2) << m_data[i];
+        std::cout << '\n';
+    }
 }
 
 /// @brief ExchangeRate constructor
@@ -464,6 +481,28 @@ ExchangeRate::ExchangeRate(const std::string &from, const std::string &to,
     : from_symbol(from), to_symbol(to), timestamp(t), exchange_rate(data[0]),
       bid_price(data[1]), ask_price(data[2])
 {
+}
+
+/// @brief print formatted avapi::ExchangeRate data
+void ExchangeRate::printData()
+{
+    std::cout << from_symbol << " -> " << to_symbol << " Exchange Rate\n";
+
+    std::cout << std::setw(15) << std::left << "Timestamp: ";
+    std::cout << std::setw(15) << std::right << std::fixed
+              << std::setprecision(2) << timestamp << '\n';
+
+    std::cout << std::setw(15) << std::left << "Exchange Rate:";
+    std::cout << std::setw(15) << std::right << std::fixed
+              << std::setprecision(2) << exchange_rate << '\n';
+
+    std::cout << std::setw(15) << std::left << "Bid Price:";
+    std::cout << std::setw(15) << std::right << std::fixed
+              << std::setprecision(2) << bid_price << '\n';
+
+    std::cout << std::setw(15) << std::left << "Ask Price";
+    std::cout << std::setw(15) << std::right << std::fixed
+              << std::setprecision(2) << ask_price << '\n';
 }
 
 /// @brief   Returns an avapi::time_series created from a csv file
