@@ -64,6 +64,8 @@ public:
 
     void setOutputSize(const std::string &size = "compact");
 
+    GlobalQuote getGlobalQuote();
+
 private:
     std::string m_symbol;
     std::string m_outputSize;
@@ -79,9 +81,6 @@ public:
 
     void setOutputSize(const std::string &size = "compact");
 
-    TimeSeries getDailySeries(const std::string &market = "USD");
-    TimeSeries getWeeklySeries(const std::string &market = "USD");
-    TimeSeries getMonthlySeries(const std::string &market = "USD");
     ExchangeRate getExchangeRate(const std::string &market = "USD");
 
     std::string m_symbol;

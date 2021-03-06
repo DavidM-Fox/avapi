@@ -132,10 +132,11 @@ Stock::Stock(const std::string &symbol, const std::string &api_key)
 }
 
 /**
- * @brief   Get a monthly time series for a symbol of interest.
+ * @brief   Get a TimeSeries for a symbol of interest.
+ * @param   function enum Stock::function for TimeSeries type
  * @param   adjusted Whether or not the data should have adjusted values
- * (default = false)
- * @param   last_n_rows Last number of rows to get (default = 0 or all)
+ * @param   interval The interval for Stock::INTRADAY, ignored otherwise
+ * (default = "30min")
  * @returns An avapi::time_series: [open,high,low,close,volume])
  * or an adjusted avapi::time_series:
  * [open,high,low,close,adjusted_close,volume,dividend_amount,split_coefficient])
@@ -207,8 +208,9 @@ void Stock::setOutputSize(const std::string &size) { m_outputSize = size; }
  */
 GlobalQuote Stock::getGlobalQuote()
 {
-    // Configure API url
+    // Clear API fields for new configuration
     clearApiFields();
+
     setApiField(FUNCTION, "GLOBAL_QUOTE");
     setApiField(SYMBOL, m_symbol);
     setApiField(DATA_TYPE, "csv");
@@ -245,11 +247,43 @@ Crypto::Crypto(const std::string &symbol, const std::string &api_key)
     // Force symbol to be capitalized
     std::transform(m_symbol.begin(), m_symbol.end(), m_symbol.begin(),
                    ::toupper);
+    setOutputSize("compact");
 }
 
 TimeSeries Crypto::getTimeSeries(const avapi::Crypto::function &function,
                                  const std::string &market)
 {
+    // Clear API fields for new configuration
+    clearApiFields();
+
+    // Set API function field
+    switch (function) {
+    case DAILY:
+        setApiField(FUNCTION, "DIGITAL_CURRENCY_DAILY");
+        break;
+
+    case WEEKLY:
+        setApiField(FUNCTION, "DIGITAL_CURRENCY_WEEKLY");
+        break;
+
+    case MONTHLY:
+        setApiField(FUNCTION, "DIGITAL_CURRENCY_MONTHLY");
+        break;
+
+    default:
+        std::invalid_argument ex("Incorrect avapi::Stock::function argument");
+        throw ex;
+    }
+
+    setApiField(SYMBOL, m_symbol);
+    setApiField(MARKET, market);
+    setApiField(OUTPUT_SIZE, m_outputSize);
+    setApiField(DATA_TYPE, "csv");
+
+    // Download, parse, and create TimeSeries from csv data
+    TimeSeries series = parseCsvString(queryApiUrl(buildApiUrl()));
+    series.setSymbol(m_symbol);
+    return series;
 }
 
 /**
@@ -257,74 +291,6 @@ TimeSeries Crypto::getTimeSeries(const avapi::Crypto::function &function,
  * @param size The output size "compact" or "full" (default = "compact")
  */
 void Stock::setOutputSize(const std::string &size) { m_outputSize = size; }
-
-/**
- * @brief   Get a daily time series for a cryptocurrency of interest.
- * @param   market The exchange market (default = "USD")
- * @param   last_n_rows Last number of rows to get (default = 0 or all)
- * @returns An avapi::time_series: [open,high,low,close,volume])
- */
-TimeSeries Crypto::getDailySeries(const std::string &market)
-{
-    // Configure API url
-    clearApiFields();
-
-    setApiField(FUNCTION, "DIGITAL_CURRENCY_DAILY");
-    setApiField(SYMBOL, m_symbol);
-    setApiField(MARKET, market);
-    setApiField(OUTPUT_SIZE, "compact");
-    setApiField(DATA_TYPE, "csv");
-
-    // Download, parse, and create TimeSeries from csv data
-    TimeSeries series = parseCsvString(queryApiUrl(buildApiUrl()));
-    series.setSymbol(m_symbol);
-    return series;
-}
-
-/**
- * @brief   Get a daily time series for a cryptocurrency of interest.
- * @param   market The exchange market (default = "USD")
- * @param   last_n_rows Last number of rows to get (default = 0 or all)
- * @returns An avapi::time_series: [open,high,low,close,volume])
- */
-TimeSeries Crypto::getWeeklySeries(const std::string &market)
-{
-    // Configure API url
-    clearApiFields();
-
-    setApiField(FUNCTION, "DIGITAL_CURRENCY_WEEKLY");
-    setApiField(SYMBOL, m_symbol);
-    setApiField(MARKET, market);
-    setApiField(OUTPUT_SIZE, "compact");
-    setApiField(DATA_TYPE, "csv");
-
-    // Download, parse, and create TimeSeries from csv data
-    TimeSeries series = parseCsvString(queryApiUrl(buildApiUrl()));
-    series.setSymbol(m_symbol);
-    return series;
-}
-
-/**
- * @brief   Get a weekly time series for a cryptocurrency of interest.
- * @param   market The exchange market (default = "USD")
- * @param   last_n_rows Last number of rows to get (default = 0 or all)
- * @returns An avapi::time_series: [open,high,low,close,volume])
- */
-TimeSeries Crypto::getMonthlySeries(const std::string &market)
-{
-    // Configure API url
-    clearApiFields();
-    setApiField(FUNCTION, "DIGITAL_CURRENCY_MONTHLY");
-    setApiField(SYMBOL, m_symbol);
-    setApiField(MARKET, market);
-    setApiField(OUTPUT_SIZE, "compact");
-    setApiField(DATA_TYPE, "csv");
-
-    // Download, parse, and create TimeSeries from csv data
-    TimeSeries series = parseCsvString(queryApiUrl(buildApiUrl()));
-    series.setSymbol(m_symbol);
-    return series;
-}
 
 /**
  * @brief   Get the current exchange rate for a specific market
