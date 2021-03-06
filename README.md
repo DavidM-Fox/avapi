@@ -366,7 +366,7 @@ If we already have a csv file from Alpha Vantage, Avapi provides a helper functi
 /// @brief 	        Returns an avapi::TimeSeries created from a csv file
 /// @param file		file path of the csv file to parse
 /// @param crypto 	If the csv data is from a crypto symbol
-/// @returns avapi::TimeSeries
+/// @returns 		avapi::TimeSeries
 TimeSeries parseCsvFile(const std::string &file_path, 
                         const bool &crypto);
 
