@@ -5,6 +5,7 @@
 #include <iomanip>
 #include <sstream>
 #include <nlohmann/json.hpp>
+#include <regex>
 #include "avapi.h"
 #include "rapidcsv.h"
 
@@ -94,7 +95,7 @@ std::string ApiCall::queryApiUrl(const std::string &url)
 
 const std::string ApiCall::m_urlBase{"https://www.alphavantage.co/query?"};
 const std::vector<std::string> ApiCall::m_apiFieldVec{
-    "&function=", "&symbol=",        "&interval=",    "&market=",
+    "&function=", "&symbol=",        "&interval=",    "&adjusted=",  "&market=",
     "&datatype=", "&from_currency=", "&to_currency=", "&outputsize="};
 
 /**
@@ -123,6 +124,9 @@ size_t ApiCall::WriteMemoryCallback(void *ptr, size_t size, size_t nmemb,
 Stock::Stock(const std::string &symbol, const std::string &api_key)
     : ApiCall(api_key), m_symbol(symbol)
 {
+    // Force symbol to be capitalized
+    std::transform(m_symbol.begin(), m_symbol.end(), m_symbol.begin(),
+                   ::toupper);
 }
 
 /**
@@ -133,24 +137,27 @@ Stock::Stock(const std::string &symbol, const std::string &api_key)
  * @returns An avapi::time_series with the data vector being ordered [open,
  * high, low, close, volume]
  */
-time_series Stock::getIntradaySeries(const std::string &interval,
-                                     const size_t &last_n_rows)
+TimeSeries Stock::getIntradaySeries(const std::string &interval,
+                                    const bool &is_adjusted)
 {
-    // Configure API url
+    // Clear and configure API fields
     clearApiFields();
-
     setApiField(FUNCTION, "TIME_SERIES_INTRADAY");
     setApiField(SYMBOL, m_symbol);
     setApiField(INTERVAL, interval);
+
+    if (is_adjusted)
+        setApiField(ADJUSTED, "true");
+    else
+        setApiField(ADJUSTED, "false");
+
     setApiField(OUTPUT_SIZE, "compact");
     setApiField(DATA_TYPE, "csv");
 
-    // Create url query
-    std::string url = buildApiUrl();
-
-    // Download csv data for time series
-    std::string csv_string = queryApiUrl(url);
-    return parseCsvString(csv_string, last_n_rows);
+    // Download, parse, and create TimeSeries from csv data
+    TimeSeries series = parseCsvString(queryApiUrl(buildApiUrl()));
+    series.setSymbol(m_symbol);
+    return series;
 }
 
 /**
@@ -162,13 +169,12 @@ time_series Stock::getIntradaySeries(const std::string &interval,
  * or an adjusted avapi::time_series:
  * [open,high,low,close,adjusted_close,volume,dividend_amount,split_coefficient])
  */
-time_series Stock::getDailySeries(const bool &adjusted,
-                                  const size_t &last_n_rows)
+TimeSeries Stock::getDailySeries(const bool &is_adjusted)
 {
-    // Configure API url
+    // Clear and configure API fields
     clearApiFields();
 
-    if (adjusted)
+    if (is_adjusted)
         setApiField(FUNCTION, "TIME_SERIES_DAILY_ADJUSTED");
     else
         setApiField(FUNCTION, "TIME_SERIES_DAILY");
@@ -177,12 +183,10 @@ time_series Stock::getDailySeries(const bool &adjusted,
     setApiField(OUTPUT_SIZE, "compact");
     setApiField(DATA_TYPE, "csv");
 
-    // Create url query
-    std::string url = buildApiUrl();
-
-    // Download csv data for time series
-    std::string csv_string = queryApiUrl(url);
-    return parseCsvString(csv_string, last_n_rows);
+    // Download, parse, and create TimeSeries from csv data
+    TimeSeries series = parseCsvString(queryApiUrl(buildApiUrl()));
+    series.setSymbol(m_symbol);
+    return series;
 }
 
 /**
@@ -194,13 +198,12 @@ time_series Stock::getDailySeries(const bool &adjusted,
  * or an adjusted avapi::time_series:
  * [open,high,low,close,adjusted_close,volume,dividend_amount,split_coefficient])
  */
-time_series Stock::getWeeklySeries(const bool &adjusted,
-                                   const size_t &last_n_rows)
+TimeSeries Stock::getWeeklySeries(const bool &is_adjusted)
 {
     // Configure API url
     clearApiFields();
 
-    if (adjusted)
+    if (is_adjusted)
         setApiField(FUNCTION, "TIME_SERIES_WEEKLY_ADJUSTED");
     else
         setApiField(FUNCTION, "TIME_SERIES_WEEKLY");
@@ -209,12 +212,10 @@ time_series Stock::getWeeklySeries(const bool &adjusted,
     setApiField(OUTPUT_SIZE, "compact");
     setApiField(DATA_TYPE, "csv");
 
-    // Create url query
-    std::string url = buildApiUrl();
-
-    // Download csv data for time series
-    std::string csv_string = queryApiUrl(url);
-    return parseCsvString(csv_string, last_n_rows);
+    // Download, parse, and create TimeSeries from csv data
+    TimeSeries series = parseCsvString(queryApiUrl(buildApiUrl()));
+    series.setSymbol(m_symbol);
+    return series;
 }
 
 /**
@@ -226,13 +227,12 @@ time_series Stock::getWeeklySeries(const bool &adjusted,
  * or an adjusted avapi::time_series:
  * [open,high,low,close,adjusted_close,volume,dividend_amount,split_coefficient])
  */
-time_series Stock::getMonthlySeries(const bool &adjusted,
-                                    const size_t &last_n_rows)
+TimeSeries Stock::getMonthlySeries(const bool &is_adjusted)
 {
     // Configure API url
     clearApiFields();
 
-    if (adjusted)
+    if (is_adjusted)
         setApiField(FUNCTION, "TIME_SERIES_MONTHLY_ADJUSTED");
     else
         setApiField(FUNCTION, "TIME_SERIES_MONTHLY");
@@ -241,12 +241,10 @@ time_series Stock::getMonthlySeries(const bool &adjusted,
     setApiField(OUTPUT_SIZE, "compact");
     setApiField(DATA_TYPE, "csv");
 
-    // Create url query
-    std::string url = buildApiUrl();
-
-    // Download csv data for time series
-    std::string csv_string = queryApiUrl(url);
-    return parseCsvString(csv_string, last_n_rows);
+    // Download, parse, and create TimeSeries from csv data
+    TimeSeries series = parseCsvString(queryApiUrl(buildApiUrl()));
+    series.setSymbol(m_symbol);
+    return series;
 }
 
 /**
@@ -254,7 +252,7 @@ time_series Stock::getMonthlySeries(const bool &adjusted,
  * @returns latest global quote as an avapi::time_pair:
  * [open,high,low,price,volume,prevClose,change,change%]
  */
-time_pair Stock::getGlobalQuote()
+GlobalQuote Stock::getGlobalQuote()
 {
     // Configure API url
     clearApiFields();
@@ -279,7 +277,8 @@ time_pair Stock::getGlobalQuote()
     transform(data.begin(), data.end(), data_f.begin(),
               [](std::string const &val) { return std::stof(val); });
 
-    return std::make_pair(timestamp, data_f);
+    GlobalQuote global_quote(timestamp, data_f);
+    return global_quote;
 }
 
 /**
@@ -290,6 +289,9 @@ time_pair Stock::getGlobalQuote()
 Crypto::Crypto(const std::string &symbol, const std::string &api_key)
     : ApiCall(api_key), m_symbol(symbol)
 {
+    // Force symbol to be capitalized
+    std::transform(m_symbol.begin(), m_symbol.end(), m_symbol.begin(),
+                   ::toupper);
 }
 
 /**
@@ -298,8 +300,7 @@ Crypto::Crypto(const std::string &symbol, const std::string &api_key)
  * @param   last_n_rows Last number of rows to get (default = 0 or all)
  * @returns An avapi::time_series: [open,high,low,close,volume])
  */
-time_series Crypto::getDailySeries(const std::string &market,
-                                   const size_t &last_n_rows)
+TimeSeries Crypto::getDailySeries(const std::string &market)
 {
     // Configure API url
     clearApiFields();
@@ -310,12 +311,10 @@ time_series Crypto::getDailySeries(const std::string &market,
     setApiField(OUTPUT_SIZE, "compact");
     setApiField(DATA_TYPE, "csv");
 
-    // Create url query
-    std::string url = buildApiUrl();
-
-    // Download csv data for time series
-    std::string csv_string = queryApiUrl(url);
-    return parseCsvString(csv_string, last_n_rows, true);
+    // Download, parse, and create TimeSeries from csv data
+    TimeSeries series = parseCsvString(queryApiUrl(buildApiUrl()));
+    series.setSymbol(m_symbol);
+    return series;
 }
 
 /**
@@ -324,8 +323,7 @@ time_series Crypto::getDailySeries(const std::string &market,
  * @param   last_n_rows Last number of rows to get (default = 0 or all)
  * @returns An avapi::time_series: [open,high,low,close,volume])
  */
-time_series Crypto::getWeeklySeries(const std::string &market,
-                                    const size_t &last_n_rows)
+TimeSeries Crypto::getWeeklySeries(const std::string &market)
 {
     // Configure API url
     clearApiFields();
@@ -336,12 +334,10 @@ time_series Crypto::getWeeklySeries(const std::string &market,
     setApiField(OUTPUT_SIZE, "compact");
     setApiField(DATA_TYPE, "csv");
 
-    // Create url query
-    std::string url = buildApiUrl();
-
-    // Download csv data for time series
-    std::string csv_string = queryApiUrl(url);
-    return parseCsvString(csv_string, last_n_rows, true);
+    // Download, parse, and create TimeSeries from csv data
+    TimeSeries series = parseCsvString(queryApiUrl(buildApiUrl()));
+    series.setSymbol(m_symbol);
+    return series;
 }
 
 /**
@@ -350,8 +346,7 @@ time_series Crypto::getWeeklySeries(const std::string &market,
  * @param   last_n_rows Last number of rows to get (default = 0 or all)
  * @returns An avapi::time_series: [open,high,low,close,volume])
  */
-time_series Crypto::getMonthlySeries(const std::string &market,
-                                     const size_t &last_n_rows)
+TimeSeries Crypto::getMonthlySeries(const std::string &market)
 {
     // Configure API url
     clearApiFields();
@@ -361,12 +356,10 @@ time_series Crypto::getMonthlySeries(const std::string &market,
     setApiField(OUTPUT_SIZE, "compact");
     setApiField(DATA_TYPE, "csv");
 
-    // Create url query
-    std::string url = buildApiUrl();
-
-    // Download csv data for time series
-    std::string csv_string = queryApiUrl(url);
-    return parseCsvString(csv_string, last_n_rows, true);
+    // Download, parse, and create TimeSeries from csv data
+    TimeSeries series = parseCsvString(queryApiUrl(buildApiUrl()));
+    series.setSymbol(m_symbol);
+    return series;
 }
 
 /**
@@ -374,7 +367,7 @@ time_series Crypto::getMonthlySeries(const std::string &market,
  * @param   market The exchange market (default = "USD")
  * @returns An avapi::time_pair: [Exchange_Rate, Bid Price, Ask Price]
  */
-time_pair Crypto::getExchangeRate(const std::string &market)
+ExchangeRate Crypto::getExchangeRate(const std::string &market)
 {
     // Configure API url
     clearApiFields();
@@ -399,9 +392,126 @@ time_pair Crypto::getExchangeRate(const std::string &market)
     exchange_data.push_back(std::stof(bid_price));
     exchange_data.push_back(std::stof(ask_price));
 
-    avapi::time_pair exchange = std::make_pair(timestamp, exchange_data);
-
+    ExchangeRate exchange(m_symbol, market, timestamp, exchange_data);
     return exchange;
+}
+
+TimeSeries::TimeSeries(const TimePairVec &data, const std::string &symbol,
+                       const series_type &type, const bool &is_adjusted,
+                       const bool &is_crypto, const std::string &market)
+    : m_data(data), m_nRows(data.size()), m_nCols(data[0].m_data.size()),
+      m_symbol(symbol), m_type(type), m_isAdjusted(is_adjusted),
+      m_isCrypto(is_crypto), m_market(market)
+{
+}
+
+TimeSeries::TimeSeries(const TimePairVec &data, const std::string &symbol,
+                       const bool &is_crypto)
+    : m_data(data), m_nRows(data.size()), m_nCols(data[0].m_data.size()),
+      m_symbol(symbol)
+{
+}
+
+TimeSeries::TimeSeries(const TimePairVec &data, const series_type &type)
+    : m_data(data), m_type(type)
+{
+}
+
+void TimeSeries::pushBack(const TimePair &pair) { m_data.push_back(pair); }
+
+void TimeSeries::setSymbol(const std::string &symbol) { m_symbol = symbol; }
+
+/**
+ * @brief Get the TimeSeries' row count
+ * @return size_t row count
+ */
+const size_t TimeSeries::rowCount() { return m_nRows; }
+
+/**
+ * @brief Get the TimeSeries' column count
+ * @return size_t column count
+ */
+const size_t TimeSeries::colCount() { return m_nCols; }
+
+const bool TimeSeries::isCrypto() { return m_isCrypto; }
+
+/**
+ * @brief Set the TimeSeries' column headers
+ */
+void TimeSeries::setHeaders(const std::vector<std::string> &headers)
+{
+    m_headers = headers;
+}
+
+std::ostream &operator<<(std::ostream &os, const TimeSeries &series)
+{
+    size_t sep_count = 0;
+    size_t volume_index = 0;
+    size_t width = 15;
+
+    // Check if need to print crypto headers
+    if (series.m_isCrypto) {
+
+        // print headers, ignoring extra columns
+        for (size_t i = 0; i < 5; ++i) {
+            os << std::setw(width) << series.m_headers[i];
+            sep_count += width;
+        }
+
+        os << std::setw(width) << "volume";
+        sep_count += width;
+
+        os << '\n' << std::string(sep_count, '-') << '\n';
+
+        for (auto &pair : series.m_data) {
+            os << std::setw(width) << std::right << pair.m_time;
+            for (size_t i = 0; i < 4; ++i) {
+                os << std::setw(width) << std::right << std::fixed
+                   << std::setprecision(2) << pair.m_data[i];
+            }
+            os << std::setw(width) << std::right << std::fixed
+               << std::setprecision(2) << pair.m_data[4] << '\n';
+        }
+    }
+    else {
+
+        for (auto &heading : series.m_headers) {
+            os << std::setw(12) << heading;
+            sep_count += 12;
+        }
+
+        std::string separator(sep_count, '-');
+
+        os << '\n' << separator << '\n';
+
+        for (auto &pair : series.m_data) {
+            os << std::setw(12) << std::left << pair.m_time;
+            for (auto &value : pair.m_data) {
+                os << std::setw(12) << std::left << std::fixed
+                   << std::setprecision(2) << value;
+            }
+            os << '\n';
+        }
+    }
+
+    return os;
+}
+
+GlobalQuote::GlobalQuote(const std::time_t &timestamp,
+                         const std::vector<float> &data)
+    : timestamp(timestamp), open(data[0]), high(data[1]), low(data[2]),
+      close(data[3]), volume(data[4]), close_previous(data[5]), change(data[6]),
+      change_percent(data[7]),
+      headers({"Open", "High", "Low", "Close", "Volume", "Prev_Close", "Change",
+               "Change%"})
+{
+}
+
+ExchangeRate::ExchangeRate(const std::string &from, const std::string &to,
+                           const std::time_t &t, const std::vector<float> &data)
+    : from_symbol(from), to_symbol(to), timestamp(t), exchange_rate(data[0]),
+      bid_price(data[1]), ask_price(data[2])
+{
 }
 
 /**
@@ -410,16 +520,13 @@ time_pair Crypto::getExchangeRate(const std::string &market)
  * @param   last_n_rows last number of rows to return
  * @returns avapi::time_series
  */
-time_series parseCsvFile(const std::string &file, const size_t &last_n_rows,
-                         const bool &crypto)
+TimeSeries parseCsvFile(const std::string &file)
 {
     // Create document object from csv file path
-    rapidcsv::Document doc;
-    size_t n_rows = 0;
+    rapidcsv::Document doc(file);
+    size_t n_rows = doc.GetRowCount();
 
     try {
-        doc.Load(file);
-        n_rows = doc.GetRowCount();
         if (n_rows == 0) {
             std::string error = "Invalid CSV File \"" + file + "\"";
             throw error;
@@ -427,34 +534,53 @@ time_series parseCsvFile(const std::string &file, const size_t &last_n_rows,
     }
     catch (std::string &ex) {
         std::cerr << "Exception caught within avapi::parseCsvFile(), returning "
-                     "a null time_series: "
+                     "a null TimeSeries: "
                   << ex << ".\n";
-        return {std::make_pair<std::time_t, std::vector<float>>(-1, {0})};
+        TimePair pair(-1, {0});
+        TimeSeries er_series({pair}, TimeSeries::EMPTY);
+        return er_series;
     }
 
-    // Ensure safe iteration over data.
-    if (last_n_rows == 0) {
-    }
-    else if (n_rows > last_n_rows) {
-        n_rows = last_n_rows;
-    }
+    std::vector<std::string> headers = doc.GetColumnNames();
+    TimeSeries::series_type type = discernSeriesType(headers);
 
-    std::vector<std::string> row = doc.GetRow<std::string>(0);
-    size_t n_rowData = row.size();
+    TimePairVec series;
+    if (type == TimeSeries::CRYPTO) {
+        // TimePairVec is Crypto, iterate over every row and neccessary cols
+        for (size_t i = 0; i < n_rows; ++i) {
 
-    // Iterate over n_rows, parsing data into the avapi::time_series
-    avapi::time_series series;
-    for (size_t i = 0; i < n_rows; ++i) {
-        std::vector<std::string> row = doc.GetRow<std::string>(i);
+            std::vector<std::string> row = doc.GetRow<std::string>(i);
 
-        std::vector<float> data;
-        for (size_t j = 1; j < n_rowData; ++j) {
-            data.push_back(std::stof(row[j]));
+            // Transform vector into floats, skip timestamp col and uneeded cols
+            std::vector<float> data;
+            for (size_t i = 1; i < 5; ++i) {
+                data.push_back(std::stof(row[i]));
+            }
+            data.push_back(std::stof(row[9]));
+            TimePair pair(toUnixTimestamp(row[0]), data);
+            series.push_back(pair);
         }
-
-        series.push_back(std::make_pair(toUnixTimestamp(row[0]), data));
     }
-    return series;
+    else {
+        // TimePairVec is not Crypto, iterate over each row/col
+        for (size_t i = 0; i < n_rows; ++i) {
+
+            std::vector<std::string> row = doc.GetRow<std::string>(i);
+
+            // Transform row vector into floats (skip timestamp col)
+            std::vector<float> data;
+            std::transform(row.begin() + 1, row.end(), std::back_inserter(data),
+                           [](std::string &value) { return std::stof(value); });
+
+            TimePair pair(toUnixTimestamp(row[0]), data);
+            series.push_back(pair);
+        }
+    }
+
+    TimeSeries time_series(series, type);
+    time_series.setHeaders(headers);
+
+    return time_series;
 }
 
 /**
@@ -464,74 +590,53 @@ time_series parseCsvFile(const std::string &file, const size_t &last_n_rows,
  * parameter is greater than document row count.
  * @returns avapi::time_series
  */
-time_series parseCsvString(const std::string &data, const size_t &last_n_rows,
-                           const bool &crypto)
+TimeSeries parseCsvString(const std::string &data)
 {
     // Create document object from csv string
     std::stringstream sstream(data);
-    rapidcsv::Document doc;
-    size_t n_rows = 0;
-    nlohmann::json parser;
+    rapidcsv::Document doc(sstream);
+    size_t n_rows = doc.GetRowCount();
 
-    try {
-        doc.Load(sstream);
-        n_rows = doc.GetRowCount();
-
-        // Test for JSON error response
-        if (n_rows <= 2 && isJsonString(data)) {
-            // Data is not a CSV string, but a JSON error reponse
-            throw "Alpha Vantage JSON Error Response:";
+    // Test if data is really a JSON response
+    if (n_rows <= 2) {
+        try {
+            if (isJsonString(data))
+                throw "Alpha Vantage JSON Response:";
+        }
+        catch (const char *ex) {
+            std::cerr << "Exception caught within avapi::parseCsvString(), "
+                         "returning a null time_series: "
+                      << ex << '\n';
+            nlohmann::json parser = nlohmann::json::parse(data);
+            std::cerr << parser.dump(4);
+            TimePair pair(-1, {0});
+            TimeSeries er_series({pair}, TimeSeries::EMPTY);
+            return er_series;
         }
     }
-    catch (char *ex) {
-        std::cerr << "Exception caught within avapi::parseCsvString(), "
-                     "returning a null time_series: "
-                  << ex << '\n';
-        parser = nlohmann::json::parse(data);
-        std::cerr << parser.dump(4);
-        return {std::make_pair<std::time_t, std::vector<float>>(-1, {0})};
+
+    // Get Series type through regex function
+    std::vector<std::string> headers = doc.GetColumnNames();
+    TimeSeries::series_type type = discernSeriesType(headers);
+
+    // Iterate over each row, parsing data into a TimePairVec
+    TimePairVec series;
+    for (size_t i = 0; i < n_rows; ++i) {
+
+        std::vector<std::string> row = doc.GetRow<std::string>(i);
+
+        // Transform row into floats (skip timestamp col)
+        std::vector<float> data;
+        std::transform(row.begin() + 1, row.end(), std::back_inserter(data),
+                       [](std::string &value) { return std::stof(value); });
+
+        TimePair pair(toUnixTimestamp(row[0]), data);
+        series.push_back(pair);
     }
 
-    // Ensure safe iteration over data.
-    if (last_n_rows == 0) {
-    }
-    else if (n_rows > last_n_rows) {
-        n_rows = last_n_rows;
-    }
-
-    std::vector<std::string> row = doc.GetRow<std::string>(0);
-    size_t n_rowData = row.size();
-
-    // Iterate over n_rows, parsing data into the avapi::time_series
-    avapi::time_series series;
-
-    if (crypto) {
-        for (size_t i = 0; i < n_rows; ++i) {
-            std::vector<std::string> row = doc.GetRow<std::string>(i);
-
-            std::vector<float> data;
-            for (size_t j = 1; j < 5; ++j) {
-                data.push_back(std::stof(row[j]));
-            }
-            // Skip needless rows 5-8
-            data.push_back(std::stof(row[9]));
-
-            series.push_back(std::make_pair(toUnixTimestamp(row[0]), data));
-        }
-    }
-    else {
-        for (size_t i = 0; i < n_rows; ++i) {
-            std::vector<std::string> row = doc.GetRow<std::string>(i);
-
-            std::vector<float> data;
-            for (size_t j = 1; j < n_rowData; ++j) {
-                data.push_back(std::stof(row[j]));
-            }
-
-            series.push_back(std::make_pair(toUnixTimestamp(row[0]), data));
-        }
-    }
-    return series;
+    TimeSeries time_series(series, type);
+    time_series.setHeaders(headers);
+    return time_series;
 }
 
 /**
@@ -594,140 +699,43 @@ std::time_t toUnixTimestamp(const std::string &input)
     return mktime(&t);
 }
 
-/**
- * @brief   Prints an avapi::time_series' data to console
- * @param   series The avapi::time_series to be printed
- * @param   adjusted Whether or not the data is adjusted (default = false)
- */
-void printSeries(const time_series &series, const bool &adjusted)
+TimeSeries::series_type
+discernSeriesType(const std::vector<std::string> &headers)
 {
-    try {
-        if (series[0].first == -1)
-            throw "Invalid avapi::time_series object";
-    }
-    catch (char *ex) {
-        std::cerr << "Exception caught within avapi::printSeries(): " << ex
-                  << ".\n";
-        return;
+    // Combine all headers into one string to discern csv type
+    std::string str;
+    for (auto &header : headers) {
+        str += header;
     }
 
-    std::vector<std::string> header;
-    std::string separator;
+    // Remove whitespace from combined str
+    str.erase(remove(str.begin(), str.end(), ' '), str.end());
 
-    if (adjusted) {
-        header = {"open",      "high",   "low",      "close",
-                  "adj_close", "volume", "dividend", "split_coeff"};
-        separator = "----------------------------------------------------------"
-                    "------------------------------------------------";
+    std::regex nonadjusted_stock("timestampopenhighlowclosevolume");
+    std::regex adjusted_stock(
+        "timestampopenhighlowcloseadjustedclosevolumedividendamount");
+    std::regex crypto(
+        "timestampopen\\([a-zA-z]*\\)high\\([a-zA-z]*\\)low\\([a-zA-z]*\\)"
+        "close\\([a-zA-z]*\\)open\\([a-zA-z]*\\)high\\([a-zA-z]*\\)low\\([a-"
+        "zA-z]*\\)close\\([a-zA-z]*\\)volumemarketcap\\([a-zA-Z]*\\)");
 
-        std::cout << std::setw(12) << std::right << "Timestamp";
-        for (auto &label : header) {
-            std::cout << std::setw(12) << std::right << label;
-        }
-
-        std::cout << '\n' << separator << '\n';
-
-        for (auto &pair : series) {
-            std::cout << std::setw(12) << std::right << pair.first;
-
-            for (size_t i = 0; i < 5; ++i) {
-                std::cout << std::setw(12) << std::right << std::fixed
-                          << std::setprecision(2) << pair.second[i];
-            }
-            std::cout << std::setw(12) << std::right << std::setprecision(0)
-                      << pair.second[5];
-
-            std::cout << std::setw(12) << std::right << std::fixed
-                      << std::setprecision(2) << pair.second[6];
-
-            std::cout << std::setw(12) << std::right << std::fixed
-                      << std::setprecision(2) << pair.second[7];
-            std::cout << '\n';
-        }
+    // Discern TimeSeries type from header match
+    if (std::regex_match(str, nonadjusted_stock)) {
+        return TimeSeries::NON_ADJUSTED;
     }
-    else {
-        header = {"Open", "High", "Low", "Close", "Volume"};
-        separator = "----------------------------------------------------------"
-                    "--------------";
-
-        std::cout << std::setw(12) << std::right << "Timestamp";
-        for (auto &label : header) {
-            std::cout << std::setw(12) << std::right << label;
-        }
-
-        std::cout << '\n' << separator << '\n';
-
-        for (auto &pair : series) {
-            std::cout << std::setw(12) << std::right << pair.first;
-
-            for (size_t i = 0; i < 4; ++i) {
-                std::cout << std::setw(12) << std::right << std::fixed
-                          << std::setprecision(2) << pair.second[i];
-            }
-            std::cout << std::setw(12) << std::right << std::setprecision(0)
-                      << pair.second[4];
-            std::cout << '\n';
-        }
+    else if (std::regex_match(str, adjusted_stock)) {
+        return TimeSeries::ADJUSTED;
     }
-}
-
-/**
- * @brief   Prints an avapi::global_quote to console
- * @param   pair The avapi::global_quote/avapi::time_pair to be printed
- */
-void printGlobalQuote(const time_pair &pair)
-{
-    try {
-        if (pair.first == -1)
-            throw "Invalid avapi::time_pair object";
+    else if (std::regex_match(str, crypto)) {
+        return TimeSeries::CRYPTO;
     }
-    catch (char *ex) {
-        std::cerr << "Exception caught within avapi::printGlobalQuote(): " << ex
-                  << ".\n";
-        return;
-    }
-
-    std::vector<std::string> header{"Open",   "High",   "Low",
-                                    "Close",  "Volume", "Prev_Close",
-                                    "Change", "Change%"};
-
-    std::string separator =
-        "----------------------------------------------------------------------"
-        "--------------------------------------";
-
-    std::cout << std::setw(12) << std::right << "Timestamp";
-
-    for (auto &label : header) {
-        std::cout << std::setw(12) << std::right << label;
-    }
-
-    std::cout << '\n' << separator << '\n';
-
-    std::cout << std::setw(12) << std::right << pair.first;
-
-    for (size_t i = 0; i < 4; ++i) {
-        std::cout << std::setw(12) << std::right << std::fixed
-                  << std::setprecision(2) << pair.second[i];
-    }
-    std::cout << std::setw(12) << std::right << std::setprecision(0)
-              << pair.second[4];
-
-    std::cout << std::setw(12) << std::right << std::fixed
-              << std::setprecision(2) << pair.second[5];
-
-    std::cout << std::setw(12) << std::right << std::fixed
-              << std::setprecision(2) << pair.second[6];
-
-    std::cout << std::setw(12) << std::right << std::fixed
-              << std::setprecision(2) << pair.second[7];
-    std::cout << '\n';
 }
 
 /**
  * @brief   Reverses the orde of an avapi::time_series
  * @param   series The avapi::time_series to be reversed
  */
-void reverseTimeSeries(avapi::time_series &series)
+void reverseTimeSeries(TimePairVec &series)
 {
     // Data coming from Alpha Vantage is reversed (Dates are reversed)
     std::reverse(series.begin(), series.end());

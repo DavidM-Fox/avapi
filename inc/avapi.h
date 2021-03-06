@@ -1,16 +1,21 @@
 #ifndef AVAPI_H
 #define AVAPI_H
 #include <iomanip>
+#include <iostream>
 #include <string>
 #include <vector>
 #include <map>
 
 namespace avapi {
 
+// Avapi forward declarations
+class TimePair;
+class TimeSeries;
+class GlobalQuote;
+class ExchangeRate;
+
 // Typedefs for Alpha Vantage API function return values
-typedef std::pair<std::time_t, std::vector<float>> time_pair;
-typedef time_pair global_quote;
-typedef std::vector<time_pair> time_series;
+typedef std::vector<TimePair> TimePairVec;
 
 // Parent class of avapi::Stock and avapi::Crypto
 class ApiCall {
@@ -21,6 +26,7 @@ public:
         FUNCTION,
         SYMBOL,
         INTERVAL,
+        ADJUSTED,
         MARKET,
         DATA_TYPE,
         FROM_CURRENCY,
@@ -51,15 +57,12 @@ class Stock : private ApiCall {
 public:
     explicit Stock(const std::string &symbol, const std::string &api_key);
 
-    time_series getIntradaySeries(const std::string &interval = "30min",
-                                  const size_t &last_n_rows = 0);
-    time_series getDailySeries(const bool &adjusted = false,
-                               const size_t &last_n_rows = 0);
-    time_series getWeeklySeries(const bool &adjusted = false,
-                                const size_t &last_n_rows = 0);
-    time_series getMonthlySeries(const bool &adjusted = false,
-                                 const size_t &last_n_rows = 0);
-    time_pair getGlobalQuote();
+    TimeSeries getIntradaySeries(const std::string &interval = "30min",
+                                 const bool &adjusted = false);
+    TimeSeries getDailySeries(const bool &adjusted = false);
+    TimeSeries getWeeklySeries(const bool &adjusted = false);
+    TimeSeries getMonthlySeries(const bool &adjusted = false);
+    GlobalQuote getGlobalQuote();
 
     std::string m_symbol;
 };
@@ -68,15 +71,91 @@ class Crypto : private ApiCall {
 public:
     explicit Crypto(const std::string &symbol, const std::string &api_key);
 
-    time_series getDailySeries(const std::string &market = "USD",
-                               const size_t &last_n_rows = 0);
-    time_series getWeeklySeries(const std::string &market = "USD",
-                                const size_t &last_n_rows = 0);
-    time_series getMonthlySeries(const std::string &market = "USD",
-                                 const size_t &last_n_rows = 0);
-    time_pair getExchangeRate(const std::string &market = "USD");
+    TimeSeries getDailySeries(const std::string &market = "USD");
+    TimeSeries getWeeklySeries(const std::string &market = "USD");
+    TimeSeries getMonthlySeries(const std::string &market = "USD");
+    ExchangeRate getExchangeRate(const std::string &market = "USD");
 
     std::string m_symbol;
+};
+
+class TimePair {
+public:
+    TimePair(const std::time_t &time, const std::vector<float> &data)
+        : m_time(time), m_data(data)
+    {
+    }
+
+    std::time_t m_time;
+    std::vector<float> m_data;
+    float &operator[](size_t i) { return m_data[i]; }
+};
+
+class TimeSeries {
+public:
+    enum series_type { ADJUSTED, NON_ADJUSTED, CRYPTO, EMPTY };
+    TimeSeries(const TimePairVec &data, const std::string &symbol,
+               const series_type &type, const bool &is_adjusted,
+               const bool &is_crypto, const std::string &market = "USD");
+    TimeSeries(const TimePairVec &data, const std::string &symbol,
+               const bool &is_crypto);
+    TimeSeries(const TimePairVec &data, const series_type &type);
+
+    void pushBack(const TimePair &pair);
+    void setSymbol(const std::string &symbol);
+    void setSeriesTitle(const std::string &title);
+    void setHeaders(const std::vector<std::string> &headers);
+
+    const size_t rowCount();
+    const size_t colCount();
+    const bool isAdjusted();
+    const bool isCrypto();
+
+    TimePair &operator[](size_t i) { return m_data[i]; }
+    friend std::ostream &operator<<(std::ostream &os, const TimeSeries &series);
+
+private:
+    TimePairVec m_data;
+    size_t m_nRows;
+    size_t m_nCols;
+
+    std::string m_symbol;
+    series_type m_type;
+    bool m_isAdjusted;
+    bool m_isCrypto;
+    std::string m_market;
+
+    std::string m_title;
+    std::vector<std::string> m_headers;
+};
+
+class GlobalQuote {
+public:
+    GlobalQuote(const std::time_t &timestamp, const std::vector<float> &data);
+    const std::time_t timestamp;
+
+    const float open;
+    const float high;
+    const float low;
+    const float close;
+    const float volume;
+    const float close_previous;
+    const float change;
+    const float change_percent;
+
+    const std::vector<std::string> headers;
+};
+
+class ExchangeRate {
+public:
+    ExchangeRate(const std::string &from, const std::string &to,
+                 const std::time_t &t, const std::vector<float> &data);
+    const std::string from_symbol;
+    const std::string to_symbol;
+    const std::time_t timestamp;
+    const float exchange_rate;
+    const float bid_price;
+    const float ask_price;
 };
 
 // Helper methods
@@ -85,16 +164,13 @@ bool stringReplace(std::string &str, const std::string &from,
 std::string readFirstLineFromFile(const std::string &file_path);
 std::time_t toUnixTimestamp(const std::string &input);
 
-time_series parseCsvFile(const std::string &file, const size_t &last_n_rows = 0,
-                         const bool &crypto = false);
-time_series parseCsvString(const std::string &data,
-                           const size_t &last_n_rows = 0,
-                           const bool &crypto = false);
+TimeSeries parseCsvFile(const std::string &file);
+TimeSeries parseCsvString(const std::string &data);
 
-void printSeries(const time_series &series, const bool &adjusted = false);
-void printGlobalQuote(const time_pair &pair);
+TimeSeries::series_type
+discernSeriesType(const std::vector<std::string> &headers);
 
-void reverseTimeSeries(avapi::time_series &series);
+void reverseTimeSeries(TimePairVec &series);
 bool isJsonString(const std::string &data);
 
 } // namespace avapi
