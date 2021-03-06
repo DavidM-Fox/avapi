@@ -42,7 +42,7 @@ The ```Stock``` object contains the following member methods for fetching histor
 
 ```C++
 
-/// @brief			Get an avapi::TimeSeries for a stock symbol of interest.
+/// @brief		Get an avapi::TimeSeries for a stock symbol of interest.
 /// @param type		enum avapi::series::type
 /// @param adjusted	Whether or not the data should have adjusted values
 /// @param interval	The interval for avapi::series::INTRADAY
