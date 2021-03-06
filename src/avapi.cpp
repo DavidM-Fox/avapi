@@ -198,6 +198,7 @@ TimeSeries Stock::getTimeSeries(const avapi::series::type &type,
     TimeSeries series = parseCsvString(queryApiUrl(buildApiUrl()));
     series.setSymbol(m_symbol);
     series.setType(type);
+    series.setAdjusted(adjusted);
     series.setTitle(m_symbol + ": " + title);
     return series;
 }
@@ -349,6 +350,10 @@ void TimeSeries::pushBack(const TimePair &pair) { m_data.push_back(pair); }
 /// @param type avapi::series::type
 void TimeSeries::setType(const series::type &type) { m_type = type; }
 
+/// @brief Set whether or not the avapi::TimeSeries has adjusted values
+/// @param adjusted bool
+void TimeSeries::setAdjusted(const bool &adjusted) { m_isAdjusted = adjusted; }
+
 /// @brief Set the avapi::TimeSeries' symbol
 /// @param symbol A symbol as an std::string
 void TimeSeries::setSymbol(const std::string &symbol) { m_symbol = symbol; }
@@ -380,10 +385,37 @@ void TimeSeries::reverseData()
     std::reverse(m_data.begin(), m_data.end());
 }
 
+void TimeSeries::printData(const size_t &count)
+{
+    size_t volume_index = 0;
+    size_t width = 14;
+    size_t sep_count = (m_headers.size() * width) + 5;
+
+    std::string separator(sep_count, '-');
+    std::cout << separator << '\n';
+
+    for (auto &heading : m_headers) {
+        std::cout << std::setw(width) << (heading + "|");
+        sep_count += width;
+    }
+
+    std::cout << '\n' << separator << '\n';
+
+    for (size_t i = 0; i < count; ++i) {
+        std::cout << std::setw(width) << std::right << m_data[i].m_time;
+        for (auto &value : m_data[i].m_data) {
+            std::cout << std::setw(width) << std::right << std::fixed
+                      << std::setprecision(2) << value;
+        }
+        std::cout << '\n';
+    }
+    std::cout << std::endl;
+}
+
 /// @brief push formated avapi::TimeSeries' contents to ostream
 std::ostream &operator<<(std::ostream &os, const TimeSeries &series)
 {
-    size_t sep_count = 0;
+    size_t sep_count = 5;
     size_t volume_index = 0;
     size_t width = 15;
 
@@ -392,7 +424,7 @@ std::ostream &operator<<(std::ostream &os, const TimeSeries &series)
         sep_count += width;
     }
 
-    std::string separator(sep_count + 6, '-');
+    std::string separator(sep_count, '-');
 
     os << '\n' << separator << '\n';
 
@@ -566,6 +598,15 @@ TimeSeries parseCsvString(const std::string &data, const bool &crypto)
     }
 
     std::vector<std::string> headers = doc.GetColumnNames();
+    for (auto &header : headers) {
+
+        if (header == "adjusted close" || header == "adjusted_close")
+            header = "adj_close";
+        else if (header == "dividend amount" || header == "dividend_amount")
+            header = "dividends";
+        else if (header == "split coefficient" || header == "split_coefficient")
+            header = "split_coeff";
+    }
     series.setHeaders(headers);
     return series;
 }

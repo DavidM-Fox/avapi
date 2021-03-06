@@ -111,14 +111,18 @@ public:
 
     void setSymbol(const std::string &symbol);
     void setType(const avapi::series::type &type);
+    void setAdjusted(const bool &adjusted);
     void setTitle(const std::string &title);
     void setHeaders(const std::vector<std::string> &headers);
     void reverseData();
+    void printData(const size_t &count);
 
     std::string symbol();
 
     const size_t rowCount();
     const size_t colCount();
+
+    std::vector<std::string> m_headers;
 
     TimePair &operator[](size_t i) { return m_data[i]; }
     friend std::ostream &operator<<(std::ostream &os, const TimeSeries &series);
@@ -127,7 +131,8 @@ private:
     std::string m_symbol;
     series::type m_type;
     std::string m_title;
-    std::vector<std::string> m_headers;
+
+    bool m_isAdjusted;
 
     TimePairVec m_data;
     size_t m_nRows;
