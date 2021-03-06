@@ -12,6 +12,7 @@ Avapi is a C++ library utilizing the [Alpha Vantage API](https://www.alphavantag
   * [Global Quote Data](#global-quote-data)
 - [Example Usage - Cryptocurrencies](#example-usage---cryptocurrencies)
   * [Getting Historical Data for a Cryptocurrency of Interest](#getting-historical-data-for-a-cryptocurrency-of-interest)
+  * [Getting Exchange Rate Data](#getting-exchange-rate-data)
 - [Example Usage - Other](#example-usage---other)
   * [Parsing an Alpha Vantage time series csv file](#parsing-an-alpha-vantage-time-series-csv-file)
 
@@ -263,6 +264,40 @@ avapi::printSeries(series_b);
   1614232800    49676.21    52041.73    46674.34    47073.73       83311
   1614146400    48891.00    51374.99    46988.69    49676.20       91881
   1614060000    54087.67    54183.59    44892.56    48891.00      169375
+```
+
+## Getting Exchange Rate Data
+
+Using the previously created ```Crypto``` object ("BTC"), we can get a current exchange rate for a market of choice. For an exchange rate, a single time_pair object is returned with the data being ordered as ```[Exchange Rate, Bid Price, Ask Price]```.
+
+```C++
+
+avapi::time_pair ex_rate = btc.getExchangeRate("USD");
+
+std::cout << "BTC -> USD Exchange Rate\n";
+
+std::cout << std::setw(15) << std::left << "Timestamp: ";
+std::cout << std::setw(15) << std::right << std::fixed
+      << std::setprecision(2) << ex_rate.first << '\n';
+
+std::cout << std::setw(15) << std::left << "Exchange Rate:";
+std::cout << std::setw(15) << std::right << std::fixed
+      << std::setprecision(2) << ex_rate.second[0] << '\n';
+
+std::cout << std::setw(15) << std::left << "Bid Price:";
+std::cout << std::setw(15) << std::right << std::fixed
+      << std::setprecision(2) << ex_rate.second[1] << '\n';
+
+std::cout << std::setw(15) << std::left << "Ask Price";
+std::cout << std::setw(15) << std::right << std::fixed
+      << std::setprecision(2) << ex_rate.second[2] << '\n';
+```
+```
+BTC -> USD Exchange Rate
+Timestamp:          1614914946
+Exchange Rate:        48398.98
+Bid Price:            48394.80
+Ask Price             48398.59
 ```
 
 
