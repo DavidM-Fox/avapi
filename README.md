@@ -1,4 +1,5 @@
 
+
 # Avapi
 Avapi is a C++ library utilizing the [Alpha Vantage API](https://www.alphavantage.co/) for fetching historical stock and cryptocurrency data. This library aims to implement the most popular features from the API while providing an easy to use interface for the user.
 
@@ -27,7 +28,7 @@ To use Avapi, the following is required:
 
 # Example Usage - Stocks
 ## Getting Historical Data for a Stock of Interest
-In this example, we will explore getting historical data for Tesla stock ("TSLA"). We will begin by creating an ```avapi::Stock``` object with the  ```symbol``` "TSLA" and our Alpha Vantage ```api_key```. The ```api_key``` can be saved to a text file and then read with a provided helper function.  
+In this example, we will explore getting historical time series data for Tesla stock ("TSLA"). We will begin by creating an ```avapi::Stock``` object with the  ```symbol``` "TSLA" and our Alpha Vantage ```api_key```. The ```api_key``` can be saved to a text file and then read with a provided helper function.  
 
 ```C++
 
@@ -37,181 +38,230 @@ avapi::Stock tsla(symbol, api_key);
 
 ```
 
-The ```Stock``` object contains the following member methods for accessing different historical data sets:
+The ```Stock``` object contains the following member methods for fetching historical data:
 
 ```C++
 
-// Intraday interval: "1min", "5min", "15min", "30min", or "60min" (default = "30min")
-// If parameter last_n_rows == 0, get every available row from Alpha Vantage
-
-time_series  getIntradaySeries(const  std::string  &interval = "30min",
-			       const  size_t &last_n_rows = 0);		       
-time_series  getDailySeries(const  bool  &adjusted = false,
-			    const  size_t  &last_n_rows = 0);
-time_series  getWeeklySeries(const  bool  &adjusted = false,
-			     const  size_t  &last_n_rows = 0);
-time_series  getMonthlySeries(const  bool  &adjusted = false,
-			      const  size_t  &last_n_rows = 0);
-time_pair  getGlobalQuote();
+/// @brief 		Get an avapi::TimeSeries for a stock symbol of interest.
+/// @param type		enum avapi::series::type
+/// @param adjusted 	Whether or not the data should have adjusted values
+/// @param interval 	The interval for avapi::series::INTRADAY
+/// @returns 		An avapi::TimeSeries of the specified type
+TimeSeries  Stock::getTimeSeries(const series::type &type, const bool &adjusted,
+			         const std::string &interval = "30min");
+			  
+/// @brief Return the symbol's latest global quote
+/// @returns the symbol's global quote as an avapi::GlobalQuote object
+GlobalQuote Stock::getGlobalQuote();
 
 ```
 
-The ```time_series``` object is a vector of ```time_pairs``` with each pair containing a Unix timestamp and a data vector. 
+The ```avapi::TimeSeries``` object is a class comprising of an ```std::vector``` of  ```avapi::TimePair``` objects along with other important meta data. Each ```TimePair``` object simply contains an ```std::time_t``` UNIX timestamp and an ```std::vector<float>``` data vector. The data vector can be accessed with the ```[]``` operator.
 
 ```C++
 
-typedef std::pair<std::time_t, std::vector<float>> time_pair
-typedef std::vector<time_pair> time_series
+class  TimePair {
+public:
+	TimePair(const  std::time_t  &time, const  std::vector<float> &data)
+            : m_time(time), m_data(data) {}
+            
+	std::time_t m_time;
+	std::vector<float> m_data;
+	float &operator[](size_t i) { return m_data[i]; }
+};
 
 ```
 
-The data vector within each ```time_pair``` is ordered according to the member method it is returned from:
-* Intraday data:
+The data vector within each ```TimePair``` is ordered according to the ```TimeSeries``` type:
+
+* Adjusted/Non-Adjusted **Intraday** data:
 	* ```[open, high, low, close, volume]```
-* Non-adjusted daily, weekly, and monthly data:
+* Non-adjusted **daily**, **weekly**, and **monthly** data:
 	* ```[open, high, low, close, volume]```
-* Adjusted daily, weekly, and monthly data:
+* Adjusted **daily** data:
 	* ```[open, high, low, close, adjusted_close, volume, dividend, split_coefficient]```
-* Global quote:
-	* ```[open, high, low, price, volume, previous_close, change, change%]```
+* Adjusted **Weekly** and **Monthly** data:
+	* ```[open, high, low, close, adjusted_close, volume, dividend]```
+
+
+The ```avapi::GlobalQuote``` object is a class containing the stock of interest's current global quote data. It is constructed with the stock of interest's symbol, a UNIX timestamp, and a data vector ordered: ```[open, high, low, price, volume, previous_close, change, change%]```
+
+```C++
+class  GlobalQuote {
+public:
+	GlobalQuote(const std::string& symbol, const std::time_t &timestamp, const std::vector<float> &data);   
+	
+	const std::string symbol;
+        const std::time_t timestamp;
+        
+	const float open;
+	const float high;
+	const float low;
+	const float close;
+	const float volume;
+	const float close_previous;
+	const float change;
+	const float change_percent;
+	void printData();
+};
+```
+
+
 
 ## Intraday Data
-With our previously created ```Stock``` object (Tesla stock “TSLA”), let's look at getting **intraday**. In the following, we see two different ```time_series``` objects created for this example:
+With our previously created ```avapi::Stock``` object (Tesla stock “TSLA”), let's look at getting an **intraday** data set. In the following, we see an ```avapi::TimeSeries``` object created with the ```Stock::getTimeSeries()``` member method:
 
 ```C++
 
-avapi::time_series series_a = tsla.getIntradaySeries();
-avapi::time_series series_b = tsla.getIntradaySeries("15min", 10);
+avapi::TimeSeries tsla_intraday = 
+    tsla.getTimeSeries(avapi::series::INTRADAY, true, "15min");
 
 ```
+The first parameter specifies that we want an **intraday** time series. The second parameter specifies that the data should be adjusted by historical split and dividend events. The third parameter sets the **intraday** interval to 15 minutes.  We can call the member method ```TimeSeries::printData(10)``` to print the last 10 rows of data to the console:
 
-```series_a``` will be defaulted to an **intraday** ```time_series``` on a 30 minute interval containing every available row of data from Alpha Vantage. ```series_b``` is an **intraday** ```time_series``` on a 15 minute interval containing only the previous last 10 rows of data from today. Let's also print ```series_b``` using another helper function to view the series' contents.
 ```C++
 
-avapi::printSeries(series_b);
+tsla_intraday.printData(10);
 
 ```
 ```
-   Timestamp        Open        High         Low       Close      Volume
-------------------------------------------------------------------------
-  1614650400      724.30      725.44      724.01      725.25       33508
-  1614649500      724.75      724.75      723.58      724.27       14049
-  1614648600      723.00      724.63      723.00      724.63       13770
-  1614647700      722.55      723.00      722.50      723.00        9691
-  1614646800      722.50      722.60      722.50      722.60       11364
-  1614645900      722.51      723.00      722.50      722.73       12976
-  1614645000      722.50      723.30      721.65      723.00       25562
-  1614644100      721.90      722.55      721.90      722.55       17208
-  1614643200      720.50      721.80      720.30      721.49       14681
-  1614642300      721.50      721.50      720.50      720.90        4320
+Output:
+-----------------------------------------------------------------------------------------
+    |timestamp|       |open|        |high|         |low|       |close|      |volume|
+-----------------------------------------------------------------------------------------
+    1614996000        596.97        596.97        596.00        596.25      22219.00
+    1614995100        596.90        597.20        596.50        597.00      13698.00
+    1614994200        597.00        597.00        595.80        596.88      14491.00
+    1614993300        597.50        597.50        597.01        597.13       8955.00
+    1614992400        596.08        597.94        596.08        597.13      15367.00
+    1614991500        596.18        596.50        596.00        596.30       7451.00
+    1614990600        597.26        597.40        596.26        596.66       7497.00
+    1614989700        596.12        597.68        596.12        597.42      11905.00
+    1614988800        596.00        597.00        595.75        596.52      20728.00
+    1614987900        595.49        596.00        595.18        596.00      24726.00
+
+```
+
+The ```[]``` operator can be used to access a specific ```TimePair``` from the ```TimeSeries``` object and the data within the ```TimePair``` object:
+
+```C++
+
+// Print the last 10 "open" values
+for (size_t  i = 0; i < 10; ++i)
+	std::cout << tsla_intraday[i][0] <<  ' ';
+std::cout << std::endl;
+
+```
+```
+Output:
+596.97 596.9 597 597.5 596.08 596.18 597.26 596.12 596 595.49
 ```
 
 ## Daily, Weekly, and Monthly Data
-Let's now look at getting daily, weekly, and monthly data for a stock of interest. We begin as always by creating an ```avapi::Stock``` object, in this case using the ```symbol``` "AAPL" for Apple stock. In the following, we see 4 different ```time_series``` created for this example:
+Let's now look at getting daily, weekly, and monthly data for a stock of interest. We begin as always by creating an ```avapi::Stock``` object, in this case using the ```symbol``` "AAPL" for Apple stock. In the following, we see 5 different ```TimeSeries``` created for this example:
 ```C++
 
+// Create avapi::Stock object
 avapi::Stock aapl("AAPL", avapi::readFirstLineFromFile("api.key"));
 
-// Get last 10 rows of non-adjusted daily, weekly, and monthly data
-avapi::time_series daily_series = aapl.getDailySeries(false, 10);
-avapi::time_series weekly_series = aapl.getWeeklySeries(false, 10);
-avapi::time_series monthly_series = aapl.getMonthlySeries(false, 10);
+// Get non-adjusted daily, weekly, and monthly data
+avapi::TimeSeries daily = aapl.getTimeSeries(avapi::series::DAILY, false);
+avapi::TimeSeries weekly = aapl.getTimeSeries(avapi::series::WEEKLY, false);
+avapi::TimeSeries monthly = aapl.getTimeSeries(avapi::series::MONTHLY, false);
 
-// Get last 10 rows of adjusted daily data
-avapi::time_series adj_dailySeries = aapl.getDailySeries(true, 10);
+// Get adjusted daily and weekly data
+avapi::TimeSeries daily_adj = aapl.getTimeSeries(avapi::series::DAILY, true);
+avapi::TimeSeries weekly_adj = aapl.getTimeSeries(avapi::series::WEEKLY, true);
 
-// Print each time_series
-std::cout << "Non-Adjusted Daily Series -------------------------\n\n";
-avapi::printSeries(daily_series);
-std::cout << '\n' << "Non-Adjusted Weekly Series ------------------------\n\n";
-avapi::printSeries(weekly_series);
-std::cout << '\n' << "Non-Adjusted Monthly Series -----------------------\n\n ";
-avapi::printSeries(monthly_series);
-std::cout << '\n' << "Adjusted Daily Series -----------------------------\n";
-avapi::printSeries(adj_dailySeries, true);
+// Print last 5 rows of data from each TimeSeries
+std::cout << "Non-Adjusted Daily Series\n";
+daily.printData(5);
+std::cout << '\n' << "Non-Adjusted Weekly Series\n";
+weekly.printData(5);
+std::cout << '\n' << "Non-Adjusted Monthly Series\n";
+monthly.printData(5);
+std::cout << '\n' << "Adjusted Daily Series\n";
+daily_adj.printData(5);
+std::cout << '\n' << "Adjusted Weekly Series\n";
+weekly_adj.printData(5);
 
 ```
 ```
-Non-Adjusted Daily Series -------------------------
+Output:
+Non-Adjusted Daily Series 
+-----------------------------------------------------------------------------------------
+   |timestamp|        |open|        |high|         |low|       |close|      |volume|
+-----------------------------------------------------------------------------------------
+    1614924000        120.98        121.93        117.57        121.42  153766608.00
+    1614837600        121.75        123.60        118.62        120.13  178154976.00
+    1614751200        124.81        125.71        121.84        122.06  112966336.00
+    1614664800        128.41        128.72        125.01        125.12  102260944.00
+    1614578400        123.75        127.93        122.79        127.79  116307888.00
 
-   Timestamp        Open        High         Low       Close      Volume
-------------------------------------------------------------------------
-  1614578400      123.75      127.93      122.79      127.79   116307888
-  1614319200      122.59      124.85      121.20      121.26   163424672
-  1614232800      124.68      126.46      120.54      120.99   144766928
-  1614146400      124.94      125.56      122.23      125.35   111039904
-  1614060000      123.76      126.71      118.39      125.86   158273024
-  1613973600      128.01      129.72      125.60      126.00   102886920
-  1613714400      130.24      130.71      128.80      129.87    87668832
-  1613628000      129.20      129.99      127.41      129.71    96856752
-  1613541600      131.25      132.22      129.47      130.84    97372200
-  1613455200      135.49      136.01      132.79      133.19    80576320
- 
-Non-Adjusted Weekly Series ------------------------
+Non-Adjusted Weekly Series
+-----------------------------------------------------------------------------------------
+   |timestamp|        |open|        |high|         |low|       |close|      |volume|
+-----------------------------------------------------------------------------------------
+    1614924000        123.75        128.72        117.57        121.42  663456768.00
+    1614319200        128.01        129.72        118.39        121.26  680391424.00
+    1613714400        135.49        136.01        127.41        129.87  362474112.00
+    1613109600        136.03        137.88        133.69        135.37  344357344.00
+    1612504800        133.75        137.42        130.93        136.76  438264064.00
 
-   Timestamp        Open        High         Low       Close      Volume
-------------------------------------------------------------------------
-  1614578400      123.75      127.93      122.79      127.79   116307888
-  1614319200      128.01      129.72      118.39      121.26   680391424
-  1613714400      135.49      136.01      127.41      129.87   362474112
-  1613109600      136.03      137.88      133.69      135.37   344357344
-  1612504800      133.75      137.42      130.93      136.76   438264064
-  1611900000      143.07      145.09      130.21      131.96   716990976
-  1611295200      127.78      139.85      126.94      139.07   430065728
-  1610690400      129.19      131.45      126.86      127.14   481518240
-  1610085600      133.52      133.61      126.38      132.05   610791168
-  1609394400      133.99      138.79      131.72      132.69   439740672
-  
-Non-Adjusted Monthly Series -----------------------
+Non-Adjusted Monthly Series
+-----------------------------------------------------------------------------------------
+   |timestamp|        |open|        |high|         |low|       |close|      |volume|
+-----------------------------------------------------------------------------------------
+    1614924000        123.75        128.72        117.57        121.42  663456768.00
+    1614319200        128.01        129.72        118.39        121.26  680391424.00
+    1613714400        135.49        136.01        127.41        129.87  362474112.00
+    1613109600        136.03        137.88        133.69        135.37  344357344.00
+    1612504800        133.75        137.42        130.93        136.76  438264064.00
+    
+```
+```
+Output (continued):
+Adjusted Daily Series
+-----------------------------------------------------------------------------------------------------------------------------------
+   |timestamp|        |open|        |high|         |low|       |close|   |adj_close|      |volume|   |dividends| |split_coeff|
+-----------------------------------------------------------------------------------------------------------------------------------
+    1614924000        120.98        121.93        117.57        121.42        121.42  153766608.00          0.00          1.00
+    1614837600        121.75        123.60        118.62        120.13        120.13  178154976.00          0.00          1.00
+    1614751200        124.81        125.71        121.84        122.06        122.06  112966336.00          0.00          1.00
+    1614664800        128.41        128.72        125.01        125.12        125.12  102260944.00          0.00          1.00
+    1614578400        123.75        127.93        122.79        127.79        127.79  116307888.00          0.00          1.00
 
-   Timestamp        Open        High         Low       Close      Volume
-------------------------------------------------------------------------
-  1614578400      123.75      127.93      122.79      127.79   116307888
-  1614319200      133.75      137.88      118.39      121.26  1825486976
-  1611900000      133.52      145.09      126.38      131.96  2239366144
-  1609394400      121.01      138.79      120.01      132.69  2319687680
-  1606716000      109.11      121.99      107.32      119.05  2122724352
-  1604037600      117.64      125.39      107.72      108.86  2895317504
-  1601445600      132.76      137.98      103.10      115.81  3886792960
-  1598853600      432.80      515.14      126.00      129.04  1184207104
-  1596175200      365.12      425.66      356.58      425.04   755162240
-  1593496800      317.75      372.38      317.21      364.80   810900864
+Adjusted Weekly Series
+---------------------------------------------------------------------------------------------------------------------
+   |timestamp|        |open|        |high|         |low|       |close|   |adj_close|      |volume|   |dividends|
+---------------------------------------------------------------------------------------------------------------------
+    1614924000        123.75        128.72        117.57        121.42        121.42  663456768.00          0.00
+    1614319200        128.01        129.72        118.39        121.26        121.26  680391424.00          0.00
+    1613714400        135.49        136.01        127.41        129.87        129.87  362474112.00          0.00
+    1613109600        136.03        137.88        133.69        135.37        135.37  344357344.00          0.00
+    1612504800        133.75        137.42        130.93        136.76        136.76  438264064.00          0.20
 
-Adjusted Monthly Series -----------------------
-
-   Timestamp        open        high         low       close   adj_close      volume    dividend split_coeff
-------------------------------------------------------------------------------------------------------------
-  1614578400      123.75      127.93      122.79      127.79      127.79   116307888        0.00        1.00
-  1614319200      122.59      124.85      121.20      121.26      121.26   163424672        0.00        1.00
-  1614232800      124.68      126.46      120.54      120.99      120.99   144766928        0.00        1.00
-  1614146400      124.94      125.56      122.23      125.35      125.35   111039904        0.00        1.00
-  1614060000      123.76      126.71      118.39      125.86      125.86   158273024        0.00        1.00
-  1613973600      128.01      129.72      125.60      126.00      126.00   102886920        0.00        1.00
-  1613714400      130.24      130.71      128.80      129.87      129.87    87668832        0.00        1.00
-  1613628000      129.20      129.99      127.41      129.71      129.71    96856752        0.00        1.00
-  1613541600      131.25      132.22      129.47      130.84      130.84    97372200        0.00        1.00
-  1613455200      135.49      136.01      132.79      133.19      133.19    80576320        0.00        1.00
 ```
 
 
 ## Global Quote Data
-Using our previously created ```Stock``` object (Apple stock "AAPL"), let's look at getting a current global quote. For a global quote, a single ```time_pair``` object is returned with the data being ordered as ```[open, high, low, price, volume, previous_close, change, change%]```. The timestamp for this object is the last traded day for the stock of question.
-
+Using our previously created ```Stock``` object (Apple stock "AAPL"), let's look at getting a current global quote. In the following, we see an ```avapi::GlobalQuote``` object created with the ```avapi::Stock``` member method ```Stock::getGlobalQuote()```. The timestamp for this object is the last traded day for the stock of question.
 ```C++
 
-typedef time_pair global_quote;
-
-```
-```C++
-
-avapi::global_quote quote = aapl.getGlobalQuote();
-avapi::printGlobalQuote(quote);
+avapi::GlobalQuote quote = aapl.getGlobalQuote();
+quote.printData();
 
 ```
 ```
-   Timestamp        Open        High         Low       Close      Volume  Prev_Close      Change     Change%
-------------------------------------------------------------------------------------------------------------
-  1614578400      123.75      127.93      122.79      127.79   116307888      121.26        6.53        5.39
+Timestamp:       1614924000
+Open:                120.98
+High:                121.93
+Low:                 117.57
+Close:               121.42
+Volume:        153766608.00
+Prev_Close:          120.13
+Change:                1.29
+Change%:               1.07
 ```
 # Example Usage - Cryptocurrencies
 ## Getting Historical Data for a Cryptocurrency of Interest
@@ -222,77 +272,82 @@ avapi::Crypto  btc("BTC", avapi::readFirstLineFromFile("api.key"));
 
 ```
 
-The ```Crypto``` object contains the following member methods:
+The ```Crypto``` object contains the following member methods for fetching historical data.
 
 ```C++
-// The parameter 'market' specifies the exchange market of interest (default = "USD")
-// If parameter last_n_rows == 0, get every available row from Alpha Vantage
+/// @brief		Get an avapi::TimeSeries for a crypto symbol of interest.
+/// @param type 	enum avapi::series::type
+/// @param market 	The exchange market (default = "USD")
+/// @returns 		An avapi::TimeSeries: [open,high,low,close,volume]
+TimeSeries Crypto::getTimeSeries(const series::type &type,
+                                 const std::string &market);
 
-time_series getDailySeries(const std::string &market = "USD",
-			   const size_t &last_n_rows = 0);
-time_series getWeeklySeries(const std::string &market = "USD",
-			    const size_t &last_n_rows = 0);
-time_series getMonthlySeries(const std::string &market = "USD",
-			     const size_t &last_n_rows = 0);
+/// @brief 		Get the current exchange rate for a specific market
+/// @param  market 	The exchange market (default = "USD")
+/// @returns 		An avapi::ExchangeRate object: [Exchange, Bid, Ask]
+ExchangeRate Crypto::getExchangeRate(const std::string &market)
 
 ```
-
-Using the previously created ```Crypto``` object, lets get two different ```time_series``` of daily data:
+Using the previously created ```Crypto``` object ("BTC"), we will create and print three different ```TimeSeries```:
 ```C++
 
-avapi::time_series series_a = btc.getDailySeries();
-avapi::time_series series_b = btc.getDailySeries("USD", 10);
+avapi::TimeSeries daily  = btc.getTimeSeries(avapi::series::DAILY, "USD");
+avapi::TimeSeries weekly  = btc.getTimeSeries(avapi::series::WEEKLY, "USD");
+avapi::TimeSeries monthly  = btc.getTimeSeries(avapi::series::MONTHLY, "USD");
+
+// Print last 5 rows of data from each TimeSeries
+std::cout << "Daily Series\n";
+daily.printData(5);
+std::cout << '\n' << "Weekly Series\n";
+weekly.printData(5);
+std::cout << '\n' << "Monthly Series\n";
+monthly.printData(5);
 
 ```
-`series_a` will be defaulted to a daily `time_series` for the market "USD" containing every available row of data from Alpha Vantage. `series_b` is a daily `time_series` for the market "USD" containing only the previous last 10 rows of data from today.
-
-```C++
-
-avapi::printSeries(series_b);
-
 ```
-```
-   Timestamp        Open        High         Low       Close      Volume
-------------------------------------------------------------------------
-  1614837600    50349.37    50588.69    49850.81    50583.54        2831
-  1614751200    48436.61    52640.00    48100.71    50349.37       81036
-  1614664800    49595.76    50200.00    47047.60    48440.65       64221
-  1614578400    45134.11    49790.00    44950.53    49587.03       85086
-  1614492000    46103.67    46638.46    43000.00    45135.66       83055
-  1614405600    46276.88    48394.00    45000.00    46106.43       66061
-  1614319200    47073.73    48424.11    44106.78    46276.87      109423
-  1614232800    49676.21    52041.73    46674.34    47073.73       83311
-  1614146400    48891.00    51374.99    46988.69    49676.20       91881
-  1614060000    54087.67    54183.59    44892.56    48891.00      169375
+Output:
+Daily Series
+-----------------------------------------------------------------------------------------
+   |timestamp|  |open (USD)|  |high (USD)|   |low (USD)| |close (USD)|      |volume|
+-----------------------------------------------------------------------------------------
+    1615010400      48746.81      49156.00      48740.65      49092.87       1258.14
+    1614924000      48374.09      49448.93      46300.00      48751.71      78192.50
+    1614837600      50349.37      51773.88      47500.00      48374.09      82649.72
+    1614751200      48436.61      52640.00      48100.71      50349.37      81035.91
+    1614664800      49595.76      50200.00      47047.60      48440.65      64221.06
+
+Weekly Series
+-----------------------------------------------------------------------------------------
+   |timestamp|  |open (USD)|  |high (USD)|   |low (USD)| |close (USD)|      |volume|
+-----------------------------------------------------------------------------------------
+    1615010400      45134.11      52640.00      44950.53      49092.87     392443.44
+    1614492000      57412.35      57508.47      43000.00      45135.66     737125.75
+    1613887200      48580.47      58352.80      45570.79      57408.57     533487.81
+    1613282400      38795.69      49707.43      37988.89      48577.79     664186.25
+    1612677600      33092.97      40955.51      32296.16      38795.69     583442.31
+
+Monthly Series
+-----------------------------------------------------------------------------------------
+   |timestamp|  |open (USD)|  |high (USD)|   |low (USD)| |close (USD)|      |volume|
+-----------------------------------------------------------------------------------------
+    1615010400      45134.11      52640.00      44950.53      49092.87     392443.44
+    1614492000      33092.97      58352.80      32296.16      45135.66    2518242.25
+    1612072800      28923.63      41950.00      28130.00      33092.98    3435639.25
+    1609394400      19695.87      29300.00      17572.33      28923.63    2495281.75
+    1606716000      13791.00      19863.16      13195.05      19695.87    2707065.00
 ```
 
 ## Getting Exchange Rate Data
 
-Using the previously created ```Crypto``` object ("BTC"), we can get a current exchange rate for a market of choice. For an exchange rate, a single time_pair object is returned with the data being ordered as ```[Exchange Rate, Bid Price, Ask Price]```.
-
+Using the previously created ```Crypto``` object ("BTC"), we can get a current exchange rate for a market of choice. In the following, we see an ```avapi::ExchangeRate``` object created with the member method ```Crypto::getExchangeRate()``` while specifying the exchange market to be ```"USD"```:
 ```C++
 
-avapi::time_pair ex_rate = btc.getExchangeRate("USD");
+avapi::ExchangeRate ex_rate = btc.getExchangeRate("USD");
+ex_rate.printData();
 
-std::cout << "BTC -> USD Exchange Rate\n";
-
-std::cout << std::setw(15) << std::left << "Timestamp: ";
-std::cout << std::setw(15) << std::right << std::fixed
-      << std::setprecision(2) << ex_rate.first << '\n';
-
-std::cout << std::setw(15) << std::left << "Exchange Rate:";
-std::cout << std::setw(15) << std::right << std::fixed
-      << std::setprecision(2) << ex_rate.second[0] << '\n';
-
-std::cout << std::setw(15) << std::left << "Bid Price:";
-std::cout << std::setw(15) << std::right << std::fixed
-      << std::setprecision(2) << ex_rate.second[1] << '\n';
-
-std::cout << std::setw(15) << std::left << "Ask Price";
-std::cout << std::setw(15) << std::right << std::fixed
-      << std::setprecision(2) << ex_rate.second[2] << '\n';
 ```
 ```
+Output:
 BTC -> USD Exchange Rate
 Timestamp:          1614914946
 Exchange Rate:        48398.98
@@ -304,7 +359,18 @@ Ask Price             48398.59
 # Example Usage - Other
 ## Parsing an Alpha Vantage time series csv file
 
-If we already have a csv file from Alpha Vantage, Avapi provides a helper function to directly parse it.
+If we already have a csv file from Alpha Vantage, Avapi provides a helper function to directly parse it:
+
+```C++
+
+/// @brief 	        Returns an avapi::TimeSeries created from a csv file
+/// @param file		file path of the csv file to parse
+/// @param crypto 	If the csv data is from a crypto symbol
+/// @returns avapi::TimeSeries
+TimeSeries parseCsvFile(const std::string &file_path, 
+                        const bool &crypto);
+
+```
 
 Example "daily_GME.csv" contents:
 
@@ -323,10 +389,16 @@ timestamp,open,high,low,close,volume
 ```
 ```C++
 
-// Get every row in daily_GME.csv
-avapi::time_series series_a = avapi::parseCsvFile("../../data/daily_GME.csv");
-
-// Get last 20 rows in daily_GME.csv
-avapi::time_series series_b = avapi::parseCsvFile("../../data/daily_GME.csv", 20);
+avapi::TimeSeries series = avapi::parseCsvFile("data/daily_GME.csv", false);
+series.printData(2);
     
+```
+```
+Output:
+-----------------------------------------------------------------------------------------
+   |timestamp|        |open|        |high|         |low|       |close|      |volume|
+-----------------------------------------------------------------------------------------
+    1613628000         48.49         48.87         40.65         40.69   23990556.00
+    1613541600         49.77         51.19         44.56         45.94    9147635.00
+
 ```
