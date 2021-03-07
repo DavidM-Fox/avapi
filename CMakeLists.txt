@@ -10,29 +10,65 @@ find_package(CURL CONFIG REQUIRED)
 find_package(Catch2 CONFIG REQUIRED)
 find_package(nlohmann_json CONFIG REQUIRED)
 
-include_directories(inc)
 
-set(PROJECT_SOURCES
-        src/avapi.cpp
-        inc/rapidcsv.h
-        inc/avapi.h
+# set(PROJECT_SOURCES
+        # ${SRC_DIR}/avapi.cpp
+        # ${SRC_DIR}/ApiCall.cpp
+        # ${SRC_DIR}/UrlBuilder.cpp
+        # 
+        # ${INC_DIR}/rapidcsv.h
+        # ${INC_DIR}/avapi.h
+        # ${INC_DIR}/ApiCall.hpp
+        # ${INC_DIR}/UrlBuilder.hpp
+# )
+
+# set(TESTS
+        # test/main.cpp
+        # test/test01_stringReplace.cpp
+        # test/test02_readFirstLineFromFile.cpp
+        # test/test03_toUnixTimestamp.cpp
+        # test/test04_parseCsvFile.cpp 
+        # test/test05_parseCsvString.cpp
+# )
+
+include_directories(include)
+
+set(SRC_DIR src)
+set(INC_DIR include)
+
+set(SOURCES
+        ${SRC_DIR}/Url.cpp
+        ${SRC_DIR}/ApiCall.cpp
+        ${SRC_DIR}/AvapiMisc.cpp
+        ${SRC_DIR}/Stock.cpp
+        ${SRC_DIR}/Crypto.cpp
+        ${SRC_DIR}/TimeSeries.cpp
+        ${SRC_DIR}/GlobalQuote.cpp
+        ${SRC_DIR}/ExchangeRate.cpp
+
+
+        ${INC_DIR}/avapi.hpp
+        ${INC_DIR}/AvapiCore.hpp
+        ${INC_DIR}/avapi/Url.hpp
+        ${INC_DIR}/avapi/ApiCall.hpp
+        ${INC_DIR}/avapi/AvapiMisc.hpp
+        ${INC_DIR}/avapi/Stock.hpp
+        ${INC_DIR}/avapi/Crypto.hpp
+        ${INC_DIR}/avapi/TimePair.hpp
+        ${INC_DIR}/avapi/TimeSeries.hpp
+        ${INC_DIR}/avapi/GlobalQuote.hpp
+        ${INC_DIR}/avapi/ExchangeRate.hpp
 )
 
-set(TESTS
-        tests/main.cpp
-        tests/test01_stringReplace.cpp
-        tests/test02_readFirstLineFromFile.cpp
-        tests/test03_toUnixTimestamp.cpp
-        tests/test04_parseCsvFile.cpp 
-        tests/test05_parseCsvString.cpp
-)
+add_executable(avapi main.cpp ${SOURCES})
+target_link_libraries(avapi PRIVATE CURL::libcurl nlohmann_json nlohmann_json::nlohmann_json)
 
-add_executable(avapi src/main.cpp ${PROJECT_SOURCES})
-target_link_libraries(avapi PRIVATE Catch2::Catch2 CURL::libcurl nlohmann_json nlohmann_json::nlohmann_json)
+# add_executable(avapi main.cpp ${PROJECT_SOURCES})
+# target_link_libraries(avapi PRIVATE Catch2::Catch2 CURL::libcurl nlohmann_json nlohmann_json::nlohmann_json)
 
-add_executable(avapi_test ${TESTS} ${PROJECT_SOURCES})
-target_link_libraries(avapi_test PRIVATE CURL::libcurl)
-
-include(CTest)
-include(Catch)
-catch_discover_tests(avapi_test)
+# add_executable(avapi_test ${TESTS} ${PROJECT_SOURCES})
+# target_link_libraries(avapi_test PRIVATE CURL::libcurl)
+# 
+# include(CTest)
+# include(Catch)
+# catch_discover_tests(avapi_test)
