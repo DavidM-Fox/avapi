@@ -1,5 +1,7 @@
 #include <iostream>
 #include <iomanip>
+#include <nlohmann/json.hpp>
+#include "rapidcsv.h"
 #include "avapi/TimePair.hpp"
 #include "avapi/TimeSeries.hpp"
 
@@ -74,7 +76,13 @@ void TimeSeries::printData(const size_t &count)
 
     std::cout << '\n' << separator << '\n';
 
-    for (size_t i = 0; i < count; ++i) {
+    size_t n;
+    if (count > rowCount())
+        size_t n = rowCount();
+    else
+        n = count;
+
+    for (size_t i = 0; i < n; ++i) {
         std::cout << std::setw(width) << std::right << m_data[i].m_time;
         for (auto &value : m_data[i].m_data) {
             std::cout << std::setw(width) << std::right << std::fixed
@@ -110,5 +118,103 @@ std::ostream &operator<<(std::ostream &os, const TimeSeries &series)
         os << '\n';
     }
     return os;
+}
+
+/// @brief   Returns an avapi::time_series created from a csv std::string
+/// @param   data An csv std::string object
+/// @param   crypto Wheter the csv data is from a crypto symbol
+/// @returns avapi::TimeSeries
+TimeSeries parseCsvString(const std::string &data, const bool &crypto)
+{
+    // Create rapidcsv::Document object from csv string
+    std::stringstream sstream(data);
+    rapidcsv::Document doc(sstream);
+    size_t n_rows = doc.GetRowCount();
+
+    // Test if data is really a JSON response
+    if (n_rows <= 2 && isJsonString(data)) {
+        nlohmann::json parser = nlohmann::json::parse(data);
+        std::string error =
+            "'avapi::parseCsvString': Json Response:" + parser.dump(4);
+        throw std::exception(error.c_str());
+    }
+
+    // Successful parse (Cells could still be invalid...)
+    TimeSeries series;
+    if (crypto) {
+        //// Remove useless columns
+        // Volume = Market Cap (Dont know why.. free version?)
+        doc.RemoveColumn(10);
+
+        // Redundant USD columns
+        doc.RemoveColumn(8);
+        doc.RemoveColumn(7);
+        doc.RemoveColumn(6);
+        doc.RemoveColumn(5);
+
+        for (size_t i = 0; i < n_rows; ++i) {
+            std::vector<std::string> row = doc.GetRow<std::string>(i);
+
+            // Transform vector into floats, skip timestamp column
+            std::vector<float> data;
+            std::transform(row.begin() + 1, row.end(), std::back_inserter(data),
+                           [](std::string &value) { return std::stof(value); });
+            TimePair pair(toUnixTimestamp(row[0]), data);
+            series.pushBack(pair);
+        }
+    }
+    else {
+        for (size_t i = 0; i < n_rows; ++i) {
+            std::vector<std::string> row = doc.GetRow<std::string>(i);
+
+            // Transform vector into floats, skip timestamp column
+            std::vector<float> data;
+            std::transform(row.begin() + 1, row.end(), std::back_inserter(data),
+                           [](std::string &value) { return std::stof(value); });
+
+            TimePair pair(toUnixTimestamp(row[0]), data);
+            series.pushBack(pair);
+        }
+    }
+
+    std::vector<std::string> headers = doc.GetColumnNames();
+    for (auto &header : headers) {
+
+        if (header == "adjusted close" || header == "adjusted_close")
+            header = "adj_close";
+        else if (header == "dividend amount" || header == "dividend_amount")
+            header = "dividends";
+        else if (header == "split coefficient" || header == "split_coefficient")
+            header = "split_coeff";
+    }
+    series.setHeaders(headers);
+    return series;
+}
+
+/// @brief   Converts date + time string "%Y-%m-%d %H:%M:%S" to Unix Timestamp
+/// (seconds since unic epoch)
+/// @param   input The input string to be converted
+/// @returns The time as an std::time_t unix timestamp
+std::time_t toUnixTimestamp(const std::string &input)
+{
+    std::tm t{};
+    std::istringstream ss(input);
+    std::string format = "%Y-%m-%d %H:%M:%S";
+    ss >> std::get_time(&t, format.c_str());
+    return mktime(&t);
+}
+
+/// @brief   Test if a string is in JSON format
+/// @param   data The string to be tested
+/// @returns bool
+bool isJsonString(const std::string &data)
+{
+    try {
+        nlohmann::json parser = nlohmann::json::parse(data);
+    }
+    catch (...) {
+        return false;
+    }
+    return true;
 }
 } // namespace avapi

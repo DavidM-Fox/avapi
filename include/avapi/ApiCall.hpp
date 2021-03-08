@@ -5,7 +5,6 @@
 #include <iomanip>
 
 namespace avapi {
-class TimeSeries;
 
 class Url {
 public:
@@ -69,13 +68,5 @@ private:
     static size_t WriteMemoryCallback(void *ptr, size_t size, size_t nmemb,
                                       void *data);
 };
-
-class TimeSeries;
-TimeSeries parseCsvFile(const std::string &file, const bool &crypto = false);
-TimeSeries parseCsvString(const std::string &data, const bool &crypto = false);
-
-std::time_t toUnixTimestamp(const std::string &input);
-bool isJsonString(const std::string &data);
-
 } // namespace avapi
 #endif

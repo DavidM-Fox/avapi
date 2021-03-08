@@ -48,5 +48,11 @@ private:
     std::string m_market;
 };
 
+TimeSeries parseCsvFile(const std::string &file, const bool &crypto = false);
+TimeSeries parseCsvString(const std::string &data, const bool &crypto = false);
+
+std::time_t toUnixTimestamp(const std::string &input);
+bool isJsonString(const std::string &data);
+
 } // namespace avapi
 #endif

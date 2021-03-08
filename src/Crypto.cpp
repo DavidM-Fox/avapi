@@ -12,18 +12,17 @@ namespace avapi {
 /// @param   symbol The crypto symbol of interest
 /// @param   api_key The Alpha Vantage API key to use
 Crypto::Crypto(const std::string &symbol, const std::string &api_key)
-    : m_symbol(symbol), m_apiKey(api_key)
+    : m_symbol(symbol), m_apiKey(api_key), m_outputSize("compact")
 {
     // Force symbol to be capitalized
     std::transform(m_symbol.begin(), m_symbol.end(), m_symbol.begin(),
                    ::toupper);
-    setOutputSize("compact");
 }
 
 /// @brief   Get an avapi::TimeSeries for a crypto symbol of interest.
-/// @param   type enum avapi::series::type for TimeSeries type
+/// @param   type enum class avapi::SeriesType
 /// @param   market The exchange market (default = "USD")
-/// @returns An avapi::TimeSeries: [open,high,low,close,volume]
+/// @returns An avapi::TimeSeries ordered [open,high,low,close,volume]
 TimeSeries Crypto::getTimeSeries(const SeriesType &type,
                                  const std::string &market)
 {

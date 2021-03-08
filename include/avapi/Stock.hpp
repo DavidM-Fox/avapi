@@ -2,7 +2,8 @@
 #define STOCK_H
 #include <string>
 #include <vector>
-#include "avapi/TimeSeries.hpp"
+#include "TimeSeries.hpp"
+#include "GlobalQuote.hpp"
 
 namespace avapi {
 

@@ -12,24 +12,23 @@ namespace avapi {
 /// @param   symbol The stock symbol of interest
 /// @param   api_key The Alpha Vantage API key to use
 Stock::Stock(const std::string &symbol, const std::string &api_key)
-    : m_symbol(symbol), m_apiKey(api_key)
+    : m_symbol(symbol), m_apiKey(api_key), m_outputSize("compact")
 {
-
     // Force symbol to be capitalized
     std::transform(m_symbol.begin(), m_symbol.end(), m_symbol.begin(),
                    ::toupper);
-    setOutputSize("compact");
 }
 
 /// @brief   Get an avapi::TimeSeries for a stock symbol of interest.
-/// @param   type enum avapi::series::type for TimeSeries type
+/// @param   type enum class avapi::SeriesType
 /// @param   adjusted Whether or not the data should have adjusted values
 /// @param   interval The interval for avapi::series::INTRADAY, ignored
 /// otherwise (default = "30min")
 /// @returns An avapi::TimeSeries: [open,high,low,close,volume]
 /// or an adjusted avapi::TimeSeries:
 /// [open,high,low,close,adjusted_close,volume,dividend_amount,split_coefficient]
-TimeSeries Stock::getTimeSeries(const SeriesType &type, const bool &adjusted,
+TimeSeries Stock::getTimeSeries(const avapi::SeriesType &type,
+                                const bool &adjusted,
                                 const std::string &interval)
 {
     // Create new ApiCall object for this method
@@ -38,7 +37,7 @@ TimeSeries Stock::getTimeSeries(const SeriesType &type, const bool &adjusted,
     std::string title;
     std::string function;
 
-    // Check if intraday (Uses different paramters than daily,weekly,monthly)
+    // Check if intraday (Uses different parameters than daily, weekly, monthly)
     if (type == SeriesType::INTRADAY) {
         function = m_seriesFunctionStrings[static_cast<int>(type)];
         m_apiCall->setFieldValue(Url::FUNCTION, function);
@@ -85,12 +84,13 @@ TimeSeries Stock::getTimeSeries(const SeriesType &type, const bool &adjusted,
 void Stock::setOutputSize(const std::string &size) { m_outputSize = size; }
 
 /// @brief   Return the symbol's latest global quote
-/// @returns The symbol's global quote as an avapi::GlobalQuote objecta
+/// @returns The symbol's global quote as an avapi::GlobalQuote object
 GlobalQuote Stock::getGlobalQuote()
 {
     // Create new ApiCall object for this method
     m_apiCall = new ApiCall(m_apiKey);
 
+    // Only three parameters needed for GlobalQuote
     m_apiCall->setFieldValue(Url::FUNCTION, "GLOBAL_QUOTE");
     m_apiCall->setFieldValue(Url::SYMBOL, m_symbol);
     m_apiCall->setFieldValue(Url::DATA_TYPE, "csv");
