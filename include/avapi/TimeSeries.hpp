@@ -13,14 +13,15 @@ class TimeSeries {
 public:
     TimeSeries();
     TimeSeries(const std::vector<avapi::TimePair> &data);
+    TimeSeries(const TimeSeries &series);
 
     void pushBack(const TimePair &pair);
     void reverseData();
     void printData(const size_t &count);
     void setHeaders(const std::vector<std::string> &headers);
 
-    const size_t rowCount();
-    const size_t colCount();
+    size_t rowCount();
+    size_t colCount();
 
     std::string symbol;
     SeriesType type;
@@ -28,7 +29,7 @@ public:
     std::string market;
 
     std::string title;
-    std::vector<std::string> m_headers;
+    std::vector<std::string> headers;
 
     TimePair &operator[](size_t i) { return data_series[i]; }
     friend std::ostream &operator<<(std::ostream &os, const TimeSeries &series);
