@@ -10,7 +10,7 @@ namespace avapi {
 GlobalQuote::GlobalQuote(const std::string &symbol,
                          const std::time_t &timestamp,
                          const std::vector<float> &data)
-    : m_symbol(symbol), m_timestamp(timestamp), m_data(data)
+    : symbol(symbol), timestamp(timestamp), quote_data(data)
 {
 }
 
@@ -18,17 +18,17 @@ GlobalQuote::GlobalQuote(const std::string &symbol,
 void GlobalQuote::printData()
 {
     std::cout << std::setw(12) << std::left << "Timestamp:";
-    std::cout << std::setw(15) << std::right << m_timestamp << '\n';
-    for (size_t i = 0; i < m_data.size(); ++i) {
-        std::string header = m_headers[i] + ":";
+    std::cout << std::setw(15) << std::right << timestamp << '\n';
+    for (size_t i = 0; i < quote_data.size(); ++i) {
+        std::string header = headers[i] + ":";
         std::cout << std::setw(12) << std::left << header;
         std::cout << std::setw(15) << std::right << std::fixed
-                  << std::setprecision(2) << m_data[i];
+                  << std::setprecision(2) << quote_data[i];
         std::cout << '\n';
     }
 }
 
-const std::vector<std::string> GlobalQuote::m_headers{
+const std::vector<std::string> GlobalQuote::headers{
     "Open",   "High",       "Low",    "Close",
     "Volume", "Prev_Close", "Change", "Change%"};
 

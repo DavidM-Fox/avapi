@@ -14,20 +14,20 @@ public:
     void printData();
 
     // Easy Getters
-    const std::string &FromSymbol() const { return m_fromSymbol; }
-    const std::string &ToSymbol() const { return m_toSymbol; }
-    const std::time_t &Timestamp() const { return m_timestamp; }
-    const float &Exchange() const { return m_data[0]; }
-    const float &BidPrice() const { return m_data[1]; }
-    const float &AskPrice() const { return m_data[2]; }
+    const std::string &FromSymbol() const { return from_symbol; }
+    const std::string &ToSymbol() const { return to_symbol; }
+    const std::time_t &Timestamp() const { return timestamp; }
+    const float &Exchange() const { return exchange_data[0]; }
+    const float &BidPrice() const { return exchange_data[1]; }
+    const float &AskPrice() const { return exchange_data[2]; }
 
-    const float &operator[](size_t i) { return m_data[i]; }
+    const float &operator[](size_t i) { return exchange_data[i]; }
 
 private:
-    const std::string m_fromSymbol;
-    const std::string m_toSymbol;
-    const std::time_t m_timestamp;
-    const std::vector<float> m_data;
+    const std::string from_symbol;
+    const std::string to_symbol;
+    const std::time_t timestamp;
+    const std::vector<float> exchange_data;
 };
 
 } // namespace avapi
