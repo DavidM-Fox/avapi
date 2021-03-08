@@ -43,11 +43,11 @@ The ```Stock``` object contains the following member methods for fetching histor
 ```C++
 
 /// @brief		Get an avapi::TimeSeries for a stock symbol of interest.
-/// @param type		enum avapi::series::type
+/// @param type		enum class avapi::SeriesType
 /// @param adjusted	Whether or not the data should have adjusted values
-/// @param interval	The interval for avapi::series::INTRADAY
+/// @param interval	The interval for avapi::SeriesType::INTRADAY
 /// @returns		An avapi::TimeSeries of the specified type
-TimeSeries Stock::getTimeSeries(const series::type &type, const bool &adjusted,
+TimeSeries Stock::getTimeSeries(const avapi::SeriesType &type, const bool &adjusted,
 				const std::string &interval = "30min");
 			  
 /// @brief Return the symbol's latest global quote
@@ -113,7 +113,7 @@ With our previously created ```avapi::Stock``` object (Tesla stock “TSLA”), 
 ```C++
 
 avapi::TimeSeries tsla_intraday = 
-	tsla.getTimeSeries(avapi::series::INTRADAY, true, "15min");
+	tsla.getTimeSeries(avapi::SeriesType::INTRADAY, true, "15min");
 
 ```
 The first parameter specifies that we want an **intraday** time series. The second parameter specifies that the data should be adjusted by historical split and dividend events. The third parameter sets the **intraday** interval to 15 minutes.  We can call the member method ```TimeSeries::printData(10)``` to print the last 10 rows of data to the console:
@@ -160,17 +160,19 @@ Output:
 Let's now look at getting daily, weekly, and monthly data for a stock of interest. We begin as always by creating an ```avapi::Stock``` object, in this case using the ```symbol``` "AAPL" for Apple stock. In the following, we see 5 different ```TimeSeries``` created for this example:
 ```C++
 
+using namespace avapi;
+
 // Create avapi::Stock object
-avapi::Stock aapl("AAPL", avapi::readFirstLineFromFile("api.key"));
+Stock aapl("AAPL", readFirstLineFromFile("api.key"));
 
 // Get non-adjusted daily, weekly, and monthly data
-avapi::TimeSeries daily = aapl.getTimeSeries(avapi::series::DAILY, false);
-avapi::TimeSeries weekly = aapl.getTimeSeries(avapi::series::WEEKLY, false);
-avapi::TimeSeries monthly = aapl.getTimeSeries(avapi::series::MONTHLY, false);
+TimeSeries daily = aapl.getTimeSeries(SeriesType::DAILY, false);
+TimeSeries weekly = aapl.getTimeSeries(SeriesType::WEEKLY, false);
+TimeSeries monthly = aapl.getTimeSeries(SeriesType::MONTHLY, false);
 
 // Get adjusted daily and weekly data
-avapi::TimeSeries daily_adj = aapl.getTimeSeries(avapi::series::DAILY, true);
-avapi::TimeSeries weekly_adj = aapl.getTimeSeries(avapi::series::WEEKLY, true);
+TimeSeries daily_adj = aapl.getTimeSeries(SeriesType::DAILY, true);
+TimeSeries weekly_adj = aapl.getTimeSeries(SeriesType::WEEKLY, true);
 
 // Print last 5 rows of data from each TimeSeries
 std::cout << "Non-Adjusted Daily Series\n";
@@ -275,10 +277,10 @@ The ```Crypto``` object contains the following member methods for fetching histo
 
 ```C++
 /// @brief		Get an avapi::TimeSeries for a crypto symbol of interest.
-/// @param type 	enum avapi::series::type
+/// @param type 	enum class avapi::SeriesType
 /// @param market 	The exchange market (default = "USD")
 /// @returns 		An avapi::TimeSeries: [open,high,low,close,volume]
-TimeSeries Crypto::getTimeSeries(const series::type &type,
+TimeSeries Crypto::getTimeSeries(const avapi::SeriesType &type,
                                  const std::string &market);
 
 /// @brief 		Get the current exchange rate for a specific market
@@ -290,9 +292,11 @@ ExchangeRate Crypto::getExchangeRate(const std::string &market)
 Using the previously created ```Crypto``` object ("BTC"), we will create and print three different ```TimeSeries```:
 ```C++
 
-avapi::TimeSeries daily = btc.getTimeSeries(avapi::series::DAILY, "USD");
-avapi::TimeSeries weekly = btc.getTimeSeries(avapi::series::WEEKLY, "USD");
-avapi::TimeSeries monthly = btc.getTimeSeries(avapi::series::MONTHLY, "USD");
+using namespace avapi;
+
+TimeSeries daily = btc.getTimeSeries(SeriesType::DAILY, "USD");
+TimeSeries weekly = btc.getTimeSeries(SeriesType::WEEKLY, "USD");
+TimeSeries monthly = btc.getTimeSeries(SeriesType::MONTHLY, "USD");
 
 // Print last 5 rows of data from each TimeSeries
 std::cout << "Daily Series\n";
