@@ -1,7 +1,7 @@
 #include <fstream>
 #include <sstream>
 #include <nlohmann/json.hpp>
-#include "avapi/AvapiMisc.hpp"
+#include "avapi/misc.hpp"
 
 namespace avapi {
 /// @brief   Replaces a substring within a given string
