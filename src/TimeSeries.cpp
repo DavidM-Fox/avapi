@@ -7,49 +7,21 @@
 
 namespace avapi {
 
+/// @brief TimeSeries default constructor
+TimeSeries::TimeSeries() : m_market("USD"), m_nRows(0), m_nCols(0) {}
+
 /// @brief TimeSeries constructor
 /// @param data A vector of avapi::TimePair data
-TimeSeries::TimeSeries(const std::vector<avapi::TimePair> &data) : m_data(data)
+TimeSeries::TimeSeries(const std::vector<avapi::TimePair> &data)
+    : m_market("USD"), m_data(data)
 {
+    m_nRows = data.size();
+    m_nCols = data[0].m_data.size();
 }
-
-/// @brief TimeSeries default constructor
-TimeSeries::TimeSeries() {}
 
 /// @brief Push an avapi::TimePair into the avapi::TimeSeries
 /// @param pair An avapi::TimePair to be pushed back
 void TimeSeries::pushBack(const TimePair &pair) { m_data.push_back(pair); }
-
-/// @brief Set the avapi::TimeSeries' type
-/// @param type avapi::series::type
-void TimeSeries::setType(const SeriesType &type) { m_type = type; }
-
-/// @brief Set whether or not the avapi::TimeSeries has adjusted values
-/// @param adjusted bool
-void TimeSeries::setAdjusted(const bool &adjusted) { m_isAdjusted = adjusted; }
-
-/// @brief Set the avapi::TimeSeries' symbol
-/// @param symbol A symbol as an std::string
-void TimeSeries::setSymbol(const std::string &symbol) { m_symbol = symbol; }
-
-/// @brief Set the avapi::TimeSeries' title
-/// @param symbol A title as an std::string
-void TimeSeries::setTitle(const std::string &title) { m_title = title; }
-
-/// @brief Get the avapi::TimeSeries' row count
-/// @return size_t row count
-const size_t TimeSeries::rowCount() { return m_nRows; }
-
-/// @brief Get the avapi::TimeSeries' column count
-/// @return size_t column count
-const size_t TimeSeries::colCount() { return m_nCols; }
-
-/// @brief Set the avapi::TimeSeries' column headers
-/// @param headers A vector of header strings
-void TimeSeries::setHeaders(const std::vector<std::string> &headers)
-{
-    m_headers = headers;
-}
 
 /// @brief   Reverses the avapi::TimeSeries' data, useful for when the data is
 /// desired to be plotted
@@ -92,6 +64,21 @@ void TimeSeries::printData(const size_t &count)
     }
     std::cout << std::endl;
 }
+
+/// @brief Set the avapi::TimeSeries' column headers
+/// @param headers A vector of header strings
+void TimeSeries::setHeaders(const std::vector<std::string> &headers)
+{
+    m_headers = headers;
+}
+
+/// @brief Get the avapi::TimeSeries' row count
+/// @return size_t row count
+const size_t TimeSeries::rowCount() { return m_nRows; }
+
+/// @brief Get the avapi::TimeSeries' column count
+/// @return size_t column count
+const size_t TimeSeries::colCount() { return m_nCols; }
 
 /// @brief push formatted avapi::TimeSeries' contents to ostream
 std::ostream &operator<<(std::ostream &os, const TimeSeries &series)
@@ -142,39 +129,25 @@ TimeSeries parseCsvString(const std::string &data, const bool &crypto)
     // Successful parse (Cells could still be invalid...)
     TimeSeries series;
     if (crypto) {
-        //// Remove useless columns
-        // Volume = Market Cap (Dont know why.. free version?)
+        // 10 -> Market Cap = volume (From alpha vantage)
+        // 5-8 -> Redundant USD columns
         doc.RemoveColumn(10);
-
-        // Redundant USD columns
         doc.RemoveColumn(8);
         doc.RemoveColumn(7);
         doc.RemoveColumn(6);
         doc.RemoveColumn(5);
-
-        for (size_t i = 0; i < n_rows; ++i) {
-            std::vector<std::string> row = doc.GetRow<std::string>(i);
-
-            // Transform vector into floats, skip timestamp column
-            std::vector<float> data;
-            std::transform(row.begin() + 1, row.end(), std::back_inserter(data),
-                           [](std::string &value) { return std::stof(value); });
-            TimePair pair(toUnixTimestamp(row[0]), data);
-            series.pushBack(pair);
-        }
     }
-    else {
-        for (size_t i = 0; i < n_rows; ++i) {
-            std::vector<std::string> row = doc.GetRow<std::string>(i);
 
-            // Transform vector into floats, skip timestamp column
-            std::vector<float> data;
-            std::transform(row.begin() + 1, row.end(), std::back_inserter(data),
-                           [](std::string &value) { return std::stof(value); });
+    for (size_t i = 0; i < n_rows; ++i) {
+        std::vector<std::string> row = doc.GetRow<std::string>(i);
 
-            TimePair pair(toUnixTimestamp(row[0]), data);
-            series.pushBack(pair);
-        }
+        // Transform vector into floats, skip timestamp column
+        std::vector<float> data;
+        std::transform(row.begin() + 1, row.end(), std::back_inserter(data),
+                       [](std::string &value) { return std::stof(value); });
+
+        TimePair pair(toUnixTimestamp(row[0]), data);
+        series.pushBack({toUnixTimestamp(row[0]), data});
     }
 
     std::vector<std::string> headers = doc.GetColumnNames();
