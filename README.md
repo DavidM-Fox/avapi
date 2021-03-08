@@ -13,6 +13,7 @@ Avapi is a C++ library utilizing the [Alpha Vantage API](https://www.alphavantag
   * [Global Quote Data](#global-quote-data)
 - [Example Usage - Cryptocurrencies](#example-usage---cryptocurrencies)
   * [Getting Historical Data for a Cryptocurrency of Interest](#getting-historical-data-for-a-cryptocurrency-of-interest)
+  * [Daily, Weekly, and Monthly Data](#daily-weekly-and-monthly-data-1)
   * [Getting Exchange Rate Data](#getting-exchange-rate-data)
 - [Example Usage - Other](#example-usage---other)
   * [Parsing an Alpha Vantage time series csv file](#parsing-an-alpha-vantage-time-series-csv-file)
@@ -42,16 +43,8 @@ The ```Stock``` object contains the following member methods for fetching histor
 
 ```C++
 
-/// @brief		Get an avapi::TimeSeries for a stock symbol of interest.
-/// @param type		enum class avapi::SeriesType
-/// @param adjusted	Whether or not the data should have adjusted values
-/// @param interval	The interval for avapi::SeriesType::INTRADAY
-/// @returns		An avapi::TimeSeries of the specified type
 TimeSeries Stock::getTimeSeries(const avapi::SeriesType &type, const bool &adjusted,
-				const std::string &interval = "30min");
-			  
-/// @brief Return the symbol's latest global quote
-/// @returns the symbol's global quote as an avapi::GlobalQuote object
+				const std::string &interval = "30min");			
 GlobalQuote Stock::getGlobalQuote();
 
 ```
@@ -85,27 +78,6 @@ The data vector within each ```TimePair``` is ordered according to the ```TimeSe
 
 
 The ```avapi::GlobalQuote``` object is a class containing the stock of interest's current global quote data. It is constructed with the stock of interest's symbol, a UNIX timestamp, and a data vector ordered: ```[open, high, low, price, volume, previous_close, change, change%]```
-
-```C++
-class  GlobalQuote {
-public:
-	GlobalQuote(const std::string& symbol, const std::time_t &timestamp, 
-	            const std::vector<float> &data);   
-	
-    	const std::string symbol;
-    	const std::time_t timestamp;
-        
-	const float open;
-	const float high;
-	const float low;
-	const float close;
-	const float volume;
-	const float close_previous;
-	const float change;
-	const float change_percent;
-	void printData();
-};
-```
 
 ## Intraday Data
 With our previously created ```avapi::Stock``` object (Tesla stock “TSLA”), let's look at getting an **intraday** data set. In the following, we see an ```avapi::TimeSeries``` object created with the ```Stock::getTimeSeries()``` member method:
@@ -146,7 +118,7 @@ The ```[]``` operator can be used to access a specific ```TimePair``` from the `
 ```C++
 
 // Print the last 10 "open" values
-for (size_t  i = 0; i < 10; ++i)
+for (size_t i = 0; i < 10; ++i)
 	std::cout << tsla_intraday[i][0] <<  ' ';
 std::cout << std::endl;
 
@@ -276,19 +248,15 @@ avapi::Crypto  btc("BTC", avapi::readFirstLineFromFile("api.key"));
 The ```Crypto``` object contains the following member methods for fetching historical data.
 
 ```C++
-/// @brief		Get an avapi::TimeSeries for a crypto symbol of interest.
-/// @param type 	enum class avapi::SeriesType
-/// @param market 	The exchange market (default = "USD")
-/// @returns 		An avapi::TimeSeries: [open,high,low,close,volume]
 TimeSeries Crypto::getTimeSeries(const avapi::SeriesType &type,
                                  const std::string &market);
-
-/// @brief 		Get the current exchange rate for a specific market
-/// @param  market 	The exchange market (default = "USD")
-/// @returns 		An avapi::ExchangeRate object: [Exchange, Bid, Ask]
 ExchangeRate Crypto::getExchangeRate(const std::string &market)
-
 ```
+The ```avapi::TimeSeries``` object is constructed in a similar fashion to ones created with ```Stock::getTimeSeries()```. However, The data vector within each ```avapi::TimePair``` is explicitly ordered ```[open, high, low, close, volume]```.
+
+The ```avapi::ExchangeRate``` object is a class containing the stock of interest's current exchange rate for a specified market. It is constructed with a "from" and "to" symbol, a UNIX timestamp, and a data vector ordered: ```[Exchange Rate, Bid Price, Ask Price]```
+
+## Daily, Weekly, and Monthly Data
 Using the previously created ```Crypto``` object ("BTC"), we will create and print three different ```TimeSeries```:
 ```C++
 
@@ -366,13 +334,8 @@ If we already have a csv file from Alpha Vantage, Avapi provides a helper functi
 
 ```C++
 
-/// @brief 	        Returns an avapi::TimeSeries created from a csv file
-/// @param file		file path of the csv file to parse
-/// @param crypto 	If the csv data is from a crypto symbol
-/// @returns 		avapi::TimeSeries
 TimeSeries parseCsvFile(const std::string &file_path, 
                         const bool &crypto);
-
 ```
 
 Example "daily_GME.csv" contents:
