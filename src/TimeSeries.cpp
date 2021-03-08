@@ -19,6 +19,14 @@ TimeSeries::TimeSeries(const std::vector<avapi::TimePair> &data)
     n_cols = data[0].data.size();
 }
 
+TimeSeries::TimeSeries(const TimeSeries &series) : market("USD")
+{
+    headers = series.headers;
+    data_series = series.data_series;
+    n_rows = series.n_rows;
+    n_cols = series.n_cols;
+}
+
 /// @brief Push an avapi::TimePair into the avapi::TimeSeries
 /// @param pair An avapi::TimePair to be pushed back
 void TimeSeries::pushBack(const TimePair &pair) { data_series.push_back(pair); }
@@ -36,23 +44,22 @@ void TimeSeries::printData(const size_t &count)
 {
     size_t volume_index = 0;
     size_t width = 14;
-    size_t sep_count = (m_headers.size() * width) + 5;
+    size_t sep_count = (headers.size() * width) + 5;
 
     std::string separator(sep_count, '-');
     std::cout << separator << '\n';
 
-    for (auto &heading : m_headers) {
+    for (auto &heading : headers) {
         std::cout << std::setw(width) << ("|" + heading + "|");
         sep_count += width;
     }
 
     std::cout << '\n' << separator << '\n';
 
-    size_t n;
+    size_t n = count;
+
     if (count > rowCount())
         size_t n = rowCount();
-    else
-        n = count;
 
     for (size_t i = 0; i < n; ++i) {
         std::cout << std::setw(width) << std::right << data_series[i].timestamp;
@@ -69,16 +76,16 @@ void TimeSeries::printData(const size_t &count)
 /// @param headers A vector of header strings
 void TimeSeries::setHeaders(const std::vector<std::string> &headers)
 {
-    m_headers = headers;
+    this->headers = headers;
 }
 
 /// @brief Get the avapi::TimeSeries' row count
 /// @return size_t row count
-const size_t TimeSeries::rowCount() { return n_rows; }
+size_t TimeSeries::rowCount() { return n_rows; }
 
 /// @brief Get the avapi::TimeSeries' column count
 /// @return size_t column count
-const size_t TimeSeries::colCount() { return n_cols; }
+size_t TimeSeries::colCount() { return n_cols; }
 
 /// @brief push formatted avapi::TimeSeries' contents to ostream
 std::ostream &operator<<(std::ostream &os, const TimeSeries &series)
@@ -87,7 +94,7 @@ std::ostream &operator<<(std::ostream &os, const TimeSeries &series)
     size_t volume_index = 0;
     size_t width = 15;
 
-    for (auto &heading : series.m_headers) {
+    for (auto &heading : series.headers) {
         os << std::setw(width) << heading;
         sep_count += width;
     }
