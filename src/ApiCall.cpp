@@ -59,61 +59,61 @@ const std::vector<std::string> Url::m_fieldStrings{
 const std::string Url::m_urlBase{"https://www.alphavantage.co/query?"};
 
 /// @brief   ApiCall Class default constructor
-ApiCall::ApiCall() : m_apiKey("")
+ApiCall::ApiCall() : api_key("")
 {
-    m_url = new avapi::Url();
-    m_url->setFieldValue(Url::API_KEY, m_apiKey);
+    url = new avapi::Url();
+    url->setFieldValue(Url::API_KEY, api_key);
 }
 
 /// @brief   ApiCall Class constructor
 /// @param   key The Alpha Vantage API key to set
-ApiCall::ApiCall(const std::string &key) : m_apiKey(key)
+ApiCall::ApiCall(const std::string &key) : api_key(key)
 {
-    m_url = new avapi::Url();
-    m_url->setFieldValue(Url::API_KEY, m_apiKey);
+    url = new avapi::Url();
+    url->setFieldValue(Url::API_KEY, api_key);
 }
 
 /// @brief   ApiCall Class deconstructor
 /// @param   key The Alpha Vantage API key to set
 ApiCall::~ApiCall()
 {
-    if (m_url != nullptr)
-        delete m_url;
+    if (url != nullptr)
+        delete url;
 }
 
-/// @brief   Add a field and value to m_url
+/// @brief   Add a field and value to url
 /// @param   field The Url::field to be set
 /// @param   value The string value
 void ApiCall::setFieldValue(const Url::Field &field, const std::string &value)
 {
-    m_url->setFieldValue(field, value);
+    url->setFieldValue(field, value);
 }
 
-/// @brief   Get a the specified field value within m_url
+/// @brief   Get a the specified field value within url
 /// @param   field The Url::field
 /// @returns The value corresponding to the field parameter
 std::string ApiCall::getValue(const Url::Field &field)
 {
-    return m_url->getValue(field);
+    return url->getValue(field);
 }
 
-/// @brief   Curls m_url
+/// @brief   Curls url
 /// @param   url The API query URL to be curled
 /// @returns The data as an std::string
 std::string ApiCall::curlQuery()
 {
-    if (m_apiKey == "") {
+    if (api_key == "") {
         throw std::exception(
             "\"avapi/ApiCall.cpp\": Alpha Vantage API key not present.");
     }
-    std::string url = m_url->buildQuery();
+
     CURL *curl;
     CURLcode res;
     std::string data;
 
     curl = curl_easy_init();
     if (curl) {
-        curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
+        curl_easy_setopt(curl, CURLOPT_URL, url->buildQuery().c_str());
         curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, WriteMemoryCallback);
         curl_easy_setopt(curl, CURLOPT_WRITEDATA, &data);
         res = curl_easy_perform(curl);
@@ -127,11 +127,11 @@ std::string ApiCall::curlQuery()
 
 void ApiCall::resetQuery()
 {
-    if (m_url != nullptr)
-        delete m_url;
+    if (url != nullptr)
+        delete url;
 
-    m_url = new Url();
-    m_url->setFieldValue(Url::API_KEY, m_apiKey);
+    url = new Url();
+    url->setFieldValue(Url::API_KEY, api_key);
 }
 
 /// @brief   Callback function for CURLOPT_WRITEFUNCTION

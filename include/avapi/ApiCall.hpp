@@ -54,11 +54,11 @@ public:
     std::string curlQuery();
     void resetQuery();
 
-    std::string m_apiKey;
-    std::string m_outputSize;
+    std::string api_key;
+    std::string output_size;
 
 private:
-    Url *m_url = nullptr;
+    Url *url = nullptr;
     static size_t WriteMemoryCallback(void *ptr, size_t size, size_t nmemb,
                                       void *data);
 };

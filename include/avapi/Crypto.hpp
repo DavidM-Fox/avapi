@@ -25,7 +25,7 @@ public:
     std::string m_symbol;
 
 private:
-    ApiCall m_apiCall;
+    ApiCall m_cryptoApiCall;
     static const std::vector<std::string> m_seriesFunctionStrings;
 };
 } // namespace avapi
