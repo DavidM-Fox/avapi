@@ -34,7 +34,7 @@ public:
     std::string getValue(const Url::Field &field);
 
     // Build and return the url query
-    std::string buildUrlQuery();
+    std::string buildQuery();
 
 private:
     Query m_query;
@@ -51,8 +51,8 @@ public:
     void setFieldValue(const enum Url::Field &field, const std::string &value);
     std::string getValue(const enum Url::Field &field);
 
-    std::string Curl();
-    void ResetUrl();
+    std::string curlQuery();
+    void resetQuery();
 
     std::string m_apiKey;
     std::string m_outputSize;
