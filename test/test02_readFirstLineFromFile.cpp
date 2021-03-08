@@ -1,4 +1,4 @@
-#include "avapi/AvapiMisc.hpp"
+#include "avapi/misc.hpp"
 #include "catch.hpp"
 
 TEST_CASE("avapi::readFirstLineFromFile()", "[readFirstLineFromFile]")

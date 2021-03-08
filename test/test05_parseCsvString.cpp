@@ -27,7 +27,7 @@ SCENARIO("avapi::parseCsvString()")
             "2021-01-26,143.6000,144.3000,141.3700,143.1600,98390555'\n'"
             "2021-01-25,143.0700,145.0900,136.5400,142.9200,157611713";
 
-        WHEN("avapi::parseCsvString() is called without n_last_rows parameter.")
+        WHEN("avapi::parseCsvString() is called.")
         {
             avapi::TimeSeries series = avapi::parseCsvString(csv_string);
             THEN("The time series should contain the whole csv.")
