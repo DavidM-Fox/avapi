@@ -253,6 +253,7 @@ TimeSeries Crypto::getTimeSeries(const avapi::SeriesType &type,
 ExchangeRate Crypto::getExchangeRate(const std::string &market)
 ```
 The ```avapi::TimeSeries``` object is constructed in a similar fashion to ones created with ```Stock::getTimeSeries()```. However, The data vector within each ```avapi::TimePair``` is explicitly ordered ```[open, high, low, close, volume]```.
+
 The ```avapi::ExchangeRate``` object is a class containing the stock of interest's current exchange rate for a specified market. It is constructed with a "from" and "to" symbol, a UNIX timestamp, and a data vector ordered: ```[Exchange Rate, Bid Price, Ask Price]```
 
 ## Daily, Weekly, and Monthly Data
