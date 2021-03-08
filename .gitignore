@@ -34,7 +34,6 @@
 # Project Specific 
 *.key
 build/
-data/
 .vscode/
 src/main.cpp
 main.cpp
