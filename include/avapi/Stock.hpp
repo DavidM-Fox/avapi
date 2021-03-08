@@ -12,12 +12,12 @@ class ApiCall;
 
 class Stock {
 public:
-    // Constructors
     Stock();
     explicit Stock(const std::string &symbol);
     explicit Stock(const std::string &symbol, const std::string &api_key);
 
-    // Historical Data
+    void setOutputSize(const SeriesSize &size);
+
     TimeSeries getTimeSeries(const SeriesType &type, const bool &adjusted,
                              const std::string &interval = "30min");
     GlobalQuote getGlobalQuote();

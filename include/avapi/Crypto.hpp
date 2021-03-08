@@ -12,12 +12,12 @@ class ApiCall;
 
 class Crypto {
 public:
-    // Constructors
     Crypto();
     explicit Crypto(const std::string &symbol);
     explicit Crypto(const std::string &symbol, const std::string &api_key);
 
-    // Historical Data
+    void setOutputSize(const SeriesSize &size);
+
     TimeSeries getTimeSeries(const SeriesType &type,
                              const std::string &market = "USD");
     ExchangeRate getExchangeRate(const std::string &market = "USD");
