@@ -2,7 +2,6 @@ cmake_minimum_required(VERSION 3.0.0)
 
 project(avapi LANGUAGES CXX)
 
-
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
@@ -10,29 +9,7 @@ find_package(CURL CONFIG REQUIRED)
 find_package(Catch2 CONFIG REQUIRED)
 find_package(nlohmann_json CONFIG REQUIRED)
 
-
-# set(PROJECT_SOURCES
-        # ${SRC_DIR}/avapi.cpp
-        # ${SRC_DIR}/ApiCall.cpp
-        # ${SRC_DIR}/UrlBuilder.cpp
-        # 
-        # ${INC_DIR}/rapidcsv.h
-        # ${INC_DIR}/avapi.h
-        # ${INC_DIR}/ApiCall.hpp
-        # ${INC_DIR}/UrlBuilder.hpp
-# )
-
-# set(TESTS
-        # test/main.cpp
-        # test/test01_stringReplace.cpp
-        # test/test02_readFirstLineFromFile.cpp
-        # test/test03_toUnixTimestamp.cpp
-        # test/test04_parseCsvFile.cpp 
-        # test/test05_parseCsvString.cpp
-# )
-
 include_directories(include)
-
 set(SRC_DIR src)
 set(INC_DIR include)
 
@@ -61,8 +38,14 @@ set(SOURCES
 add_executable(avapi main.cpp ${SOURCES})
 target_link_libraries(avapi PRIVATE CURL::libcurl nlohmann_json nlohmann_json::nlohmann_json)
 
-# add_executable(avapi main.cpp ${PROJECT_SOURCES})
-# target_link_libraries(avapi PRIVATE Catch2::Catch2 CURL::libcurl nlohmann_json nlohmann_json::nlohmann_json)
+# set(TESTS
+        # test/main.cpp
+        # test/test01_stringReplace.cpp
+        # test/test02_readFirstLineFromFile.cpp
+        # test/test03_toUnixTimestamp.cpp
+        # test/test04_parseCsvFile.cpp 
+        # test/test05_parseCsvString.cpp
+# )
 
 # add_executable(avapi_test ${TESTS} ${PROJECT_SOURCES})
 # target_link_libraries(avapi_test PRIVATE CURL::libcurl)
