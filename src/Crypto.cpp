@@ -12,18 +12,18 @@ namespace avapi {
 /// @brief   avapi::Crypto Default Constructor
 Crypto::Crypto()
 {
-    this->m_symbol = "";
-    m_cryptoApiCall.api_key = "";
-    m_cryptoApiCall.output_size = "compact";
+    this->symbol = "";
+    api_call.api_key = "";
+    api_call.output_size = "compact";
 }
 
 /// @brief   avapi::Crypto constructor
 /// @param   symbol The crypto symbol of interest
 Crypto::Crypto(const std::string &symbol)
 {
-    this->m_symbol = symbol;
-    m_cryptoApiCall.api_key = "";
-    m_cryptoApiCall.output_size = "compact";
+    this->symbol = symbol;
+    api_call.api_key = "";
+    api_call.output_size = "compact";
 }
 
 /// @brief   avapi::Crypto constructor
@@ -31,9 +31,9 @@ Crypto::Crypto(const std::string &symbol)
 /// @param   api_key The Alpha Vantage API key to use
 Crypto::Crypto(const std::string &symbol, const std::string &api_key)
 {
-    this->m_symbol = symbol;
-    m_cryptoApiCall.api_key = api_key;
-    m_cryptoApiCall.output_size = "compact";
+    this->symbol = symbol;
+    api_call.api_key = api_key;
+    api_call.output_size = "compact";
 }
 
 /// @brief   Set the TimeSeries output size from Alpha Vantage
@@ -41,9 +41,9 @@ Crypto::Crypto(const std::string &symbol, const std::string &api_key)
 void Crypto::setOutputSize(const SeriesSize &size)
 {
     if (size == SeriesSize::COMPACT)
-        m_cryptoApiCall.output_size = "compact";
+        api_call.output_size = "compact";
     else if (size == SeriesSize::FULL)
-        m_cryptoApiCall.output_size = "full";
+        api_call.output_size = "full";
 }
 
 /// @brief   Get an avapi::TimeSeries for a crypto symbol of interest.
@@ -53,7 +53,7 @@ void Crypto::setOutputSize(const SeriesSize &size)
 TimeSeries Crypto::getTimeSeries(const SeriesType &type,
                                  const std::string &market)
 {
-    m_cryptoApiCall.resetQuery();
+    api_call.resetQuery();
 
     std::string function;
 
@@ -67,23 +67,22 @@ TimeSeries Crypto::getTimeSeries(const SeriesType &type,
                      "from Alpha Vantage, returning a daily TimeSeries.\n";
     }
 
-    function = m_seriesFunctionStrings[static_cast<int>(check)];
-    m_cryptoApiCall.setFieldValue(Url::FUNCTION, function);
+    function = series_function[static_cast<int>(check)];
+    api_call.setFieldValue(Url::FUNCTION, function);
 
     // Set other needed API fields
-    m_cryptoApiCall.setFieldValue(Url::SYMBOL, m_symbol);
-    m_cryptoApiCall.setFieldValue(Url::MARKET, market);
-    m_cryptoApiCall.setFieldValue(Url::OUTPUT_SIZE,
-                                  m_cryptoApiCall.output_size);
-    m_cryptoApiCall.setFieldValue(Url::DATA_TYPE, "csv");
+    api_call.setFieldValue(Url::SYMBOL, symbol);
+    api_call.setFieldValue(Url::MARKET, market);
+    api_call.setFieldValue(Url::OUTPUT_SIZE, api_call.output_size);
+    api_call.setFieldValue(Url::DATA_TYPE, "csv");
 
     // Download, parse, and create TimeSeries from csv data
-    TimeSeries series = parseCsvString(m_cryptoApiCall.curlQuery(), true);
-    series.m_symbol = m_symbol;
-    series.m_type = check;
-    series.m_adjusted = false;
-    series.m_market = market;
-    series.m_title = m_symbol + ": " + function;
+    TimeSeries series = parseCsvString(api_call.curlQuery(), true);
+    series.symbol = symbol;
+    series.type = check;
+    series.is_adjusted = false;
+    series.market = market;
+    series.title = symbol + ": " + function;
     return series;
 }
 
@@ -92,13 +91,13 @@ TimeSeries Crypto::getTimeSeries(const SeriesType &type,
 /// @returns An avapi::ExchangeRate object: [Exchange, Bid, Ask]
 ExchangeRate Crypto::getExchangeRate(const std::string &market)
 {
-    m_cryptoApiCall.resetQuery();
+    api_call.resetQuery();
 
-    m_cryptoApiCall.setFieldValue(Url::FUNCTION, "CURRENCY_EXCHANGE_RATE");
-    m_cryptoApiCall.setFieldValue(Url::FROM_CURRENCY, m_symbol);
-    m_cryptoApiCall.setFieldValue(Url::TO_CURRENCY, market);
+    api_call.setFieldValue(Url::FUNCTION, "CURRENCY_EXCHANGE_RATE");
+    api_call.setFieldValue(Url::FROM_CURRENCY, symbol);
+    api_call.setFieldValue(Url::TO_CURRENCY, market);
 
-    std::string data = m_cryptoApiCall.curlQuery();
+    std::string data = api_call.curlQuery();
 
     nlohmann::json json =
         nlohmann::json::parse(data)["Realtime Currency Exchange Rate"];
@@ -110,9 +109,9 @@ ExchangeRate Crypto::getExchangeRate(const std::string &market)
         std::stof(std::string(json["8. Bid Price"])),
         std::stof(std::string(json["9. Ask Price"]))};
 
-    return {m_symbol, market, timestamp, exchange_data};
+    return {symbol, market, timestamp, exchange_data};
 }
-const std::vector<std::string> Crypto::m_seriesFunctionStrings = {
+const std::vector<std::string> Crypto::series_function = {
     "DIGITAL_CURRENCY_DAILY", "DIGITAL_CURRENCY_WEEKLY",
     "DIGITAL_CURRENCY_MONTHLY"};
 

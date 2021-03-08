@@ -10,18 +10,18 @@ namespace avapi {
 /// @brief   avapi::Stock default constructor
 Stock::Stock()
 {
-    this->m_symbol = "";
-    m_apiCall.m_apiKey = "";
-    m_apiCall.m_outputSize = "compact";
+    this->symbol = "";
+    api_call.api_key = "";
+    api_call.output_size = "compact";
 }
 
 /// @brief   avapi::Stock constructor
 /// @param   symbol The stock symbol of interest
 Stock::Stock(const std::string &symbol)
 {
-    this->m_symbol = symbol;
-    m_apiCall.m_apiKey = "";
-    m_apiCall.m_outputSize = "compact";
+    this->symbol = symbol;
+    api_call.api_key = "";
+    api_call.output_size = "compact";
 }
 
 /// @brief   avapi::Stock constructor
@@ -29,9 +29,9 @@ Stock::Stock(const std::string &symbol)
 /// @param   api_key The Alpha Vantage API key to use
 Stock::Stock(const std::string &symbol, const std::string &api_key)
 {
-    this->m_symbol = symbol;
-    m_apiCall.m_apiKey = api_key;
-    m_apiCall.m_outputSize = "compact";
+    this->symbol = symbol;
+    api_call.api_key = api_key;
+    api_call.output_size = "compact";
 }
 
 /// @brief   Set the TimeSeries output size from Alpha Vantage
@@ -39,9 +39,9 @@ Stock::Stock(const std::string &symbol, const std::string &api_key)
 void Stock::setOutputSize(const SeriesSize &size)
 {
     if (size == SeriesSize::COMPACT)
-        m_apiCall.m_outputSize = "compact";
+        api_call.output_size = "compact";
     else if (size == SeriesSize::FULL)
-        m_apiCall.m_outputSize = "full";
+        api_call.output_size = "full";
 }
 
 /// @brief   Get an avapi::TimeSeries for a stock symbol of interest.
@@ -56,48 +56,48 @@ TimeSeries Stock::getTimeSeries(const avapi::SeriesType &type,
                                 const bool &adjusted,
                                 const std::string &interval)
 {
-    m_apiCall.resetQuery();
+    api_call.resetQuery();
 
     std::string title;
     std::string function;
 
     // Check if intraday (Uses different parameters than daily, weekly, monthly)
     if (type == SeriesType::INTRADAY) {
-        function = m_seriesFunctionStrings[static_cast<int>(type)];
-        m_apiCall.setFieldValue(Url::FUNCTION, function);
-        m_apiCall.setFieldValue(Url::INTERVAL, interval);
+        function = series_function[static_cast<int>(type)];
+        api_call.setFieldValue(Url::FUNCTION, function);
+        api_call.setFieldValue(Url::INTERVAL, interval);
         if (adjusted) {
-            m_apiCall.setFieldValue(Url::ADJUSTED, "true");
+            api_call.setFieldValue(Url::ADJUSTED, "true");
             title = function + " (" + interval + ", Adjusted)";
         }
         else {
-            m_apiCall.setFieldValue(Url::ADJUSTED, "false");
+            api_call.setFieldValue(Url::ADJUSTED, "false");
             title = function + " (" + interval + ", Non-Adjusted)";
         }
     }
     else {
-        function = m_seriesFunctionStrings[static_cast<int>(type)];
+        function = series_function[static_cast<int>(type)];
         if (adjusted) {
-            m_apiCall.setFieldValue(Url::FUNCTION, function + "_ADJUSTED");
+            api_call.setFieldValue(Url::FUNCTION, function + "_ADJUSTED");
             title = function + " (Adjusted)";
         }
         else {
-            m_apiCall.setFieldValue(Url::FUNCTION, function);
+            api_call.setFieldValue(Url::FUNCTION, function);
             title = function + " (Non-Adjusted)";
         }
     }
 
     // Set other needed API fields
-    m_apiCall.setFieldValue(Url::SYMBOL, m_symbol);
-    m_apiCall.setFieldValue(Url::OUTPUT_SIZE, m_apiCall.m_outputSize);
-    m_apiCall.setFieldValue(Url::DATA_TYPE, "csv");
+    api_call.setFieldValue(Url::SYMBOL, symbol);
+    api_call.setFieldValue(Url::OUTPUT_SIZE, api_call.output_size);
+    api_call.setFieldValue(Url::DATA_TYPE, "csv");
 
     // Download, parse, and create TimeSeries from csv data
-    TimeSeries series = parseCsvString(m_apiCall.curlQuery());
-    series.m_symbol = m_symbol;
-    series.m_type = type;
-    series.m_adjusted = adjusted;
-    series.m_title = m_symbol + ": " + title;
+    TimeSeries series = parseCsvString(api_call.curlQuery());
+    series.symbol = symbol;
+    series.type = type;
+    series.is_adjusted = adjusted;
+    series.title = symbol + ": " + title;
     return series;
 }
 
@@ -106,15 +106,15 @@ TimeSeries Stock::getTimeSeries(const avapi::SeriesType &type,
 GlobalQuote Stock::getGlobalQuote()
 {
     // Create new ApiCall object for this method
-    m_apiCall.resetQuery();
+    api_call.resetQuery();
 
     // Only three parameters needed for GlobalQuote
-    m_apiCall.setFieldValue(Url::FUNCTION, "GLOBAL_QUOTE");
-    m_apiCall.setFieldValue(Url::SYMBOL, m_symbol);
-    m_apiCall.setFieldValue(Url::DATA_TYPE, "csv");
+    api_call.setFieldValue(Url::FUNCTION, "GLOBAL_QUOTE");
+    api_call.setFieldValue(Url::SYMBOL, symbol);
+    api_call.setFieldValue(Url::DATA_TYPE, "csv");
 
     // Download csv data for global quote
-    std::stringstream csv(m_apiCall.curlQuery());
+    std::stringstream csv(api_call.curlQuery());
 
     // Get global quote row from csv std::string
     rapidcsv::Document doc(csv);
@@ -145,10 +145,10 @@ GlobalQuote Stock::getGlobalQuote()
     transform(data.begin(), data.end(), data_f.begin(),
               [](std::string const &val) { return std::stof(val); });
 
-    return {m_symbol, timestamp, data_f};
+    return {symbol, timestamp, data_f};
 }
 
-const std::vector<std::string> Stock::m_seriesFunctionStrings = {
+const std::vector<std::string> Stock::series_function = {
     "TIME_SERIES_INTRADAY", "TIME_SERIES_DAILY", "TIME_SERIES_WEEKLY",
     "TIME_SERIES_MONTHLY"};
 } // namespace avapi

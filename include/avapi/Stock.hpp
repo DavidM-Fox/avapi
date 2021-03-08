@@ -22,11 +22,11 @@ public:
                              const std::string &interval = "30min");
     GlobalQuote getGlobalQuote();
 
-    std::string m_symbol;
+    std::string symbol;
 
 private:
-    ApiCall m_apiCall;
-    static const std::vector<std::string> m_seriesFunctionStrings;
+    ApiCall api_call;
+    static const std::vector<std::string> series_function;
 };
 } // namespace avapi
 #endif

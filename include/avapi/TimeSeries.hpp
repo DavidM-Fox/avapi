@@ -22,21 +22,21 @@ public:
     const size_t rowCount();
     const size_t colCount();
 
-    std::string m_symbol;
-    SeriesType m_type;
-    bool m_adjusted;
-    std::string m_market;
+    std::string symbol;
+    SeriesType type;
+    bool is_adjusted;
+    std::string market;
 
-    std::string m_title;
+    std::string title;
     std::vector<std::string> m_headers;
 
-    TimePair &operator[](size_t i) { return m_data[i]; }
+    TimePair &operator[](size_t i) { return data_series[i]; }
     friend std::ostream &operator<<(std::ostream &os, const TimeSeries &series);
 
 private:
-    std::vector<TimePair> m_data;
-    size_t m_nRows;
-    size_t m_nCols;
+    std::vector<TimePair> data_series;
+    size_t n_rows;
+    size_t n_cols;
 };
 
 TimeSeries parseCsvFile(const std::string &file, const bool &crypto = false);

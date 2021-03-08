@@ -8,27 +8,27 @@
 namespace avapi {
 
 /// @brief TimeSeries default constructor
-TimeSeries::TimeSeries() : m_market("USD"), m_nRows(0), m_nCols(0) {}
+TimeSeries::TimeSeries() : market("USD"), n_rows(0), n_cols(0) {}
 
 /// @brief TimeSeries constructor
 /// @param data A vector of avapi::TimePair data
 TimeSeries::TimeSeries(const std::vector<avapi::TimePair> &data)
-    : m_market("USD"), m_data(data)
+    : market("USD"), data_series(data)
 {
-    m_nRows = data.size();
-    m_nCols = data[0].m_data.size();
+    n_rows = data.size();
+    n_cols = data[0].data.size();
 }
 
 /// @brief Push an avapi::TimePair into the avapi::TimeSeries
 /// @param pair An avapi::TimePair to be pushed back
-void TimeSeries::pushBack(const TimePair &pair) { m_data.push_back(pair); }
+void TimeSeries::pushBack(const TimePair &pair) { data_series.push_back(pair); }
 
 /// @brief   Reverses the avapi::TimeSeries' data, useful for when the data is
 /// desired to be plotted
 void TimeSeries::reverseData()
 {
     // Data coming from Alpha Vantage is reversed (Dates are reversed)
-    std::reverse(m_data.begin(), m_data.end());
+    std::reverse(data_series.begin(), data_series.end());
 }
 
 /// @brief print formatted avapi::TimeSeries' contents
@@ -55,8 +55,8 @@ void TimeSeries::printData(const size_t &count)
         n = count;
 
     for (size_t i = 0; i < n; ++i) {
-        std::cout << std::setw(width) << std::right << m_data[i].m_time;
-        for (auto &value : m_data[i].m_data) {
+        std::cout << std::setw(width) << std::right << data_series[i].timestamp;
+        for (auto &value : data_series[i].data) {
             std::cout << std::setw(width) << std::right << std::fixed
                       << std::setprecision(2) << value;
         }
@@ -74,11 +74,11 @@ void TimeSeries::setHeaders(const std::vector<std::string> &headers)
 
 /// @brief Get the avapi::TimeSeries' row count
 /// @return size_t row count
-const size_t TimeSeries::rowCount() { return m_nRows; }
+const size_t TimeSeries::rowCount() { return n_rows; }
 
 /// @brief Get the avapi::TimeSeries' column count
 /// @return size_t column count
-const size_t TimeSeries::colCount() { return m_nCols; }
+const size_t TimeSeries::colCount() { return n_cols; }
 
 /// @brief push formatted avapi::TimeSeries' contents to ostream
 std::ostream &operator<<(std::ostream &os, const TimeSeries &series)
@@ -96,9 +96,9 @@ std::ostream &operator<<(std::ostream &os, const TimeSeries &series)
 
     os << '\n' << separator << '\n';
 
-    for (auto &pair : series.m_data) {
-        os << std::setw(width) << std::right << pair.m_time;
-        for (auto &value : pair.m_data) {
+    for (auto &pair : series.data_series) {
+        os << std::setw(width) << std::right << pair.timestamp;
+        for (auto &value : pair.data) {
             os << std::setw(width) << std::right << std::fixed
                << std::setprecision(2) << value;
         }
