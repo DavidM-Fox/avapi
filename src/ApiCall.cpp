@@ -39,7 +39,7 @@ std::string Url::getValue(const Url::Field &field)
 
 /// @brief Construct an API url query using m_query
 /// @returns An Alpha Vantage API query URL
-std::string Url::buildUrlQuery()
+std::string Url::buildQuery()
 {
     std::string url{"https://www.alphavantage.co/query?"};
 
@@ -100,13 +100,13 @@ std::string ApiCall::getValue(const Url::Field &field)
 /// @brief   Curls m_url
 /// @param   url The API query URL to be curled
 /// @returns The data as an std::string
-std::string ApiCall::Curl()
+std::string ApiCall::curlQuery()
 {
     if (m_apiKey == "") {
         throw std::exception(
             "\"avapi/ApiCall.cpp\": Alpha Vantage API key not present.");
     }
-    std::string url = m_url->buildUrlQuery();
+    std::string url = m_url->buildQuery();
     CURL *curl;
     CURLcode res;
     std::string data;
@@ -125,7 +125,7 @@ std::string ApiCall::Curl()
     return data;
 }
 
-void ApiCall::ResetUrl()
+void ApiCall::resetQuery()
 {
     if (m_url != nullptr)
         delete m_url;
