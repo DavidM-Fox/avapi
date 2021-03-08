@@ -9,7 +9,7 @@ int main()
     avapi::Stock gme(symbol, key);
 
     avapi::TimeSeries series =
-        gme.getTimeSeries(avapi::TimeSeries::type::DAILY, true);
+        gme.getTimeSeries(avapi::SeriesType::DAILY, false);
 
     series.printData(10);
 }

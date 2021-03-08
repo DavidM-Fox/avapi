@@ -6,18 +6,18 @@
 
 namespace avapi {
 
+enum class SeriesType { INTRADAY = 0, DAILY, WEEKLY, MONTHLY };
+
 class TimeSeries {
 
 public:
-    enum class type { INTRADAY, DAILY, WEEKLY, MONTHLY };
-
     TimeSeries(const std::vector<avapi::TimePair> &data);
     TimeSeries();
 
     void pushBack(const TimePair &pair);
 
     void setSymbol(const std::string &symbol);
-    void setType(const TimeSeries::type &type);
+    void setType(const SeriesType &type);
     void setAdjusted(const bool &adjusted);
     void setTitle(const std::string &title);
     void setHeaders(const std::vector<std::string> &headers);
@@ -36,7 +36,7 @@ public:
 
 private:
     std::string m_symbol;
-    TimeSeries::type m_type;
+    SeriesType m_type;
     std::string m_title;
 
     bool m_isAdjusted;

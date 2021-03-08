@@ -17,7 +17,7 @@ class Crypto {
 public:
     explicit Crypto(const std::string &symbol, const std::string &api_key);
 
-    TimeSeries getTimeSeries(const TimeSeries::type &type,
+    TimeSeries getTimeSeries(const SeriesType &type,
                              const std::string &market = "USD");
 
     void setOutputSize(const std::string &size = "compact");
@@ -29,6 +29,8 @@ private:
     std::string m_symbol;
     std::string m_outputSize;
     std::string m_apiKey;
+
+    static const std::vector<std::string> m_seriesFunctionStrings;
 };
 } // namespace avapi
 #endif

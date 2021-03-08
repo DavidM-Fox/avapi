@@ -37,7 +37,6 @@ set(SRC_DIR src)
 set(INC_DIR include)
 
 set(SOURCES
-        ${SRC_DIR}/Url.cpp
         ${SRC_DIR}/ApiCall.cpp
         ${SRC_DIR}/AvapiMisc.cpp
         ${SRC_DIR}/Stock.cpp
@@ -49,7 +48,6 @@ set(SOURCES
 
         ${INC_DIR}/avapi.hpp
         ${INC_DIR}/AvapiCore.hpp
-        ${INC_DIR}/avapi/Url.hpp
         ${INC_DIR}/avapi/ApiCall.hpp
         ${INC_DIR}/avapi/AvapiMisc.hpp
         ${INC_DIR}/avapi/Stock.hpp

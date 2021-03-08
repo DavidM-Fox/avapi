@@ -20,7 +20,7 @@ void TimeSeries::pushBack(const TimePair &pair) { m_data.push_back(pair); }
 
 /// @brief Set the avapi::TimeSeries' type
 /// @param type avapi::series::type
-void TimeSeries::setType(const TimeSeries::type &type) { m_type = type; }
+void TimeSeries::setType(const SeriesType &type) { m_type = type; }
 
 /// @brief Set whether or not the avapi::TimeSeries has adjusted values
 /// @param adjusted bool

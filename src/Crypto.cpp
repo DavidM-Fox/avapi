@@ -24,30 +24,26 @@ Crypto::Crypto(const std::string &symbol, const std::string &api_key)
 /// @param   type enum avapi::series::type for TimeSeries type
 /// @param   market The exchange market (default = "USD")
 /// @returns An avapi::TimeSeries: [open,high,low,close,volume]
-TimeSeries Crypto::getTimeSeries(const TimeSeries::type &type,
+TimeSeries Crypto::getTimeSeries(const SeriesType &type,
                                  const std::string &market)
 {
     // Create new ApiCall object for this method
     m_apiCall = new ApiCall(m_apiKey);
+    std::string title;
+    std::string function;
 
-    // Set API function field
-    switch (type) {
-    case TimeSeries::type::INTRADAY:
-    case TimeSeries::type::DAILY:
-        m_apiCall->setFieldValue(Url::FUNCTION, "DIGITAL_CURRENCY_DAILY");
-        break;
-
-    case TimeSeries::type::WEEKLY:
-        m_apiCall->setFieldValue(Url::FUNCTION, "DIGITAL_CURRENCY_WEEKLY");
-        break;
-
-    case TimeSeries::type::MONTHLY:
-        m_apiCall->setFieldValue(Url::FUNCTION, "DIGITAL_CURRENCY_MONTHLY");
-        break;
-
-    default:
-        std::invalid_argument ex("Incorrect avapi::Crypto::function argument");
-        throw ex;
+    // Intraday not available from Alpha Vantage
+    if (type == SeriesType::INTRADAY) {
+        std::cerr << "\"avapi/Crypto.cpp\": Intraday not available from Alpha "
+                     "Vantage, returning a daily TimeSeries.\n";
+        function = "DIGITAL_CURRENCY_DAILY";
+        m_apiCall->setFieldValue(Url::FUNCTION, function);
+        title = function;
+    }
+    else {
+        function = m_seriesFunctionStrings[static_cast<int>(type)];
+        m_apiCall->setFieldValue(Url::FUNCTION, function);
+        title = function;
     }
 
     // Set other needed API fields
@@ -101,5 +97,8 @@ ExchangeRate Crypto::getExchangeRate(const std::string &market)
     ExchangeRate exchange(m_symbol, market, timestamp, exchange_data);
     return exchange;
 }
+const std::vector<std::string> Crypto::m_seriesFunctionStrings = {
+    "DIGITAL_CURRENCY_DAILY", "DIGITAL_CURRENCY_WEEKLY",
+    "DIGITAL_CURRENCY_MONTHLY"};
 
 } // namespace avapi

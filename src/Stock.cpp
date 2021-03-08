@@ -29,73 +29,39 @@ Stock::Stock(const std::string &symbol, const std::string &api_key)
 /// @returns An avapi::TimeSeries: [open,high,low,close,volume]
 /// or an adjusted avapi::TimeSeries:
 /// [open,high,low,close,adjusted_close,volume,dividend_amount,split_coefficient]
-TimeSeries Stock::getTimeSeries(const TimeSeries::type &type,
-                                const bool &adjusted,
+TimeSeries Stock::getTimeSeries(const SeriesType &type, const bool &adjusted,
                                 const std::string &interval)
 {
     // Create new ApiCall object for this method
     m_apiCall = new ApiCall(m_apiKey);
 
     std::string title;
+    std::string function;
 
-    // Set API function field
-    switch (type) {
-    case TimeSeries::type::INTRADAY:
-        m_apiCall->setFieldValue(Url::FUNCTION, "TIME_SERIES_INTRADAY");
+    // Check if intraday (Uses different paramters than daily,weekly,monthly)
+    if (type == SeriesType::INTRADAY) {
+        function = m_seriesFunctionStrings[static_cast<int>(type)];
+        m_apiCall->setFieldValue(Url::FUNCTION, function);
         m_apiCall->setFieldValue(Url::INTERVAL, interval);
         if (adjusted) {
             m_apiCall->setFieldValue(Url::ADJUSTED, "true");
-            title =
-                "Intraday Time Series (Adjusted, interval = " + interval + ')';
+            title = function + " (" + interval + ", Adjusted)";
         }
         else {
             m_apiCall->setFieldValue(Url::ADJUSTED, "false");
-            title =
-                "Intraday Time Series (Non-Adjusted, interval = " + interval +
-                ')';
+            title = function + " (" + interval + ", Non-Adjusted)";
         }
-        break;
-
-    case TimeSeries::type::DAILY:
+    }
+    else {
+        function = m_seriesFunctionStrings[static_cast<int>(type)];
         if (adjusted) {
-            m_apiCall->setFieldValue(Url::FUNCTION,
-                                     "TIME_SERIES_DAILY_ADJUSTED");
-            title = "Daily Time Series (Adjusted)";
-        }
-
-        else {
-            m_apiCall->setFieldValue(Url::FUNCTION, "TIME_SERIES_DAILY");
-            title = "Daily Time Series (Non-Adjusted)";
-        }
-        break;
-
-    case TimeSeries::type::WEEKLY:
-        if (adjusted) {
-            m_apiCall->setFieldValue(Url::FUNCTION,
-                                     "TIME_SERIES_WEEKLY_ADJUSTED");
-            title = "Weekly Time Series (Adjusted)";
+            m_apiCall->setFieldValue(Url::FUNCTION, function + "_ADJUSTED");
+            title = function + " (Adjusted)";
         }
         else {
-            m_apiCall->setFieldValue(Url::FUNCTION, "TIME_SERIES_WEEKLY");
-            title = "Weekly Time Series (Non-Adjusted)";
+            m_apiCall->setFieldValue(Url::FUNCTION, function);
+            title = function + " (Non-Adjusted)";
         }
-        break;
-
-    case TimeSeries::type::MONTHLY:
-        if (adjusted) {
-            m_apiCall->setFieldValue(Url::FUNCTION,
-                                     "TIME_SERIES_WEEKLY_ADJUSTED");
-            title = "Monthly Time Series (Adjusted)";
-        }
-        else {
-            m_apiCall->setFieldValue(Url::FUNCTION, "TIME_SERIES_WEEKLY");
-            title = "Monthly Time Series (Non-Adjusted)";
-        }
-        break;
-
-    default:
-        std::invalid_argument ex("Incorrect avapi::Stock::function argument");
-        throw ex;
     }
 
     // Set other needed API fields
@@ -150,4 +116,8 @@ GlobalQuote Stock::getGlobalQuote()
     GlobalQuote global_quote(m_symbol, timestamp, data_f);
     return global_quote;
 }
+
+const std::vector<std::string> Stock::m_seriesFunctionStrings = {
+    "TIME_SERIES_INTRADAY", "TIME_SERIES_DAILY", "TIME_SERIES_WEEKLY",
+    "TIME_SERIES_MONTHLY"};
 } // namespace avapi
