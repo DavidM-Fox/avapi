@@ -6,46 +6,37 @@
 
 namespace avapi {
 
+enum class SeriesSize { COMPACT = 0, FULL };
 enum class SeriesType { INTRADAY = 0, DAILY, WEEKLY, MONTHLY };
 
 class TimeSeries {
-
 public:
-    TimeSeries(const std::vector<avapi::TimePair> &data);
     TimeSeries();
+    TimeSeries(const std::vector<avapi::TimePair> &data);
 
     void pushBack(const TimePair &pair);
-
-    void setSymbol(const std::string &symbol);
-    void setType(const SeriesType &type);
-    void setAdjusted(const bool &adjusted);
-    void setTitle(const std::string &title);
-    void setHeaders(const std::vector<std::string> &headers);
     void reverseData();
     void printData(const size_t &count);
-
-    std::string symbol();
+    void setHeaders(const std::vector<std::string> &headers);
 
     const size_t rowCount();
     const size_t colCount();
 
+    std::string m_symbol;
+    SeriesType m_type;
+    bool m_adjusted;
+    std::string m_market;
+
+    std::string m_title;
     std::vector<std::string> m_headers;
 
     TimePair &operator[](size_t i) { return m_data[i]; }
     friend std::ostream &operator<<(std::ostream &os, const TimeSeries &series);
 
 private:
-    std::string m_symbol;
-    SeriesType m_type;
-    std::string m_title;
-
-    bool m_isAdjusted;
-
     std::vector<TimePair> m_data;
     size_t m_nRows;
     size_t m_nCols;
-
-    std::string m_market;
 };
 
 TimeSeries parseCsvFile(const std::string &file, const bool &crypto = false);
