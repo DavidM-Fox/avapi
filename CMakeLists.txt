@@ -15,7 +15,7 @@ set(INC_DIR include)
 
 set(SOURCES
         ${SRC_DIR}/ApiCall.cpp
-        ${SRC_DIR}/AvapiMisc.cpp
+        ${SRC_DIR}/misc.cpp
         ${SRC_DIR}/Stock.cpp
         ${SRC_DIR}/Crypto.cpp
         ${SRC_DIR}/TimeSeries.cpp
@@ -26,7 +26,7 @@ set(SOURCES
         ${INC_DIR}/avapi.hpp
         ${INC_DIR}/rapidcsv.h
         ${INC_DIR}/avapi/ApiCall.hpp
-        ${INC_DIR}/avapi/AvapiMisc.hpp
+        ${INC_DIR}/avapi/misc.hpp
         ${INC_DIR}/avapi/Stock.hpp
         ${INC_DIR}/avapi/Crypto.hpp
         ${INC_DIR}/avapi/TimePair.hpp
