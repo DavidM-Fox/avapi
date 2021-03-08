@@ -1,4 +1,4 @@
-#include "avapi.h"
+#include "avapi/TimeSeries.hpp"
 #include "catch.hpp"
 
 SCENARIO("avapi::parseCsvString()")
@@ -29,36 +29,10 @@ SCENARIO("avapi::parseCsvString()")
 
         WHEN("avapi::parseCsvString() is called without n_last_rows parameter.")
         {
-            avapi::time_series series = avapi::parseCsvString(csv_string);
+            avapi::TimeSeries series = avapi::parseCsvString(csv_string);
             THEN("The time series should contain the whole csv.")
             {
-                REQUIRE(series.size() == 19);
-            }
-        }
-        WHEN("avapi::parseCsvString() is called with n_last_rows parameter.")
-        {
-            avapi::time_series series = avapi::parseCsvString(csv_string, 10);
-            THEN("The time series should contain only n_last_rows.")
-            {
-                REQUIRE(series.size() == 10);
-            }
-        }
-        WHEN("avapi::parseCsvString() is called and n_last_rows > available "
-             "rows.")
-        {
-            avapi::time_series series =
-                avapi::parseCsvString(csv_string, 1000000);
-            THEN("The time series should contain the whole csv.")
-            {
-                REQUIRE(series.size() == 19);
-            }
-        }
-        WHEN("avapi::parseCsvFile() is called and n_last_rows == 0.")
-        {
-            avapi::time_series series = avapi::parseCsvString(csv_string, 0);
-            THEN("The time series should contain the whole csv.")
-            {
-                REQUIRE(series.size() == 19);
+                REQUIRE(series.rowCount() == 19);
             }
         }
     }

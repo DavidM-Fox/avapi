@@ -1,4 +1,4 @@
-#include "avapi.h"
+#include "avapi/AvapiMisc.hpp"
 #include "catch.hpp"
 
 SCENARIO("avapi::stringReplace()", "[stringReplace]")

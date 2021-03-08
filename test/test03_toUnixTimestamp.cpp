@@ -1,4 +1,4 @@
-#include "avapi.h"
+#include "avapi/TimeSeries.hpp"
 #include "catch.hpp"
 
 TEST_CASE("avapi::toUnixTimestamp()")
