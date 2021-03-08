@@ -36,6 +36,16 @@ Crypto::Crypto(const std::string &symbol, const std::string &api_key)
     m_apiCall.m_outputSize = "compact";
 }
 
+/// @brief   Set the TimeSeries output size from Alpha Vantage
+/// @param   size enum class SeriesSize [COMPACT, FULL]
+void Crypto::setOutputSize(const SeriesSize &size)
+{
+    if (size == SeriesSize::COMPACT)
+        m_apiCall.m_outputSize = "compact";
+    else if (size == SeriesSize::FULL)
+        m_apiCall.m_outputSize = "full";
+}
+
 /// @brief   Get an avapi::TimeSeries for a crypto symbol of interest.
 /// @param   type enum class avapi::SeriesType
 /// @param   market The exchange market (default = "USD")
@@ -43,24 +53,22 @@ Crypto::Crypto(const std::string &symbol, const std::string &api_key)
 TimeSeries Crypto::getTimeSeries(const SeriesType &type,
                                  const std::string &market)
 {
-    m_apiCall.ResetUrl();
+    m_apiCall.resetQuery();
 
-    std::string title;
     std::string function;
 
+    SeriesType check = type;
+
     // Intraday not available from Alpha Vantage
-    if (type == SeriesType::INTRADAY) {
-        std::cerr << "\"avapi/Crypto.cpp\": Intraday not available from Alpha "
-                     "Vantage, returning a daily TimeSeries.\n";
-        function = "DIGITAL_CURRENCY_DAILY";
-        m_apiCall.setFieldValue(Url::FUNCTION, function);
-        title = function;
+    if (check == SeriesType::INTRADAY) {
+        check = SeriesType::DAILY;
+        std::cerr << "avapi/Crypto.cpp: exception: "
+                     "'avapi::Crypto::getTimeSeries': Intraday not available "
+                     "from Alpha Vantage, returning a daily TimeSeries.\n";
     }
-    else {
-        function = m_seriesFunctionStrings[static_cast<int>(type)];
-        m_apiCall.setFieldValue(Url::FUNCTION, function);
-        title = function;
-    }
+
+    function = m_seriesFunctionStrings[static_cast<int>(check)];
+    m_apiCall.setFieldValue(Url::FUNCTION, function);
 
     // Set other needed API fields
     m_apiCall.setFieldValue(Url::SYMBOL, m_symbol);
@@ -69,9 +77,12 @@ TimeSeries Crypto::getTimeSeries(const SeriesType &type,
     m_apiCall.setFieldValue(Url::DATA_TYPE, "csv");
 
     // Download, parse, and create TimeSeries from csv data
-    TimeSeries series = parseCsvString(m_apiCall.Curl(), true);
-
-    series.setSymbol(m_symbol);
+    TimeSeries series = parseCsvString(m_apiCall.curlQuery(), true);
+    series.m_symbol = m_symbol;
+    series.m_type = check;
+    series.m_adjusted = false;
+    series.m_market = market;
+    series.m_title = m_symbol + ": " + function;
     return series;
 }
 
@@ -80,31 +91,25 @@ TimeSeries Crypto::getTimeSeries(const SeriesType &type,
 /// @returns An avapi::ExchangeRate object: [Exchange, Bid, Ask]
 ExchangeRate Crypto::getExchangeRate(const std::string &market)
 {
-    m_apiCall.ResetUrl();
+    m_apiCall.resetQuery();
 
     m_apiCall.setFieldValue(Url::FUNCTION, "CURRENCY_EXCHANGE_RATE");
     m_apiCall.setFieldValue(Url::FROM_CURRENCY, m_symbol);
     m_apiCall.setFieldValue(Url::TO_CURRENCY, market);
 
-    std::string data = m_apiCall.Curl();
+    std::string data = m_apiCall.curlQuery();
 
     nlohmann::json json =
         nlohmann::json::parse(data)["Realtime Currency Exchange Rate"];
 
     std::time_t timestamp = toUnixTimestamp(json["6. Last Refreshed"]);
 
-    std::string exchange_rate = json["5. Exchange Rate"];
-    std::string bid_price = json["8. Bid Price"];
-    std::string ask_price = json["9. Ask Price"];
+    std::vector<float> exchange_data = {
+        std::stof(std::string(json["5. Exchange Rate"])),
+        std::stof(std::string(json["8. Bid Price"])),
+        std::stof(std::string(json["9. Ask Price"]))};
 
-    std::vector<float> exchange_data;
-
-    exchange_data.push_back(std::stof(exchange_rate));
-    exchange_data.push_back(std::stof(bid_price));
-    exchange_data.push_back(std::stof(ask_price));
-
-    ExchangeRate exchange(m_symbol, market, timestamp, exchange_data);
-    return exchange;
+    return {m_symbol, market, timestamp, exchange_data};
 }
 const std::vector<std::string> Crypto::m_seriesFunctionStrings = {
     "DIGITAL_CURRENCY_DAILY", "DIGITAL_CURRENCY_WEEKLY",

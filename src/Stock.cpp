@@ -1,5 +1,6 @@
 #include <algorithm>
 #include <sstream>
+#include <nlohmann/json.hpp>
 #include "rapidcsv.h"
 #include "avapi/ApiCall.hpp"
 #include "avapi/Stock.hpp"
@@ -33,6 +34,16 @@ Stock::Stock(const std::string &symbol, const std::string &api_key)
     m_apiCall.m_outputSize = "compact";
 }
 
+/// @brief   Set the TimeSeries output size from Alpha Vantage
+/// @param   size enum class SeriesSize [COMPACT, FULL]
+void Stock::setOutputSize(const SeriesSize &size)
+{
+    if (size == SeriesSize::COMPACT)
+        m_apiCall.m_outputSize = "compact";
+    else if (size == SeriesSize::FULL)
+        m_apiCall.m_outputSize = "full";
+}
+
 /// @brief   Get an avapi::TimeSeries for a stock symbol of interest.
 /// @param   type enum class avapi::SeriesType
 /// @param   adjusted Whether or not the data should have adjusted values
@@ -45,7 +56,7 @@ TimeSeries Stock::getTimeSeries(const avapi::SeriesType &type,
                                 const bool &adjusted,
                                 const std::string &interval)
 {
-    m_apiCall.ResetUrl();
+    m_apiCall.resetQuery();
 
     std::string title;
     std::string function;
@@ -82,11 +93,11 @@ TimeSeries Stock::getTimeSeries(const avapi::SeriesType &type,
     m_apiCall.setFieldValue(Url::DATA_TYPE, "csv");
 
     // Download, parse, and create TimeSeries from csv data
-    TimeSeries series = parseCsvString(m_apiCall.Curl());
-    series.setSymbol(m_symbol);
-    series.setType(type);
-    series.setAdjusted(adjusted);
-    series.setTitle(m_symbol + ": " + title);
+    TimeSeries series = parseCsvString(m_apiCall.curlQuery());
+    series.m_symbol = m_symbol;
+    series.m_type = type;
+    series.m_adjusted = adjusted;
+    series.m_title = m_symbol + ": " + title;
     return series;
 }
 
@@ -95,7 +106,7 @@ TimeSeries Stock::getTimeSeries(const avapi::SeriesType &type,
 GlobalQuote Stock::getGlobalQuote()
 {
     // Create new ApiCall object for this method
-    m_apiCall.ResetUrl();
+    m_apiCall.resetQuery();
 
     // Only three parameters needed for GlobalQuote
     m_apiCall.setFieldValue(Url::FUNCTION, "GLOBAL_QUOTE");
@@ -103,10 +114,25 @@ GlobalQuote Stock::getGlobalQuote()
     m_apiCall.setFieldValue(Url::DATA_TYPE, "csv");
 
     // Download csv data for global quote
-    std::stringstream csv(m_apiCall.Curl());
+    std::stringstream csv(m_apiCall.curlQuery());
 
     // Get global quote row from csv std::string
     rapidcsv::Document doc(csv);
+    try {
+
+        size_t count = doc.GetRowCount();
+        if (count == 0) {
+            throw std::exception(
+                "avapi/Stock.cpp: avapi exception: 'Stock::GlobalQuote': "
+                "Invalid CSV response from Alpha Vantage.");
+        }
+    }
+    catch (std::exception &ex) {
+        std::cerr << "Exception Caught: " << ex.what();
+        std::cerr << " Returning empty Global Quote.\n";
+        return {"NULL", 0, std::vector<float>(8, 0.0)};
+    }
+
     std::vector<std::string> data = doc.GetRow<std::string>(0);
 
     // Save and convert latestDay and then erase it along with symbol
@@ -119,8 +145,7 @@ GlobalQuote Stock::getGlobalQuote()
     transform(data.begin(), data.end(), data_f.begin(),
               [](std::string const &val) { return std::stof(val); });
 
-    GlobalQuote global_quote(m_symbol, timestamp, data_f);
-    return global_quote;
+    return {m_symbol, timestamp, data_f};
 }
 
 const std::vector<std::string> Stock::m_seriesFunctionStrings = {
