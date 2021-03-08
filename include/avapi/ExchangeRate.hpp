@@ -14,12 +14,12 @@ public:
     void printData();
 
     // Easy Getters
-    const std::string &FromSymbol() { return m_fromSymbol; }
-    const std::string &ToSymbol() { return m_toSymbol; }
-    const std::time_t &Timestamp() { return m_timestamp; }
-    const float &Exchange() { return m_data[0]; }
-    const float &BidPrice() { return m_data[1]; }
-    const float &AskPrice() { return m_data[2]; }
+    const std::string &FromSymbol() const { return m_fromSymbol; }
+    const std::string &ToSymbol() const { return m_toSymbol; }
+    const std::time_t &Timestamp() const { return m_timestamp; }
+    const float &Exchange() const { return m_data[0]; }
+    const float &BidPrice() const { return m_data[1]; }
+    const float &AskPrice() const { return m_data[2]; }
 
     const float &operator[](size_t i) { return m_data[i]; }
 

@@ -1,3 +1,4 @@
+#include <iostream>
 #include <stdexcept>
 #include <curl/curl.h>
 #include "avapi/ApiCall.hpp"
@@ -74,19 +75,11 @@ ApiCall::ApiCall(const std::string &key) : m_apiKey(key)
 
 /// @brief   ApiCall Class deconstructor
 /// @param   key The Alpha Vantage API key to set
-ApiCall::~ApiCall() { delete m_url; }
-
-/// @brief   Set the API key
-/// @param   key The Alpha Vantage API key to set
-void ApiCall::setApiKey(const std::string &key)
+ApiCall::~ApiCall()
 {
-    m_url->setFieldValue(Url::API_KEY, key);
-    m_apiKey = key;
+    if (m_url != nullptr)
+        delete m_url;
 }
-
-/// @brief   Get the instance's API Key
-/// @return  The instance's Alpha Vantage API key as an std::string
-const std::string &ApiCall::getApiKey() { return m_apiKey; }
 
 /// @brief   Add a field and value to m_url
 /// @param   field The Url::field to be set
@@ -130,6 +123,15 @@ std::string ApiCall::Curl()
         curl_global_cleanup();
     }
     return data;
+}
+
+void ApiCall::ResetUrl()
+{
+    if (m_url != nullptr)
+        delete m_url;
+
+    m_url = new Url();
+    m_url->setFieldValue(Url::API_KEY, m_apiKey);
 }
 
 /// @brief   Callback function for CURLOPT_WRITEFUNCTION

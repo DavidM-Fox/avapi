@@ -2,21 +2,35 @@
 #include <sstream>
 #include "rapidcsv.h"
 #include "avapi/ApiCall.hpp"
-#include "avapi/TimeSeries.hpp"
-#include "avapi/GlobalQuote.hpp"
 #include "avapi/Stock.hpp"
 
 namespace avapi {
+
+/// @brief   avapi::Stock default constructor
+Stock::Stock()
+{
+    this->m_symbol = "";
+    m_apiCall.m_apiKey = "";
+    m_apiCall.m_outputSize = "compact";
+}
+
+/// @brief   avapi::Stock constructor
+/// @param   symbol The stock symbol of interest
+Stock::Stock(const std::string &symbol)
+{
+    this->m_symbol = symbol;
+    m_apiCall.m_apiKey = "";
+    m_apiCall.m_outputSize = "compact";
+}
 
 /// @brief   avapi::Stock constructor
 /// @param   symbol The stock symbol of interest
 /// @param   api_key The Alpha Vantage API key to use
 Stock::Stock(const std::string &symbol, const std::string &api_key)
-    : m_symbol(symbol), m_apiKey(api_key), m_outputSize("compact")
 {
-    // Force symbol to be capitalized
-    std::transform(m_symbol.begin(), m_symbol.end(), m_symbol.begin(),
-                   ::toupper);
+    this->m_symbol = symbol;
+    m_apiCall.m_apiKey = api_key;
+    m_apiCall.m_outputSize = "compact";
 }
 
 /// @brief   Get an avapi::TimeSeries for a stock symbol of interest.
@@ -31,8 +45,7 @@ TimeSeries Stock::getTimeSeries(const avapi::SeriesType &type,
                                 const bool &adjusted,
                                 const std::string &interval)
 {
-    // Create new ApiCall object for this method
-    m_apiCall = new ApiCall(m_apiKey);
+    m_apiCall.ResetUrl();
 
     std::string title;
     std::string function;
@@ -40,38 +53,36 @@ TimeSeries Stock::getTimeSeries(const avapi::SeriesType &type,
     // Check if intraday (Uses different parameters than daily, weekly, monthly)
     if (type == SeriesType::INTRADAY) {
         function = m_seriesFunctionStrings[static_cast<int>(type)];
-        m_apiCall->setFieldValue(Url::FUNCTION, function);
-        m_apiCall->setFieldValue(Url::INTERVAL, interval);
+        m_apiCall.setFieldValue(Url::FUNCTION, function);
+        m_apiCall.setFieldValue(Url::INTERVAL, interval);
         if (adjusted) {
-            m_apiCall->setFieldValue(Url::ADJUSTED, "true");
+            m_apiCall.setFieldValue(Url::ADJUSTED, "true");
             title = function + " (" + interval + ", Adjusted)";
         }
         else {
-            m_apiCall->setFieldValue(Url::ADJUSTED, "false");
+            m_apiCall.setFieldValue(Url::ADJUSTED, "false");
             title = function + " (" + interval + ", Non-Adjusted)";
         }
     }
     else {
         function = m_seriesFunctionStrings[static_cast<int>(type)];
         if (adjusted) {
-            m_apiCall->setFieldValue(Url::FUNCTION, function + "_ADJUSTED");
+            m_apiCall.setFieldValue(Url::FUNCTION, function + "_ADJUSTED");
             title = function + " (Adjusted)";
         }
         else {
-            m_apiCall->setFieldValue(Url::FUNCTION, function);
+            m_apiCall.setFieldValue(Url::FUNCTION, function);
             title = function + " (Non-Adjusted)";
         }
     }
 
     // Set other needed API fields
-    m_apiCall->setFieldValue(Url::SYMBOL, m_symbol);
-    m_apiCall->setFieldValue(Url::OUTPUT_SIZE, m_outputSize);
-    m_apiCall->setFieldValue(Url::DATA_TYPE, "csv");
+    m_apiCall.setFieldValue(Url::SYMBOL, m_symbol);
+    m_apiCall.setFieldValue(Url::OUTPUT_SIZE, m_apiCall.m_outputSize);
+    m_apiCall.setFieldValue(Url::DATA_TYPE, "csv");
 
     // Download, parse, and create TimeSeries from csv data
-    TimeSeries series = parseCsvString(m_apiCall->Curl());
-    delete m_apiCall;
-
+    TimeSeries series = parseCsvString(m_apiCall.Curl());
     series.setSymbol(m_symbol);
     series.setType(type);
     series.setAdjusted(adjusted);
@@ -79,25 +90,20 @@ TimeSeries Stock::getTimeSeries(const avapi::SeriesType &type,
     return series;
 }
 
-/// @brief Set the output size for Alpha Vantage API calls
-/// @param size The output size: "compact" or "full" (default = "compact")
-void Stock::setOutputSize(const std::string &size) { m_outputSize = size; }
-
 /// @brief   Return the symbol's latest global quote
 /// @returns The symbol's global quote as an avapi::GlobalQuote object
 GlobalQuote Stock::getGlobalQuote()
 {
     // Create new ApiCall object for this method
-    m_apiCall = new ApiCall(m_apiKey);
+    m_apiCall.ResetUrl();
 
     // Only three parameters needed for GlobalQuote
-    m_apiCall->setFieldValue(Url::FUNCTION, "GLOBAL_QUOTE");
-    m_apiCall->setFieldValue(Url::SYMBOL, m_symbol);
-    m_apiCall->setFieldValue(Url::DATA_TYPE, "csv");
+    m_apiCall.setFieldValue(Url::FUNCTION, "GLOBAL_QUOTE");
+    m_apiCall.setFieldValue(Url::SYMBOL, m_symbol);
+    m_apiCall.setFieldValue(Url::DATA_TYPE, "csv");
 
     // Download csv data for global quote
-    std::stringstream csv(m_apiCall->Curl());
-    delete m_apiCall;
+    std::stringstream csv(m_apiCall.Curl());
 
     // Get global quote row from csv std::string
     rapidcsv::Document doc(csv);

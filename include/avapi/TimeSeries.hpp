@@ -1,7 +1,7 @@
 #ifndef TIMESERIES_H
 #define TIMESERIES_H
-#include <vector>
 #include <string>
+#include <vector>
 #include "avapi/TimePair.hpp"
 
 namespace avapi {
