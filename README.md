@@ -13,6 +13,7 @@ Avapi is a C++ library utilizing the [Alpha Vantage API](https://www.alphavantag
   * [Global Quote Data](#global-quote-data)
 - [Example Usage - Cryptocurrencies](#example-usage---cryptocurrencies)
   * [Getting Historical Data for a Cryptocurrency of Interest](#getting-historical-data-for-a-cryptocurrency-of-interest)
+  * [Daily, Weekly, and Monthly Data](#daily-weekly-and-monthly-data-1)
   * [Getting Exchange Rate Data](#getting-exchange-rate-data)
 - [Example Usage - Other](#example-usage---other)
   * [Parsing an Alpha Vantage time series csv file](#parsing-an-alpha-vantage-time-series-csv-file)
@@ -251,6 +252,7 @@ TimeSeries Crypto::getTimeSeries(const avapi::SeriesType &type,
                                  const std::string &market);
 ExchangeRate Crypto::getExchangeRate(const std::string &market)
 ```
+The ```avapi::TimeSeries``` object is constructed in a similar fashion to ones created with ```Stock::getTimeSeries()```. However, The data vector within each ```avapi::TimePair``` is explicitly ordered ```[open, high, low, close, volume]```.
 The ```avapi::ExchangeRate``` object is a class containing the stock of interest's current exchange rate for a specified market. It is constructed with a "from" and "to" symbol, a UNIX timestamp, and a data vector ordered: ```[Exchange Rate, Bid Price, Ask Price]```
 
 ## Daily, Weekly, and Monthly Data
@@ -331,13 +333,8 @@ If we already have a csv file from Alpha Vantage, Avapi provides a helper functi
 
 ```C++
 
-/// @brief 	        Returns an avapi::TimeSeries created from a csv file
-/// @param file		file path of the csv file to parse
-/// @param crypto 	If the csv data is from a crypto symbol
-/// @returns 		avapi::TimeSeries
 TimeSeries parseCsvFile(const std::string &file_path, 
                         const bool &crypto);
-
 ```
 
 Example "daily_GME.csv" contents:
