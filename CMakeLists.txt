@@ -24,7 +24,7 @@ set(SOURCES
 
 
         ${INC_DIR}/avapi.hpp
-        ${INC_DIR}/AvapiCore.hpp
+        ${INC_DIR}/rapidcsv.h
         ${INC_DIR}/avapi/ApiCall.hpp
         ${INC_DIR}/avapi/AvapiMisc.hpp
         ${INC_DIR}/avapi/Stock.hpp
