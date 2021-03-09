@@ -8,8 +8,6 @@
 
 namespace avapi {
 
-class ApiCall;
-
 class Crypto {
 public:
     Crypto();

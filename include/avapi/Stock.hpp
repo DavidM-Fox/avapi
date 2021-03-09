@@ -8,8 +8,6 @@
 
 namespace avapi {
 
-class ApiCall;
-
 class Stock {
 public:
     Stock();
