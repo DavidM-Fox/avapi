@@ -125,6 +125,7 @@ std::string ApiCall::curlQuery()
     return data;
 }
 
+/// @brief   Reset the field/value queries within avapi::Url
 void ApiCall::resetQuery()
 {
     if (url != nullptr)

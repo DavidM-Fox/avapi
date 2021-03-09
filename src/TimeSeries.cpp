@@ -19,6 +19,7 @@ TimeSeries::TimeSeries(const std::vector<avapi::TimePair> &data)
     n_cols = data[0].data.size();
 }
 
+/// @brief TimeSeries copy constructor
 TimeSeries::TimeSeries(const TimeSeries &series) : market("USD")
 {
     headers = series.headers;
@@ -42,7 +43,9 @@ void TimeSeries::reverseData()
 /// @brief print formatted avapi::TimeSeries' contents
 void TimeSeries::printData(const size_t &count)
 {
-    size_t volume_index = 0;
+    size_t n = count;
+    if (count > rowCount())
+        size_t n = rowCount();
     size_t width = 14;
     size_t sep_count = (headers.size() * width) + 5;
 
@@ -55,11 +58,6 @@ void TimeSeries::printData(const size_t &count)
     }
 
     std::cout << '\n' << separator << '\n';
-
-    size_t n = count;
-
-    if (count > rowCount())
-        size_t n = rowCount();
 
     for (size_t i = 0; i < n; ++i) {
         std::cout << std::setw(width) << std::right << data_series[i].timestamp;
@@ -91,15 +89,16 @@ size_t TimeSeries::colCount() { return n_cols; }
 std::ostream &operator<<(std::ostream &os, const TimeSeries &series)
 {
     size_t sep_count = 5;
-    size_t volume_index = 0;
-    size_t width = 15;
+    size_t width = 14;
+    size_t sep_count = (series.headers.size() * width) + 5;
+    std::string separator(sep_count, '-');
+
+    os << separator << '\n';
 
     for (auto &heading : series.headers) {
         os << std::setw(width) << heading;
         sep_count += width;
     }
-
-    std::string separator(sep_count, '-');
 
     os << '\n' << separator << '\n';
 
