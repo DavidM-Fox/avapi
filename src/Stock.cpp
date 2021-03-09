@@ -105,7 +105,6 @@ TimeSeries Stock::getTimeSeries(const avapi::SeriesType &type,
 /// @returns The symbol's global quote as an avapi::GlobalQuote object
 GlobalQuote Stock::getGlobalQuote()
 {
-    // Create new ApiCall object for this method
     api_call.resetQuery();
 
     // Only three parameters needed for GlobalQuote
