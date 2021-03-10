@@ -29,10 +29,6 @@ public:
 private:
     ApiCall api_call;
 
-    void stockConfig();
-    void overviewConfig();
-    void earningsConfig();
-
     CompanyStock *company_stock = nullptr;
     CompanyOverview *company_overview = nullptr;
     CompanyEarnings *company_earnings = nullptr;

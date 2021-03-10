@@ -16,13 +16,8 @@ Company::Company() {}
 Company::Company(const std::string &symbol, const std::string &api_key)
     : symbol(symbol)
 {
-
     api_call.api_key = api_key;
     api_call.output_size = "compact";
-
-    stockConfig();
-    overviewConfig();
-    earningsConfig();
 }
 
 Company::~Company()
@@ -51,50 +46,42 @@ void Company::setSymbol(const std::string &symbol)
     company_overview->symbol = symbol;
 }
 
-CompanyStock *Company::Stock() { return company_stock; }
+CompanyStock *Company::Stock()
+{
+    if (company_stock == nullptr) {
+        company_stock = new CompanyStock(symbol, api_call.api_key);
+        return company_stock;
+    }
+    else {
+        return company_stock;
+    }
+}
 
 CompanyOverview *Company::Overview(const bool &update)
 {
-    if (update) {
+    if (company_overview == nullptr) {
+        company_overview = new CompanyOverview(symbol);
+    }
+    else if (update) {
+        delete company_overview;
+        company_overview = new CompanyOverview(symbol);
     }
     else {
+        return company_overview;
     }
-    return company_overview;
 }
 
 CompanyEarnings *Company::Earnings(const bool &update)
 {
-    if (update) {
+    if (company_earnings == nullptr) {
+        company_earnings = new CompanyEarnings(symbol);
+    }
+    else if (update) {
+        delete company_earnings;
+        company_earnings = new CompanyEarnings(symbol);
     }
     else {
+        return company_earnings;
     }
-    return company_earnings;
-}
-
-void Company::stockConfig()
-{
-    // Check if object has been created
-    if (company_stock == nullptr)
-        company_stock = new CompanyStock(symbol, api_call.api_key);
-    else
-        company_stock->symbol = symbol;
-}
-
-void Company::overviewConfig()
-{
-    // Check if object has been created
-    if (company_overview == nullptr)
-        company_overview = new CompanyOverview(this->symbol);
-    else
-        company_overview->symbol = this->symbol;
-}
-
-void Company::earningsConfig()
-{
-    // Check if object has been created
-    if (company_earnings == nullptr)
-        company_earnings = new CompanyEarnings(this->symbol);
-    else
-        company_earnings->symbol = this->symbol;
 }
 } // namespace avapi
