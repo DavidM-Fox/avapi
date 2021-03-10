@@ -27,6 +27,9 @@ Company::Company(const std::string &symbol, const std::string &api_key)
 
 Company::~Company()
 {
+    if (company_stock != nullptr)
+        delete company_stock;
+
     if (company_overview != nullptr)
         delete company_overview;
 
