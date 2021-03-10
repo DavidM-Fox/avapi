@@ -4,7 +4,6 @@
 #include <vector>
 #include "avapi/ApiCall.hpp"
 #include "avapi/TimeSeries.hpp"
-#include "avapi/company/GlobalQuote.hpp"
 
 namespace avapi {
 
