@@ -3,31 +3,33 @@
 #include <nlohmann/json.hpp>
 #include "rapidcsv.h"
 #include "avapi/ApiCall.hpp"
-#include "avapi/Stock.hpp"
+#include "avapi/TimeSeries.hpp"
+#include "avapi/company/Stock.hpp"
 
 namespace avapi {
 
-/// @brief   avapi::Stock default constructor
-Stock::Stock()
+/// @brief   avapi::CompanyStock default constructor
+CompanyStock::CompanyStock()
 {
     this->symbol = "";
     api_call.api_key = "";
     api_call.output_size = "compact";
 }
 
-/// @brief   avapi::Stock constructor
+/// @brief   avapi::CompanyStock constructor
 /// @param   symbol The stock symbol of interest
-Stock::Stock(const std::string &symbol)
+CompanyStock::CompanyStock(const std::string &symbol)
 {
     this->symbol = symbol;
     api_call.api_key = "";
     api_call.output_size = "compact";
 }
 
-/// @brief   avapi::Stock constructor
+/// @brief   avapi::CompanyStock constructor
 /// @param   symbol The stock symbol of interest
 /// @param   api_key The Alpha Vantage API key to use
-Stock::Stock(const std::string &symbol, const std::string &api_key)
+CompanyStock::CompanyStock(const std::string &symbol,
+                           const std::string &api_key)
 {
     this->symbol = symbol;
     api_call.api_key = api_key;
@@ -36,7 +38,7 @@ Stock::Stock(const std::string &symbol, const std::string &api_key)
 
 /// @brief   Set the TimeSeries output size from Alpha Vantage
 /// @param   size enum class SeriesSize [COMPACT, FULL]
-void Stock::setOutputSize(const SeriesSize &size)
+void CompanyStock::setOutputSize(const SeriesSize &size)
 {
     if (size == SeriesSize::COMPACT)
         api_call.output_size = "compact";
@@ -52,18 +54,17 @@ void Stock::setOutputSize(const SeriesSize &size)
 /// @returns An avapi::TimeSeries: [open,high,low,close,volume]
 /// or an adjusted avapi::TimeSeries:
 /// [open,high,low,close,adjusted_close,volume,dividend_amount,split_coefficient]
-TimeSeries Stock::getTimeSeries(const avapi::SeriesType &type,
-                                const bool &adjusted,
-                                const std::string &interval)
+TimeSeries CompanyStock::getTimeSeries(const avapi::SeriesType &type,
+                                       const bool &adjusted,
+                                       const std::string &interval)
 {
     api_call.resetQuery();
 
     std::string title;
-    std::string function;
+    std::string function = series_function[static_cast<int>(type)];
 
     // Check if intraday (Uses different parameters than daily, weekly, monthly)
     if (type == SeriesType::INTRADAY) {
-        function = series_function[static_cast<int>(type)];
         api_call.setFieldValue(Url::FUNCTION, function);
         api_call.setFieldValue(Url::INTERVAL, interval);
         if (adjusted) {
@@ -76,7 +77,6 @@ TimeSeries Stock::getTimeSeries(const avapi::SeriesType &type,
         }
     }
     else {
-        function = series_function[static_cast<int>(type)];
         if (adjusted) {
             api_call.setFieldValue(Url::FUNCTION, function + "_ADJUSTED");
             title = function + " (Adjusted)";
@@ -103,7 +103,7 @@ TimeSeries Stock::getTimeSeries(const avapi::SeriesType &type,
 
 /// @brief   Return the symbol's latest global quote
 /// @returns The symbol's global quote as an avapi::GlobalQuote object
-GlobalQuote Stock::getGlobalQuote()
+GlobalQuote CompanyStock::getGlobalQuote()
 {
     api_call.resetQuery();
 
@@ -121,9 +121,9 @@ GlobalQuote Stock::getGlobalQuote()
 
         size_t count = doc.GetRowCount();
         if (count == 0) {
-            throw std::exception(
-                "avapi/Stock.cpp: avapi exception: 'Stock::GlobalQuote': "
-                "Invalid CSV response from Alpha Vantage.");
+            throw std::exception("avapi/CompanyStock.cpp: avapi exception: "
+                                 "'CompanyStock::GlobalQuote': "
+                                 "Invalid CSV response from Alpha Vantage.");
         }
     }
     catch (std::exception &ex) {
@@ -135,7 +135,7 @@ GlobalQuote Stock::getGlobalQuote()
     std::vector<std::string> data = doc.GetRow<std::string>(0);
 
     // Save and convert latestDay and then erase it along with symbol
-    std::time_t timestamp = toUnixTimestamp(data[6]);
+    std::time_t timestamp = avapi::toUnixTimestamp(data[6]);
     data.erase(data.begin() + 6);
     data.erase(data.begin());
 
@@ -147,7 +147,7 @@ GlobalQuote Stock::getGlobalQuote()
     return {symbol, timestamp, data_f};
 }
 
-const std::vector<std::string> Stock::series_function = {
+const std::vector<std::string> CompanyStock::series_function = {
     "TIME_SERIES_INTRADAY", "TIME_SERIES_DAILY", "TIME_SERIES_WEEKLY",
     "TIME_SERIES_MONTHLY"};
 } // namespace avapi
