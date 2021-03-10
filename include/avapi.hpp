@@ -1,2 +1,2 @@
-#include "avapi/Stock.hpp"
+#include "avapi/Company.hpp"
 #include "avapi/Crypto.hpp"
