@@ -16,8 +16,8 @@ Company::Company() {}
 Company::Company(const std::string &symbol, const std::string &api_key)
     : symbol(symbol)
 {
-    api_call.api_key = api_key;
-    api_call.output_size = "compact";
+    this->api_key = api_key;
+    // api_call.output_size = "compact";
 }
 
 Company::~Company()
@@ -34,7 +34,14 @@ Company::~Company()
 
 void Company::setApiKey(const std::string &api_key)
 {
-    api_call.api_key = api_key;
+    if (company_stock != nullptr)
+        company_stock->setApiKey(api_key);
+
+    if (company_overview != nullptr)
+        company_overview->setApiKey(api_key);
+
+    if (company_earnings != nullptr)
+        company_earnings->setApiKey(api_key);
 }
 
 void Company::setSymbol(const std::string &symbol)
@@ -49,7 +56,7 @@ void Company::setSymbol(const std::string &symbol)
 CompanyStock *Company::Stock()
 {
     if (company_stock == nullptr) {
-        company_stock = new CompanyStock(symbol, api_call.api_key);
+        company_stock = new CompanyStock(symbol, api_key);
         return company_stock;
     }
     else {
@@ -60,11 +67,11 @@ CompanyStock *Company::Stock()
 CompanyOverview *Company::Overview(const bool &update)
 {
     if (company_overview == nullptr) {
-        company_overview = new CompanyOverview(symbol);
+        company_overview = new CompanyOverview(symbol, api_key);
     }
     else if (update) {
         delete company_overview;
-        company_overview = new CompanyOverview(symbol);
+        company_overview = new CompanyOverview(symbol, api_key);
     }
     else {
         return company_overview;
@@ -74,11 +81,11 @@ CompanyOverview *Company::Overview(const bool &update)
 CompanyEarnings *Company::Earnings(const bool &update)
 {
     if (company_earnings == nullptr) {
-        company_earnings = new CompanyEarnings(symbol);
+        company_earnings = new CompanyEarnings(symbol, api_key);
     }
     else if (update) {
         delete company_earnings;
-        company_earnings = new CompanyEarnings(symbol);
+        company_earnings = new CompanyEarnings(symbol, api_key);
     }
     else {
         return company_earnings;

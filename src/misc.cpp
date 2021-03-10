@@ -41,4 +41,31 @@ std::string readFirstLineFromFile(const std::string &file_path)
     return api_key;
 }
 
+/// @brief   Converts date + time string "%Y-%m-%d %H:%M:%S" to Unix Timestamp
+/// (seconds since unic epoch)
+/// @param   input The input string to be converted
+/// @returns The time as an std::time_t unix timestamp
+std::time_t toUnixTimestamp(const std::string &input)
+{
+    std::tm t{};
+    std::istringstream ss(input);
+    std::string format = "%Y-%m-%d %H:%M:%S";
+    ss >> std::get_time(&t, format.c_str());
+    return mktime(&t);
+}
+
+/// @brief   Test if a string is in JSON format
+/// @param   data The string to be tested
+/// @returns bool
+bool isJsonString(const std::string &data)
+{
+    try {
+        nlohmann::json parser = nlohmann::json::parse(data);
+    }
+    catch (...) {
+        return false;
+    }
+    return true;
+}
+
 } // namespace avapi

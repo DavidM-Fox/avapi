@@ -3,6 +3,7 @@
 #include <nlohmann/json.hpp>
 #include "rapidcsv.h"
 #include "avapi/ApiCall.hpp"
+#include "avapi/misc.hpp"
 #include "avapi/TimeSeries.hpp"
 #include "avapi/ExchangeRate.hpp"
 #include "avapi/Crypto.hpp"

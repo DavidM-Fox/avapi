@@ -15,11 +15,12 @@ public:
     explicit CompanyStock(const std::string &symbol,
                           const std::string &api_key);
 
-    void setOutputSize(const SeriesSize &size);
-
     TimeSeries getTimeSeries(const SeriesType &type, const bool &adjusted,
                              const std::string &interval = "30min");
     GlobalQuote getGlobalQuote();
+
+    void setApiKey(const std::string &api_key);
+    void setOutputSize(const SeriesSize &size);
 
     std::string symbol;
 

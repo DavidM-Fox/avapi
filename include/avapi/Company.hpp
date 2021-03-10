@@ -18,8 +18,6 @@ public:
     void setApiKey(const std::string &api_key);
     void setSymbol(const std::string &symbol);
 
-    ApiCall getCall() { return api_call; }
-
     CompanyStock *Stock();
     CompanyOverview *Overview(const bool &update = false);
     CompanyEarnings *Earnings(const bool &update = false);
@@ -27,7 +25,7 @@ public:
     std::string symbol;
 
 private:
-    ApiCall api_call;
+    std::string api_key;
 
     CompanyStock *company_stock = nullptr;
     CompanyOverview *company_overview = nullptr;

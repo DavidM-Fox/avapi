@@ -3,6 +3,7 @@
 #include <nlohmann/json.hpp>
 #include "rapidcsv.h"
 #include "avapi/ApiCall.hpp"
+#include "avapi/misc.hpp"
 #include "avapi/TimeSeries.hpp"
 #include "avapi/company/Stock.hpp"
 
@@ -145,6 +146,11 @@ GlobalQuote CompanyStock::getGlobalQuote()
               [](std::string const &val) { return std::stof(val); });
 
     return {symbol, timestamp, data_f};
+}
+
+void CompanyStock::setApiKey(const std::string &api_key)
+{
+    api_call.api_key = api_key;
 }
 
 const std::vector<std::string> CompanyStock::series_function = {

@@ -11,6 +11,9 @@ bool stringReplace(std::string &str, const std::string &from,
 
 std::string readFirstLineFromFile(const std::string &file_path);
 
+std::time_t toUnixTimestamp(const std::string &input);
+bool isJsonString(const std::string &data);
+
 } // namespace avapi
 
 #endif
