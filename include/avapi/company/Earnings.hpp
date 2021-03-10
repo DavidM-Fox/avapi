@@ -11,7 +11,6 @@ public:
     ~CompanyEarnings();
 
     void setApiKey(const std::string &api_key);
-    void printAnnualData();
 
     std::string symbol;
 
