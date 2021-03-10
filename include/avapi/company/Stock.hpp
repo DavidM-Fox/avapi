@@ -2,17 +2,18 @@
 #define STOCK_H
 #include <string>
 #include <vector>
-#include "ApiCall.hpp"
-#include "TimeSeries.hpp"
-#include "GlobalQuote.hpp"
+#include "avapi/ApiCall.hpp"
+#include "avapi/TimeSeries.hpp"
+#include "avapi/company/GlobalQuote.hpp"
 
 namespace avapi {
 
-class Stock {
+class CompanyStock {
 public:
-    Stock();
-    explicit Stock(const std::string &symbol);
-    explicit Stock(const std::string &symbol, const std::string &api_key);
+    CompanyStock();
+    explicit CompanyStock(const std::string &symbol);
+    explicit CompanyStock(const std::string &symbol,
+                          const std::string &api_key);
 
     void setOutputSize(const SeriesSize &size);
 
