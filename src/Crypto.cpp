@@ -102,7 +102,7 @@ ExchangeRate Crypto::getExchangeRate(const std::string &market)
     nlohmann::json json =
         nlohmann::json::parse(data)["Realtime Currency Exchange Rate"];
 
-    std::time_t timestamp = toUnixTimestamp(json["6. Last Refreshed"]);
+    std::time_t timestamp = avapi::toUnixTimestamp(json["6. Last Refreshed"]);
 
     std::vector<float> exchange_data = {
         std::stof(std::string(json["5. Exchange Rate"])),

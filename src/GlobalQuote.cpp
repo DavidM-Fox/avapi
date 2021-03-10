@@ -1,4 +1,4 @@
-#include "avapi/GlobalQuote.hpp"
+#include "avapi/company/GlobalQuote.hpp"
 #include <iostream>
 
 namespace avapi {

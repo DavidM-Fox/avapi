@@ -88,16 +88,14 @@ size_t TimeSeries::colCount() { return n_cols; }
 /// @brief push formatted avapi::TimeSeries' contents to ostream
 std::ostream &operator<<(std::ostream &os, const TimeSeries &series)
 {
-    size_t sep_count = 5;
     size_t width = 14;
-    size_t sep_count = (series.headers.size() * width) + 5;
+    size_t sep_count = (series.headers.size() * width) + 10;
     std::string separator(sep_count, '-');
 
     os << separator << '\n';
 
     for (auto &heading : series.headers) {
         os << std::setw(width) << heading;
-        sep_count += width;
     }
 
     os << '\n' << separator << '\n';
