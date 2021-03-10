@@ -1,6 +1,7 @@
 #ifndef COMPANYOVERVIEW_H
 #define COMPANYOVERVIEW_H
 #include <string>
+#include <unordered_map>
 #include "avapi/ApiCall.hpp"
 
 namespace avapi {
@@ -13,9 +14,12 @@ public:
     void setApiKey(const std::string &api_key);
 
     std::string symbol;
+    std::unordered_map<std::string, std::string> data;
+    std::string operator[](const std::string &str) { return data[str]; }
 
 private:
     ApiCall api_call;
+    void updateOverview();
 };
 
 } // namespace avapi
