@@ -17,23 +17,23 @@ set(INC_DIR include)
 set(SOURCES
         ${SRC_DIR}/ApiCall.cpp
         ${SRC_DIR}/misc.cpp
-        ${SRC_DIR}/Crypto.cpp
         ${SRC_DIR}/TimeSeries.cpp
-        ${SRC_DIR}/ExchangeRate.cpp
-        ${SRC_DIR}/Company.cpp
-        ${SRC_DIR}/Earnings.cpp
-        ${SRC_DIR}/Overview.cpp
-        ${SRC_DIR}/Stock.cpp
+        ${SRC_DIR}/crypto/Crypto.cpp
+        ${SRC_DIR}/crypto/ExchangeRate.cpp
+        ${SRC_DIR}/company/Company.cpp
+        ${SRC_DIR}/company/Earnings.cpp
+        ${SRC_DIR}/company/Overview.cpp
+        ${SRC_DIR}/company/Stock.cpp
 
 
         ${INC_DIR}/avapi.hpp
         ${INC_DIR}/rapidcsv.h
         ${INC_DIR}/avapi/ApiCall.hpp
         ${INC_DIR}/avapi/misc.hpp
-        ${INC_DIR}/avapi/Crypto.hpp
         ${INC_DIR}/avapi/TimePair.hpp
         ${INC_DIR}/avapi/TimeSeries.hpp
-        ${INC_DIR}/avapi/ExchangeRate.hpp
+        ${INC_DIR}/avapi/Crypto.hpp
+        ${INC_DIR}/avapi/crypto/ExchangeRate.hpp
         ${INC_DIR}/avapi/Company.hpp
         ${INC_DIR}/avapi/company/Earnings.hpp
         ${INC_DIR}/avapi/company/Overview.hpp

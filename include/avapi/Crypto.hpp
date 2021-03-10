@@ -4,7 +4,7 @@
 #include <vector>
 #include "avapi/ApiCall.hpp"
 #include "avapi/TimeSeries.hpp"
-#include "avapi/ExchangeRate.hpp"
+#include "avapi/crypto/ExchangeRate.hpp"
 
 namespace avapi {
 
