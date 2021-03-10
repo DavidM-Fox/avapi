@@ -73,9 +73,7 @@ CompanyOverview *Company::Overview(const bool &update)
         delete company_overview;
         company_overview = new CompanyOverview(symbol, api_key);
     }
-    else {
-        return company_overview;
-    }
+    return company_overview;
 }
 
 CompanyEarnings *Company::Earnings(const bool &update)
@@ -87,8 +85,6 @@ CompanyEarnings *Company::Earnings(const bool &update)
         delete company_earnings;
         company_earnings = new CompanyEarnings(symbol, api_key);
     }
-    else {
-        return company_earnings;
-    }
+    return company_earnings;
 }
 } // namespace avapi
