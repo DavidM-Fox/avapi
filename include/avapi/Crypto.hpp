@@ -2,9 +2,9 @@
 #define CRYPTO_H
 #include <string>
 #include <vector>
-#include "ApiCall.hpp"
-#include "TimeSeries.hpp"
-#include "ExchangeRate.hpp"
+#include "avapi/ApiCall.hpp"
+#include "avapi/TimeSeries.hpp"
+#include "avapi/ExchangeRate.hpp"
 
 namespace avapi {
 
