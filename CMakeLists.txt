@@ -22,7 +22,6 @@ set(SOURCES
         ${SRC_DIR}/ExchangeRate.cpp
         ${SRC_DIR}/Company.cpp
         ${SRC_DIR}/Earnings.cpp
-        ${SRC_DIR}/GlobalQuote.cpp
         ${SRC_DIR}/Overview.cpp
         ${SRC_DIR}/Stock.cpp
 
@@ -37,7 +36,6 @@ set(SOURCES
         ${INC_DIR}/avapi/ExchangeRate.hpp
         ${INC_DIR}/avapi/Company.hpp
         ${INC_DIR}/avapi/company/Earnings.hpp
-        ${INC_DIR}/avapi/company/GlobalQuote.hpp
         ${INC_DIR}/avapi/company/Overview.hpp
         ${INC_DIR}/avapi/company/Stock.hpp
 )
