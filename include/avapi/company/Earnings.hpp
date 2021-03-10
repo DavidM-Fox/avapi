@@ -15,29 +15,57 @@ public:
 
     std::string symbol;
 
-    struct AnnualEarning {
-        std::string fiscal_date_ending;
-        std::string reported_eps;
+    class AnnualEarnings {
+    public:
+        AnnualEarnings(const std::string &symbol) : symbol(symbol) {}
+
+        struct report {
+            std::string fiscal_date_ending;
+            std::string reported_eps;
+        };
+
+        std::vector<report> data;
+        void printData();
+        const avapi::CompanyEarnings::AnnualEarnings::report &
+        operator[](size_t i) const
+        {
+            return data[i];
+        }
+
+    private:
+        std::string symbol;
     };
 
-    struct QuarterlyEarning {
-        std::string fiscal_date_ending;
-        std::string reported_date;
-        std::string reported_eps;
-        std::string estimated_eps;
-        std::string surprise;
-        std::string surprise_percentage;
+    class QuarterlyEarnings {
+    public:
+        QuarterlyEarnings(const std::string &symbol) : symbol(symbol) {}
+
+        struct report {
+            std::string fiscal_date_ending;
+            std::string reported_date;
+            std::string reported_eps;
+            std::string estimated_eps;
+            std::string surprise;
+            std::string surprise_percentage;
+        };
+
+        std::vector<report> data;
+        void printData();
+        const report &operator[](size_t i) { return data[i]; }
+
+    private:
+        std::string symbol;
     };
 
-    std::vector<AnnualEarning> &Annual() { return annual_earnings; }
-    std::vector<QuarterlyEarning> &Quarterly() { return quarterly_earnings; };
+    AnnualEarnings *Annual() { return annual_earnings; }
+    QuarterlyEarnings *Quarterly() { return quarterly_earnings; };
 
 private:
     ApiCall api_call;
 
     void updateEarnings();
-    std::vector<AnnualEarning> annual_earnings;
-    std::vector<QuarterlyEarning> quarterly_earnings;
+    AnnualEarnings *annual_earnings;
+    QuarterlyEarnings *quarterly_earnings;
 };
 
 } // namespace avapi
