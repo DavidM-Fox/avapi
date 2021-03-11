@@ -48,9 +48,14 @@ void Company::setSymbol(const std::string &symbol)
 {
     this->symbol = symbol;
 
-    company_stock->symbol = symbol;
-    company_earnings->symbol = symbol;
-    company_overview->symbol = symbol;
+    if (company_stock != nullptr)
+        company_stock->setSymbol(symbol);
+
+    if (company_overview != nullptr)
+        company_overview->setSymbol(symbol);
+
+    if (company_earnings != nullptr)
+        company_earnings->setSymbol(symbol);
 }
 
 CompanyStock *Company::Stock()
