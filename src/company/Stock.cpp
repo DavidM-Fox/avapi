@@ -177,11 +177,6 @@ CompanyStock::GlobalQuote CompanyStock::getGlobalQuote()
     return {symbol, timestamp, data_f};
 }
 
-void CompanyStock::setApiKey(const std::string &api_key)
-{
-    api_call.api_key = api_key;
-}
-
 const std::vector<std::string> CompanyStock::series_function = {
     "TIME_SERIES_INTRADAY", "TIME_SERIES_DAILY", "TIME_SERIES_WEEKLY",
     "TIME_SERIES_MONTHLY"};
