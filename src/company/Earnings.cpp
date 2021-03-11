@@ -47,11 +47,6 @@ void CompanyEarnings::updateEarnings()
     }
 }
 
-void CompanyEarnings::setApiKey(const std::string &api_key)
-{
-    api_call.api_key = api_key;
-}
-
 void CompanyEarnings::AnnualEarnings::printData()
 {
     std::cout << std::string(38, '-') << '\n';

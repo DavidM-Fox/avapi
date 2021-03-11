@@ -10,7 +10,8 @@ public:
     CompanyEarnings(const std::string &symbol, const std::string &api_key);
     ~CompanyEarnings();
 
-    void setApiKey(const std::string &api_key);
+    void setSymbol(const std::string &symbol) { this->symbol = symbol; }
+    void setApiKey(const std::string &key) { api_call.api_key = key; }
 
     std::string symbol;
 
