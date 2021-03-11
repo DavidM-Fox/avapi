@@ -7,7 +7,7 @@ Avapi is a C++ library utilizing the [Alpha Vantage API](https://www.alphavantag
 ## Table of Contents
 - [Avapi](#avapi)
 - [Prerequisites](#prerequisites)
-- [Example Usage - Stocks](#example-usage)
+- [Example Usage](#example-usage)
   * [Company Information and Historical Stock Data](#company-information-and-historical-stock-data)
   * [Cryptocurrency Historical Pricing Data](#cryptocurrency-historical-pricing-data)
   * [Parsing an Alpha Vantage time series csv file](#parsing-an-alpha-vantage-time-series-csv-file)
@@ -318,8 +318,8 @@ The ```avapi::ExchangeRate``` object is a class containing the stock of interest
 
 ```C++
 
-auto  ex_rate = btc->Exchange("USD");
-ex_rate->printData();
+auto exchange_rate = btc->Exchange("USD");
+exchange_rate->printData();
 
 ```
 ```
