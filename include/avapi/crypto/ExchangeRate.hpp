@@ -3,31 +3,33 @@
 #include <iomanip>
 #include <string>
 #include <vector>
+#include "avapi/ApiCall.hpp"
 
 namespace avapi {
 
 class ExchangeRate {
 public:
     ExchangeRate(const std::string &from, const std::string &to,
-                 const std::time_t &t, const std::vector<float> &data);
+                 const std::string &api_key);
 
+    void setApiKey(const std::string &key) { api_call.api_key = key; }
+    void setSymbol(const std::string &symbol) { this->from_symbol = symbol; }
+
+    std::string from_symbol;
+    std::string to_symbol;
+    std::time_t timestamp;
+
+    std::vector<float> exchange_data;
     void printData();
 
-    // Easy Getters
-    const std::string &FromSymbol() const { return from_symbol; }
-    const std::string &ToSymbol() const { return to_symbol; }
-    const std::time_t &Timestamp() const { return timestamp; }
-    const float &Exchange() const { return exchange_data[0]; }
-    const float &BidPrice() const { return exchange_data[1]; }
-    const float &AskPrice() const { return exchange_data[2]; }
-
-    const float &operator[](size_t i) { return exchange_data[i]; }
+    float &Price() { return exchange_data[0]; }
+    float &BidPrice() { return exchange_data[1]; }
+    float &AskPrice() { return exchange_data[2]; }
+    float &operator[](size_t i) { return exchange_data[i]; }
 
 private:
-    const std::string from_symbol;
-    const std::string to_symbol;
-    const std::time_t timestamp;
-    const std::vector<float> exchange_data;
+    ApiCall api_call;
+    void updateExchangeRate();
 };
 
 } // namespace avapi

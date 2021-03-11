@@ -1,40 +1,50 @@
 #include <iostream>
+#include <nlohmann/json.hpp>
+#include <fmt/core.h>
 #include "avapi/crypto/ExchangeRate.hpp"
+#include "avapi/misc.hpp"
 
 namespace avapi {
 
 /// @brief ExchangeRate constructor
 /// @param from Symbol converting from
 /// @param to Symbol converting to
-/// @param timestamp A Unix timestamp
-/// @param data std::vector<float> ordered: [Exchange Rate, Bid Price, Ask
-/// Price]
+/// @param key An Alpha Vantage API Key
 ExchangeRate::ExchangeRate(const std::string &from, const std::string &to,
-                           const std::time_t &t, const std::vector<float> &data)
-    : from_symbol(from), to_symbol(to), timestamp(t), exchange_data(data)
+                           const std::string &key)
+    : from_symbol(from), to_symbol(to), api_call(key)
 {
+    updateExchangeRate();
+}
+
+/// @brief   Get the current exchange rate for a specific market
+void ExchangeRate::updateExchangeRate()
+{
+    api_call.resetQuery();
+    api_call.setFieldValue(Url::FUNCTION, "CURRENCY_EXCHANGE_RATE");
+    api_call.setFieldValue(Url::FROM_CURRENCY, from_symbol);
+    api_call.setFieldValue(Url::TO_CURRENCY, to_symbol);
+
+    nlohmann::json json = nlohmann::json::parse(
+        api_call.curlQuery())["Realtime Currency Exchange Rate"];
+
+    this->timestamp = avapi::toUnixTimestamp(json["6. Last Refreshed"]);
+    this->exchange_data = {std::stof(std::string(json["5. Exchange Rate"])),
+                           std::stof(std::string(json["8. Bid Price"])),
+                           std::stof(std::string(json["9. Ask Price"]))};
 }
 
 /// @brief print formatted avapi::ExchangeRate data
 void ExchangeRate::printData()
 {
-    std::cout << from_symbol << " -> " << to_symbol << " Exchange Rate\n";
-
-    std::cout << std::setw(15) << std::left << "Timestamp: ";
-    std::cout << std::setw(15) << std::right << std::fixed
-              << std::setprecision(2) << timestamp << '\n';
-
-    std::cout << std::setw(15) << std::left << "Exchange Rate:";
-    std::cout << std::setw(15) << std::right << std::fixed
-              << std::setprecision(2) << exchange_data[0] << '\n';
-
-    std::cout << std::setw(15) << std::left << "Bid Price:";
-    std::cout << std::setw(15) << std::right << std::fixed
-              << std::setprecision(2) << exchange_data[1] << '\n';
-
-    std::cout << std::setw(15) << std::left << "Ask Price";
-    std::cout << std::setw(15) << std::right << std::fixed
-              << std::setprecision(2) << exchange_data[2] << '\n';
+    std::cout << std::string(30, '-') << '\n';
+    fmt::print("|{:^28}|\n", "Exchange Rate");
+    fmt::print("|{:^28}|\n", from_symbol + " -> " + to_symbol);
+    std::cout << std::string(30, '-') << '\n';
+    fmt::print("|{:<16}{:>12}|\n", "Timestamp:", timestamp);
+    fmt::print("|{:<16}{:>12.2f}|\n", "Exchange Rate:", exchange_data[0]);
+    fmt::print("|{:<16}{:>12.2f}|\n", "Bid Price:", exchange_data[1]);
+    fmt::print("|{:<16}{:>12.2f}|\n", "Ask Price:", exchange_data[2]);
 }
 
 } // namespace avapi
