@@ -11,20 +11,26 @@ namespace avapi {
 class Crypto {
 public:
     Crypto();
-    explicit Crypto(const std::string &symbol);
-    explicit Crypto(const std::string &symbol, const std::string &api_key);
+    explicit Crypto(const std::string &symbol, const std::string &key = "");
+    ~Crypto();
 
+    void setApiKey(const std::string &key);
+    void setSymbol(const std::string &symbol);
     void setOutputSize(const SeriesSize &size);
 
     TimeSeries getTimeSeries(const SeriesType &type,
                              const std::string &market = "USD");
-    ExchangeRate getExchangeRate(const std::string &market = "USD");
 
+    ExchangeRate *Exchange(const std::string &market = "USD");
     std::string symbol;
 
 private:
+    std::string api_key;
     ApiCall api_call;
+
+    ExchangeRate *exchange_rate = nullptr;
     static const std::vector<std::string> series_function;
 };
+
 } // namespace avapi
 #endif

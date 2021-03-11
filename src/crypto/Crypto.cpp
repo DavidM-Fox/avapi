@@ -5,8 +5,8 @@
 #include "avapi/ApiCall.hpp"
 #include "avapi/misc.hpp"
 #include "avapi/TimeSeries.hpp"
-#include "avapi/ExchangeRate.hpp"
 #include "avapi/Crypto.hpp"
+#include "avapi/crypto/ExchangeRate.hpp"
 
 namespace avapi {
 
@@ -20,21 +20,47 @@ Crypto::Crypto()
 
 /// @brief   avapi::Crypto constructor
 /// @param   symbol The crypto symbol of interest
-Crypto::Crypto(const std::string &symbol)
+/// @param   key The Alpha Vantage API key to use
+Crypto::Crypto(const std::string &symbol, const std::string &key)
+    : symbol(symbol), api_key(key), api_call(key)
 {
-    this->symbol = symbol;
-    api_call.api_key = "";
     api_call.output_size = "compact";
 }
 
-/// @brief   avapi::Crypto constructor
-/// @param   symbol The crypto symbol of interest
-/// @param   api_key The Alpha Vantage API key to use
-Crypto::Crypto(const std::string &symbol, const std::string &api_key)
+/// @brief  Crypto deconstructor
+Crypto::~Crypto()
+{
+    if (exchange_rate != nullptr) {
+        delete exchange_rate;
+    }
+}
+
+void Crypto::setApiKey(const std::string &key)
+{
+    this->api_key = key;
+    api_call.api_key = key;
+    if (exchange_rate != nullptr) {
+        exchange_rate->setApiKey(key);
+    }
+}
+
+void Crypto::setSymbol(const std::string &symbol)
 {
     this->symbol = symbol;
-    api_call.api_key = api_key;
-    api_call.output_size = "compact";
+    if (exchange_rate != nullptr) {
+        exchange_rate->setSymbol(symbol);
+    }
+}
+
+ExchangeRate *Crypto::Exchange(const std::string &market)
+{
+    if (exchange_rate == nullptr) {
+        exchange_rate = new ExchangeRate(symbol, market, api_key);
+        return exchange_rate;
+    }
+    else {
+        return exchange_rate;
+    }
 }
 
 /// @brief   Set the TimeSeries output size from Alpha Vantage
@@ -57,7 +83,6 @@ TimeSeries Crypto::getTimeSeries(const SeriesType &type,
     api_call.resetQuery();
 
     std::string function;
-
     SeriesType check = type;
 
     // Intraday not available from Alpha Vantage
@@ -87,31 +112,6 @@ TimeSeries Crypto::getTimeSeries(const SeriesType &type,
     return series;
 }
 
-/// @brief   Get the current exchange rate for a specific market
-/// @param   market The exchange market (default = "USD")
-/// @returns An avapi::ExchangeRate object: [Exchange, Bid, Ask]
-ExchangeRate Crypto::getExchangeRate(const std::string &market)
-{
-    api_call.resetQuery();
-
-    api_call.setFieldValue(Url::FUNCTION, "CURRENCY_EXCHANGE_RATE");
-    api_call.setFieldValue(Url::FROM_CURRENCY, symbol);
-    api_call.setFieldValue(Url::TO_CURRENCY, market);
-
-    std::string data = api_call.curlQuery();
-
-    nlohmann::json json =
-        nlohmann::json::parse(data)["Realtime Currency Exchange Rate"];
-
-    std::time_t timestamp = avapi::toUnixTimestamp(json["6. Last Refreshed"]);
-
-    std::vector<float> exchange_data = {
-        std::stof(std::string(json["5. Exchange Rate"])),
-        std::stof(std::string(json["8. Bid Price"])),
-        std::stof(std::string(json["9. Ask Price"]))};
-
-    return {symbol, market, timestamp, exchange_data};
-}
 const std::vector<std::string> Crypto::series_function = {
     "DIGITAL_CURRENCY_DAILY", "DIGITAL_CURRENCY_WEEKLY",
     "DIGITAL_CURRENCY_MONTHLY"};
