@@ -1,6 +1,8 @@
 #include <iostream>
 #include <iomanip>
 #include <nlohmann/json.hpp>
+#include <fmt/core.h>
+#include <fmt/ranges.h>
 #include "rapidcsv.h"
 #include "avapi/misc.hpp"
 #include "avapi/TimePair.hpp"
@@ -21,12 +23,12 @@ TimeSeries::TimeSeries(const std::vector<avapi::TimePair> &data)
 }
 
 /// @brief TimeSeries copy constructor
-TimeSeries::TimeSeries(const TimeSeries &series) : market("USD")
+TimeSeries::TimeSeries(const TimeSeries &series)
+    : symbol(series.symbol), type(series.type), is_adjusted(series.is_adjusted),
+      market(series.market), title(series.title), headers(series.headers),
+      data_series(series.data_series), n_rows(series.n_rows),
+      n_cols(series.n_cols)
 {
-    headers = series.headers;
-    data_series = series.data_series;
-    n_rows = series.n_rows;
-    n_cols = series.n_cols;
 }
 
 /// @brief Push an avapi::TimePair into the avapi::TimeSeries
@@ -44,31 +46,40 @@ void TimeSeries::reverseData()
 /// @brief print formatted avapi::TimeSeries' contents
 void TimeSeries::printData(const size_t &count)
 {
+    size_t cell_w = 14;
+
+    size_t table_w = (headers.size() * cell_w) + headers.size() + 1;
+
+    // Create fmt::print() format strings
+    std::string title_format = "|{:^" + std::to_string(table_w - 2) + "}|";
+    std::string cell_format = "|{:>" + std::to_string(cell_w) + "}";
+    std::string cell_format_float = "|{:>" + std::to_string(cell_w) + ".2f}";
+    std::string separator = "\n" + std::string(table_w, '-') + "\n";
+
+    // Print Title
+    std::cout << separator;
+    fmt::print(title_format, this->title);
+    std::cout << separator;
+
+    // Print Headers
+    for (auto &header : this->headers) {
+        fmt::print(cell_format, header);
+    }
+    std::cout << "|";
+    std::cout << separator;
+
     size_t n = count;
-    if (count > rowCount())
-        size_t n = rowCount();
-    size_t width = 14;
-    size_t sep_count = (headers.size() * width) + 5;
+    if (count > n_rows)
+        size_t n = n_rows;
 
-    std::string separator(sep_count, '-');
-    std::cout << separator << '\n';
-
-    for (auto &heading : headers) {
-        std::cout << std::setw(width) << ("|" + heading + "|");
-        sep_count += width;
-    }
-
-    std::cout << '\n' << separator << '\n';
-
+    // Print Data
     for (size_t i = 0; i < n; ++i) {
-        std::cout << std::setw(width) << std::right << data_series[i].timestamp;
+        fmt::print(cell_format, data_series[i].timestamp);
         for (auto &value : data_series[i].data) {
-            std::cout << std::setw(width) << std::right << std::fixed
-                      << std::setprecision(2) << value;
+            fmt::print(cell_format_float, value);
         }
-        std::cout << '\n';
+        std::cout << "|\n";
     }
-    std::cout << std::endl;
 }
 
 /// @brief Set the avapi::TimeSeries' column headers
