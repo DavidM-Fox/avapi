@@ -15,11 +15,6 @@ CompanyOverview::CompanyOverview(const std::string &symbol,
 
 CompanyOverview::~CompanyOverview() {}
 
-void CompanyOverview::setApiKey(const std::string &api_key)
-{
-    api_call.api_key = api_key;
-}
-
 void CompanyOverview::updateOverview()
 {
     api_call.resetQuery();
