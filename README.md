@@ -19,7 +19,7 @@ To use Avapi, the following is required:
 * [<d99kris/rapidcsv>](https://github.com/d99kris/rapidcsv)
 * [<nlohmann/json>](https://github.com/nlohmann/json)
 * [<fmtlib/fmt>](https://github.com/fmtlib/fmt)
-* [libcurl](https://curl.se/libcurl/) C++ libraries
+* [<curl/curl.h>](https://curl.se/libcurl/)
 
 
 # Example Usage
