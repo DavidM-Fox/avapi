@@ -29,6 +29,7 @@ To use Avapi, the following is required:
 
 
 # Example Usage
+
 ## Company Information and Historical Stock Data
 Avapi provides a simple interface for accessing company information and stock data for a symbol of interest. For the following examples, we will explore the available functions of the ```avapi::Company``` class with Tesla ("TSLA").  With the  ```symbol``` "TSLA" and our Alpha Vantage API ```key```, lets create a new ```Company``` object. Note: The ```key``` can be saved to a text file and then read with a provided helper function.
 
@@ -43,7 +44,7 @@ The ```Company``` class has three component classes with corresponding methods t
  - avapi::CompanyEarnings - Earnings()
  - avapi::CompanyOverview - Overview()
  - avapi::CompanyStock - Stock()
-
+---
 **Company Information - Annual and Quarterly Earnings:**
 
 The following shows us accessing the annual and quarterly earnings for Tesla and then printing them to console. (The displayed output only shows the first 3 rows)
@@ -76,6 +77,7 @@ Output:
 |     2020-09-30     |  2020-10-21   |           0.76|           0.60|           0.16|          25.79|
 |     2020-06-30     |  2020-07-22   |           0.44|          -0.03|           0.47|        1458.26|...
 ```
+---
 **Company Information - Overview:**
 
 The ```avapi::CompanyOverview```class has an ```std::unordered_map``` containing the whole JSON response from Alpha Vantage's [company overview](https://www.alphavantage.co/documentation/#company-overview) function. The full list of available data fields can be viewed at the following [JSON demo](https://www.alphavantage.co/query?function=OVERVIEW&symbol=IBM&apikey=demo) from Alpha Vantage.
@@ -94,6 +96,7 @@ Output:
 Consumer Cyclical
 70757
 ```
+---
 **Historical Stock Data - Time Series**
 The ```avapi::CompanyStock``` object contains the following methods for accessing historical stock data:
 
@@ -116,7 +119,7 @@ The ```avapi::TimeSeries``` class is comprised of an ```std::vector``` of  ```av
 	* ```[open, high, low, close, adjusted_close, volume, dividend, split_coefficient]```
 * Adjusted **Weekly** and **Monthly** data:
 	* ```[open, high, low, close, adjusted_close, volume, dividend]```
-
+---
 **Historical Stock Data - Intraday Time Series**
 ```C++
 
@@ -147,6 +150,7 @@ Output :
 |    1615427100|        667.01|        667.47|        665.31|        665.65|      20616.00|
 |    1615426200|        668.06|        668.50|        666.20|        667.00|      17452.00|
 ```
+---
 **Historical Stock Data - Daily, Weekly, and Monthly Time Series**
 
 ```C++
@@ -223,6 +227,7 @@ Output:
 |    1614924000|        690.11|        721.11|        539.49|        597.95|        597.95|  235272720.00|          0.00|
 |    1614319200|        762.64|        768.50|        619.00|        675.50|        675.50|  217862432.00|          0.00|
 ```
+---
 **Historical Stock Data - Global Quote**
 
 The ```avapi::CompanyStock::GlobalQuote``` class contains the stock of interest's current global quote data. It is constructed with the stock of interest's symbol, a UNIX timestamp, and a data vector ordered: ```[open, high, low, price, volume, previous_close, change, change%]```
@@ -249,6 +254,7 @@ Output:
 |Change:               31.54|
 |Change%:               4.72|
 ```
+---
 ## Cryptocurrency Historical Pricing Data
 
 Avapi also provides a simple interface for accessing historical pricing data for a cryptocurrency of interest. For the following examples, we will explore the available functions of the `avapi::Crypto` class with Bitcoin (“BTC”). With the `symbol` “BTC” and our Alpha Vantage API `key`, lets create a new `Crypto` object. Note: The `key` can be saved to a text file and then read with a provided helper function.
@@ -260,7 +266,9 @@ std::string key = avapi::readFirstLineFromFile("api.key");
 avapi::Crypto *btc = new avapi::Crypto(symbol, key);
 
 ```
+---
 **Historical Pricing Data - Daily, Weekly, and Monthly Time Series**
+
 
 ```C++
 
@@ -309,7 +317,9 @@ Output:
 |    1612072800|      28923.63|      41950.00|      28130.00|      33092.98|    3435639.25|
 
 ```
+---
 **Pricing Data - Current Exchange Rate**
+
 
 The ```avapi::ExchangeRate``` object is a class containing the stock of interest's current exchange rate for a specified market. It is constructed with a "from" and "to" symbol, a UNIX timestamp, and a data vector ordered: ```[Exchange Rate, Bid Price, Ask Price]```
 
