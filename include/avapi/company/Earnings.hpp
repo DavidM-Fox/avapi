@@ -1,19 +1,23 @@
 #ifndef COMPANYEARNINGS_H
 #define COMPANYEARNINGS_H
-#include "avapi/ApiCall.hpp"
 #include <string>
+#include "avapi/ApiCall.hpp"
 
 namespace avapi {
 
-class CompanyEarnings {
+class CompanyEarnings : public ApiCall {
 public:
-    CompanyEarnings(const std::string &symbol, const std::string &api_key);
+    CompanyEarnings(const std::string &symbol, const std::string &key);
     ~CompanyEarnings();
 
-    void setSymbol(const std::string &symbol) { this->symbol = symbol; }
-    void setApiKey(const std::string &key) { api_call.api_key = key; }
-
     std::string symbol;
+
+    class AnnualEarnings;
+    class QuarterlyEarnings;
+
+    AnnualEarnings *Annual() { return annual_earnings; }
+    QuarterlyEarnings *Quarterly() { return quarterly_earnings; };
+    void Update();
 
     class AnnualEarnings {
     public:
@@ -57,13 +61,7 @@ public:
         std::string symbol;
     };
 
-    AnnualEarnings *Annual() { return annual_earnings; }
-    QuarterlyEarnings *Quarterly() { return quarterly_earnings; };
-
 private:
-    ApiCall api_call;
-
-    void updateEarnings();
     AnnualEarnings *annual_earnings;
     QuarterlyEarnings *quarterly_earnings;
 };

@@ -12,21 +12,21 @@ namespace avapi {
 /// @param key An Alpha Vantage API Key
 ExchangeRate::ExchangeRate(const std::string &from, const std::string &to,
                            const std::string &key)
-    : from_symbol(from), to_symbol(to), api_call(key)
+    : from_symbol(from), to_symbol(to), ApiCall(key)
 {
-    updateExchangeRate();
+    Update();
 }
 
 /// @brief   Get the current exchange rate for a specific market
-void ExchangeRate::updateExchangeRate()
+void ExchangeRate::Update()
 {
-    api_call.resetQuery();
-    api_call.setFieldValue(Url::FUNCTION, "CURRENCY_EXCHANGE_RATE");
-    api_call.setFieldValue(Url::FROM_CURRENCY, from_symbol);
-    api_call.setFieldValue(Url::TO_CURRENCY, to_symbol);
+    resetQuery();
+    setFieldValue(Url::FUNCTION, "CURRENCY_EXCHANGE_RATE");
+    setFieldValue(Url::FROM_CURRENCY, from_symbol);
+    setFieldValue(Url::TO_CURRENCY, to_symbol);
 
-    nlohmann::json json = nlohmann::json::parse(
-        api_call.curlQuery())["Realtime Currency Exchange Rate"];
+    nlohmann::json json =
+        nlohmann::json::parse(curlQuery())["Realtime Currency Exchange Rate"];
 
     this->timestamp = avapi::toUnixTimestamp(json["6. Last Refreshed"]);
     this->exchange_data = {std::stof(std::string(json["5. Exchange Rate"])),

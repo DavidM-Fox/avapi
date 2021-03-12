@@ -17,19 +17,20 @@ public:
 
     void setApiKey(const std::string &api_key);
     void setSymbol(const std::string &symbol);
+    std::string &Symbol();
 
     CompanyStock *Stock();
     CompanyOverview *Overview(const bool &update = false);
     CompanyEarnings *Earnings(const bool &update = false);
 
-    std::string symbol;
-
 private:
+    std::string symbol;
     std::string api_key;
 
     CompanyStock *company_stock = nullptr;
     CompanyOverview *company_overview = nullptr;
     CompanyEarnings *company_earnings = nullptr;
 };
+
 } // namespace avapi
 #endif

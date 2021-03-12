@@ -17,7 +17,6 @@ Company::Company(const std::string &symbol, const std::string &api_key)
     : symbol(symbol)
 {
     this->api_key = api_key;
-    // api_call.output_size = "compact";
 }
 
 Company::~Company()
@@ -32,16 +31,16 @@ Company::~Company()
         delete company_earnings;
 }
 
-void Company::setApiKey(const std::string &api_key)
+void Company::setApiKey(const std::string &key)
 {
     if (company_stock != nullptr)
-        company_stock->setApiKey(api_key);
+        company_stock->api_key = key;
 
     if (company_overview != nullptr)
-        company_overview->setApiKey(api_key);
+        company_overview->api_key = key;
 
     if (company_earnings != nullptr)
-        company_earnings->setApiKey(api_key);
+        company_earnings->api_key = key;
 }
 
 void Company::setSymbol(const std::string &symbol)
@@ -49,14 +48,16 @@ void Company::setSymbol(const std::string &symbol)
     this->symbol = symbol;
 
     if (company_stock != nullptr)
-        company_stock->setSymbol(symbol);
+        company_stock->symbol = symbol;
 
     if (company_overview != nullptr)
-        company_overview->setSymbol(symbol);
+        company_overview->symbol = symbol;
 
     if (company_earnings != nullptr)
-        company_earnings->setSymbol(symbol);
+        company_earnings->symbol = symbol;
 }
+
+std::string &Company::Symbol() { return this->symbol; }
 
 CompanyStock *Company::Stock()
 {

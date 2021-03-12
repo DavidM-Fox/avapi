@@ -7,21 +7,18 @@
 
 namespace avapi {
 
-class CompanyStock {
+class CompanyStock : public ApiCall {
 public:
     CompanyStock();
     explicit CompanyStock(const std::string &symbol);
     explicit CompanyStock(const std::string &symbol,
                           const std::string &api_key);
 
-    void setSymbol(const std::string &symbol) { this->symbol = symbol; }
-    void setApiKey(const std::string &key) { api_call.api_key = key; }
-    void setOutputSize(const SeriesSize &size);
+    std::string symbol;
 
+    void setOutputSize(const SeriesSize &size);
     TimeSeries getTimeSeries(const SeriesType &type, const bool &adjusted,
                              const std::string &interval = "30min");
-
-    std::string symbol;
 
     class GlobalQuote {
     public:
@@ -57,7 +54,6 @@ public:
     GlobalQuote getGlobalQuote();
 
 private:
-    ApiCall api_call;
     static const std::vector<std::string> series_function;
 };
 

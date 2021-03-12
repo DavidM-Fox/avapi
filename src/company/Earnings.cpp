@@ -8,12 +8,11 @@
 namespace avapi {
 
 CompanyEarnings::CompanyEarnings(const std::string &symbol,
-                                 const std::string &api_key)
-    : symbol(symbol), annual_earnings(new AnnualEarnings(symbol)),
+                                 const std::string &key)
+    : symbol(symbol), ApiCall(key), annual_earnings(new AnnualEarnings(symbol)),
       quarterly_earnings(new QuarterlyEarnings(symbol))
 {
-    api_call.api_key = api_key;
-    updateEarnings();
+    Update();
 }
 
 CompanyEarnings::~CompanyEarnings()
@@ -22,13 +21,13 @@ CompanyEarnings::~CompanyEarnings()
     delete quarterly_earnings;
 }
 
-void CompanyEarnings::updateEarnings()
+void CompanyEarnings::Update()
 {
-    api_call.resetQuery();
-    api_call.setFieldValue(Url::FUNCTION, "EARNINGS");
-    api_call.setFieldValue(Url::SYMBOL, symbol);
+    resetQuery();
+    setFieldValue(Url::FUNCTION, "EARNINGS");
+    setFieldValue(Url::SYMBOL, symbol);
 
-    std::string data = api_call.curlQuery();
+    std::string data = curlQuery();
 
     // Parse annual earnings data
     nlohmann::json annual = nlohmann::json::parse(data)["annualEarnings"];

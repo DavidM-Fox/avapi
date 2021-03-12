@@ -11,31 +11,26 @@
 namespace avapi {
 
 /// @brief   avapi::CompanyStock default constructor
-CompanyStock::CompanyStock()
+CompanyStock::CompanyStock() : symbol(symbol), ApiCall("")
 {
-    this->symbol = "";
-    api_call.api_key = "";
-    api_call.output_size = "compact";
+    output_size = "compact";
 }
 
 /// @brief   avapi::CompanyStock constructor
 /// @param   symbol The stock symbol of interest
 CompanyStock::CompanyStock(const std::string &symbol)
+    : symbol(symbol), ApiCall("")
 {
-    this->symbol = symbol;
-    api_call.api_key = "";
-    api_call.output_size = "compact";
+    output_size = "compact";
 }
 
 /// @brief   avapi::CompanyStock constructor
 /// @param   symbol The stock symbol of interest
 /// @param   api_key The Alpha Vantage API key to use
-CompanyStock::CompanyStock(const std::string &symbol,
-                           const std::string &api_key)
+CompanyStock::CompanyStock(const std::string &symbol, const std::string &key)
+    : symbol(symbol), ApiCall(key)
 {
-    this->symbol = symbol;
-    api_call.api_key = api_key;
-    api_call.output_size = "compact";
+    output_size = "compact";
 }
 
 /// @brief   Set the TimeSeries output size from Alpha Vantage
@@ -43,9 +38,9 @@ CompanyStock::CompanyStock(const std::string &symbol,
 void CompanyStock::setOutputSize(const SeriesSize &size)
 {
     if (size == SeriesSize::COMPACT)
-        api_call.output_size = "compact";
+        output_size = "compact";
     else if (size == SeriesSize::FULL)
-        api_call.output_size = "full";
+        output_size = "full";
 }
 
 /// @brief   Get an avapi::TimeSeries for a stock symbol of interest.
@@ -60,42 +55,42 @@ TimeSeries CompanyStock::getTimeSeries(const avapi::SeriesType &type,
                                        const bool &adjusted,
                                        const std::string &interval)
 {
-    api_call.resetQuery();
+    resetQuery();
 
     std::string title;
     std::string function = series_function[static_cast<int>(type)];
 
     // Check if intraday (Uses different parameters than daily, weekly, monthly)
     if (type == SeriesType::INTRADAY) {
-        api_call.setFieldValue(Url::FUNCTION, function);
-        api_call.setFieldValue(Url::INTERVAL, interval);
+        setFieldValue(Url::FUNCTION, function);
+        setFieldValue(Url::INTERVAL, interval);
         if (adjusted) {
-            api_call.setFieldValue(Url::ADJUSTED, "true");
+            setFieldValue(Url::ADJUSTED, "true");
             title = function + " (" + interval + ", Adjusted)";
         }
         else {
-            api_call.setFieldValue(Url::ADJUSTED, "false");
+            setFieldValue(Url::ADJUSTED, "false");
             title = function + " (" + interval + ", Non-Adjusted)";
         }
     }
     else {
         if (adjusted) {
-            api_call.setFieldValue(Url::FUNCTION, function + "_ADJUSTED");
+            setFieldValue(Url::FUNCTION, function + "_ADJUSTED");
             title = function + " (Adjusted)";
         }
         else {
-            api_call.setFieldValue(Url::FUNCTION, function);
+            setFieldValue(Url::FUNCTION, function);
             title = function + " (Non-Adjusted)";
         }
     }
 
     // Set other needed API fields
-    api_call.setFieldValue(Url::SYMBOL, symbol);
-    api_call.setFieldValue(Url::OUTPUT_SIZE, api_call.output_size);
-    api_call.setFieldValue(Url::DATA_TYPE, "csv");
+    setFieldValue(Url::SYMBOL, symbol);
+    setFieldValue(Url::OUTPUT_SIZE, output_size);
+    setFieldValue(Url::DATA_TYPE, "csv");
 
     // Download, parse, and create TimeSeries from csv data
-    TimeSeries series = parseCsvString(api_call.curlQuery());
+    TimeSeries series = parseCsvString(curlQuery());
     series.symbol = symbol;
     series.type = type;
     series.is_adjusted = adjusted;
@@ -129,23 +124,19 @@ void CompanyStock::GlobalQuote::printData()
     }
 }
 
-const std::vector<std::string> CompanyStock::GlobalQuote::headers{
-    "Open",   "High",       "Low",    "Close",
-    "Volume", "Prev_Close", "Change", "Change%"};
-
 /// @brief   Return the symbol's latest global quote
 /// @returns The symbol's global quote as an avapi::GlobalQuote object
 CompanyStock::GlobalQuote CompanyStock::getGlobalQuote()
 {
-    api_call.resetQuery();
+    resetQuery();
 
     // Only three parameters needed for GlobalQuote
-    api_call.setFieldValue(Url::FUNCTION, "GLOBAL_QUOTE");
-    api_call.setFieldValue(Url::SYMBOL, symbol);
-    api_call.setFieldValue(Url::DATA_TYPE, "csv");
+    setFieldValue(Url::FUNCTION, "GLOBAL_QUOTE");
+    setFieldValue(Url::SYMBOL, symbol);
+    setFieldValue(Url::DATA_TYPE, "csv");
 
     // Download csv data for global quote
-    std::stringstream csv(api_call.curlQuery());
+    std::stringstream csv(curlQuery());
 
     // Get global quote row from csv std::string
     rapidcsv::Document doc(csv);
@@ -182,4 +173,8 @@ CompanyStock::GlobalQuote CompanyStock::getGlobalQuote()
 const std::vector<std::string> CompanyStock::series_function = {
     "TIME_SERIES_INTRADAY", "TIME_SERIES_DAILY", "TIME_SERIES_WEEKLY",
     "TIME_SERIES_MONTHLY"};
+
+const std::vector<std::string> CompanyStock::GlobalQuote::headers{
+    "Open",   "High",       "Low",    "Close",
+    "Volume", "Prev_Close", "Change", "Change%"};
 } // namespace avapi
