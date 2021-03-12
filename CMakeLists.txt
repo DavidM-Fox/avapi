@@ -19,6 +19,7 @@ set(SOURCES
         ${SRC_DIR}/misc.cpp
         ${SRC_DIR}/Container/TimeSeries.cpp
         ${SRC_DIR}/Container/ExchangeRate.cpp
+        ${SRC_DIR}/Container/GlobalQuote.cpp
         ${SRC_DIR}/Crypto/Crypto.cpp
         ${SRC_DIR}/Crypto/HealthIndex.cpp
         ${SRC_DIR}/Crypto/Pricing.cpp
@@ -35,6 +36,7 @@ set(SOURCES
         ${INC_DIR}/avapi/Container/TimePair.hpp
         ${INC_DIR}/avapi/Container/TimeSeries.hpp
         ${INC_DIR}/avapi/Container/ExchangeRate.hpp
+        ${INC_DIR}/avapi/Container/GlobalQuote.hpp
         ${INC_DIR}/avapi/Crypto.hpp
         ${INC_DIR}/avapi/Crypto/HealthIndex.hpp
         ${INC_DIR}/avapi/Crypto/Pricing.hpp
