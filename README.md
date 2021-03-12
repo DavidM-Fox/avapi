@@ -259,6 +259,11 @@ std::string key = avapi::readFirstLineFromFile("api.key");
 avapi::Crypto *btc = new avapi::Crypto(symbol, key);
 
 ```
+
+The Crypto class has two component classes with corresponding methods to access pointers to them:
+
+ - avapi::ExchangeRate - Earnings()
+ - avapi::HealthIndex - Health()
 ---
 **Historical Pricing Data - Daily, Weekly, and Monthly Time Series**
 
