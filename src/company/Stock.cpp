@@ -1,8 +1,6 @@
-#include <algorithm>
 #include <sstream>
 #include <nlohmann/json.hpp>
 #include <fmt/core.h>
-#include "rapidcsv.h"
 #include "avapi/ApiCall.hpp"
 #include "avapi/misc.hpp"
 #include "avapi/Container/TimeSeries.hpp"
@@ -12,14 +10,6 @@ namespace avapi {
 
 /// @brief   avapi::CompanyStock default constructor
 CompanyStock::CompanyStock() : symbol(symbol), ApiCall("")
-{
-    output_size = "compact";
-}
-
-/// @brief   avapi::CompanyStock constructor
-/// @param   symbol The stock symbol of interest
-CompanyStock::CompanyStock(const std::string &symbol)
-    : symbol(symbol), ApiCall("")
 {
     output_size = "compact";
 }

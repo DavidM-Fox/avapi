@@ -1,9 +1,9 @@
+#include "rapidcsv.h"
+#include "avapi/misc.hpp"
 #include "avapi/Company.hpp"
 #include "avapi/Company/Stock.hpp"
 #include "avapi/Company/Earnings.hpp"
 #include "avapi/Company/Overview.hpp"
-#include "avapi/misc.hpp"
-#include "rapidcsv.h"
 
 namespace avapi {
 

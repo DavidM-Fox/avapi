@@ -11,8 +11,8 @@ namespace avapi {
 class CompanyStock : public ApiCall {
 public:
     CompanyStock();
-    explicit CompanyStock(const std::string &symbol);
-    explicit CompanyStock(const std::string &symbol, const std::string &key);
+    explicit CompanyStock(const std::string &symbol,
+                          const std::string &key = "");
 
     std::string symbol;
 

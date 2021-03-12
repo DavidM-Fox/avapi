@@ -1,9 +1,9 @@
 #include <iostream>
 #include <fmt/core.h>
 #include "rapidcsv.h"
-#include "ApiCall.hpp"
-#include "misc.hpp"
-#include "Container/GlobalQuote.hpp"
+#include "avapi/ApiCall.hpp"
+#include "avapi/misc.hpp"
+#include "avapi/Container/GlobalQuote.hpp"
 
 namespace avapi {
 

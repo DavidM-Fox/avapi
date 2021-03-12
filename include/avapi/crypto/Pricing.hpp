@@ -10,8 +10,8 @@ namespace avapi {
 class CryptoPricing : public ApiCall {
 public:
     CryptoPricing();
-    explicit CryptoPricing(const std::string &symbol);
-    explicit CryptoPricing(const std::string &symbol, const std::string &key);
+    explicit CryptoPricing(const std::string &symbol,
+                           const std::string &key = "");
 
     std::string symbol;
 
@@ -23,5 +23,6 @@ public:
 private:
     static const std::vector<std::string> series_function;
 };
+
 } // namespace avapi
 #endif

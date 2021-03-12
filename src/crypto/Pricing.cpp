@@ -1,15 +1,26 @@
-#include "Crypto/Pricing.hpp"
+#include <iostream>
+#include <sstream>
+#include <nlohmann/json.hpp>
+#include <fmt/core.h>
+#include "avapi/ApiCall.hpp"
+#include "avapi/misc.hpp"
+#include "avapi/Container/TimeSeries.hpp"
+#include "avapi/Crypto/Pricing.hpp"
 
 namespace avapi {
-CryptoPricing::CryptoPricing() {}
-
-CryptoPricing::~CryptoPricing() {}
-
-/// @brief Return an avapi::ExchangeRate* for this Crypto object
-/// @param market Exchange Market e.g. ("USD")
-ExchangeRate CryptoPricing::Exchange(const std::string &market)
+/// @brief   avapi::CryptoPricing default constructor
+CryptoPricing::CryptoPricing() : symbol(symbol), ApiCall("")
 {
-    return { symbol, market, api_key }
+    output_size = "compact";
+}
+
+/// @brief   avapi::CryptoPricing constructor
+/// @param   symbol The stock symbol of interest
+/// @param   api_key The Alpha Vantage API key to use
+CryptoPricing::CryptoPricing(const std::string &symbol, const std::string &key)
+    : symbol(symbol), ApiCall(key)
+{
+    output_size = "compact";
 }
 
 /// @brief   Set the TimeSeries output size from Alpha Vantage
@@ -37,7 +48,7 @@ TimeSeries CryptoPricing::getTimeSeries(const SeriesType &type,
     // Intraday not available from Alpha Vantage
     if (check == SeriesType::INTRADAY) {
         check = SeriesType::DAILY;
-        std::cerr << "avapi/Crypto.cpp: exception: "
+        std::cout << "avapi/Crypto.cpp: exception: "
                      "'avapi::Crypto::getTimeSeries': Intraday not available "
                      "from Alpha Vantage, returning a daily TimeSeries.\n";
     }
@@ -59,6 +70,13 @@ TimeSeries CryptoPricing::getTimeSeries(const SeriesType &type,
     series.market = market;
     series.title = symbol + ": " + function;
     return series;
+}
+
+/// @brief Get an avapi::ExchangeRate for this Crypto object
+/// @param market Exchange Market e.g. ("USD")
+ExchangeRate CryptoPricing::Exchange(const std::string &market)
+{
+    return {symbol, market, api_key};
 }
 
 const std::vector<std::string> CryptoPricing::series_function = {
