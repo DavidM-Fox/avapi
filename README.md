@@ -314,7 +314,7 @@ Output:
 **Pricing Data - Current Exchange Rate**
 
 
-The ```avapi::ExchangeRate``` object is a class containing the stock of interest's current exchange rate for a specified market. It is constructed with a "from" and "to" symbol, a UNIX timestamp, and a data vector ordered: ```[Exchange Rate, Bid Price, Ask Price]```
+The ```avapi::ExchangeRate``` object is a class containing the cryptocurrency's current exchange rate for a specified market.
 
 ```C++
 
@@ -335,6 +335,9 @@ Output:
 ```
 ---
 **General Info - Health Index**
+
+
+The ```avapi::HealthIndex``` object is a class containing the cryptocurrency's current Health Index.
 
 ```C++
 
