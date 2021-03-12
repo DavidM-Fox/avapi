@@ -6,6 +6,7 @@
 
 namespace avapi {
 
+/// @brief Default constructor
 ExchangeRate::ExchangeRate() : from_symbol(""), to_symbol(""), ApiCall("") {}
 
 /// @brief ExchangeRate constructor
