@@ -262,7 +262,7 @@ avapi::Crypto *btc = new avapi::Crypto(symbol, key);
 
 The Crypto class has two component classes with corresponding methods to access pointers to them:
 
- - avapi::ExchangeRate - Earnings()
+ - avapi::CryptoPricing - Pricing()
  - avapi::HealthIndex - Health()
 ---
 **Historical Pricing Data - Daily, Weekly, and Monthly Time Series**
@@ -271,9 +271,9 @@ The Crypto class has two component classes with corresponding methods to access 
 ```C++
 
 // Get daily, weekly, and monthly time series for "BTC" with the market "USD"
-auto daily = btc->getTimeSeries(avapi::SeriesType::DAILY,"USD");
-auto weekly = btc->getTimeSeries(avapi::SeriesType::WEEKLY,"USD");
-auto monthly = btc->getTimeSeries(avapi::SeriesType::MONTHLY,"USD");
+auto daily = btc->Pricing()->getTimeSeries(avapi::SeriesType::DAILY,"USD");
+auto weekly = btc->Pricing()->getTimeSeries(avapi::SeriesType::WEEKLY,"USD");
+auto monthly = btc->Pricing()->getTimeSeries(avapi::SeriesType::MONTHLY,"USD");
 
 // Print last 3 rows
 daily.printData(3);
@@ -323,7 +323,8 @@ The ```avapi::ExchangeRate``` object is a class containing the cryptocurrency's 
 
 ```C++
 
-auto exchange_rate = btc->Exchange("USD");
+// Get an avapi::ExchangeRate object for "BTC"
+auto exchange_rate = btc->Pricing()->Exchange("USD");
 exchange_rate->printData();
 
 ```
