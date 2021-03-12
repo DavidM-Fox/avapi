@@ -1,6 +1,7 @@
 #include <algorithm>
 #include <sstream>
 #include <nlohmann/json.hpp>
+#include <fmt/core.h>
 #include "rapidcsv.h"
 #include "avapi/ApiCall.hpp"
 #include "avapi/misc.hpp"
@@ -116,14 +117,15 @@ CompanyStock::GlobalQuote::GlobalQuote(const std::string &symbol,
 /// @brief print formatted avapi::GlobalQuote data
 void CompanyStock::GlobalQuote::printData()
 {
-    std::cout << std::setw(12) << std::left << "Timestamp:";
-    std::cout << std::setw(15) << std::right << timestamp << '\n';
+
+    std::cout << std::string(29, '-') << '\n';
+    fmt::print("|{:^27}|\n", symbol + " Global Quote");
+    std::cout << std::string(29, '-') << '\n';
+
+    fmt::print("|{:<12}{:>15}|\n", "Timestamp:", timestamp);
+
     for (size_t i = 0; i < quote_data.size(); ++i) {
-        std::string header = headers[i] + ":";
-        std::cout << std::setw(12) << std::left << header;
-        std::cout << std::setw(15) << std::right << std::fixed
-                  << std::setprecision(2) << quote_data[i];
-        std::cout << '\n';
+        fmt::print("|{:<12}{:>15.2f}|\n", headers[i] + ":", quote_data[i]);
     }
 }
 
