@@ -48,14 +48,14 @@ public:
     explicit ApiCall(const std::string &key);
     ~ApiCall();
 
+    std::string api_key;
+    std::string output_size;
+
     void setFieldValue(const enum Url::Field &field, const std::string &value);
     std::string getValue(const enum Url::Field &field);
 
     std::string curlQuery();
     void resetQuery();
-
-    std::string api_key;
-    std::string output_size;
 
 private:
     Url *url = nullptr;
