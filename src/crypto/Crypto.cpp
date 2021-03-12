@@ -1,9 +1,4 @@
-#include <algorithm>
-#include <stdexcept>
-#include <nlohmann/json.hpp>
-#include "rapidcsv.h"
-#include "avapi/ApiCall.hpp"
-#include "avapi/Crypto.hpp"
+#include "avapi/Crypto/Crypto.hpp"
 #include "avapi/Crypto/HealthIndex.hpp"
 #include "avapi/Crypto/Pricing.hpp"
 
@@ -18,7 +13,6 @@ Crypto::Crypto() : symbol(""), api_key("") {}
 Crypto::Crypto(const std::string &symbol, const std::string &key)
     : symbol(symbol), api_key(key)
 {
-    output_size = "compact";
 }
 
 /// @brief  Crypto deconstructor
