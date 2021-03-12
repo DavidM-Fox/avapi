@@ -17,7 +17,7 @@ public:
 
     void pushBack(const TimePair &pair);
     void reverseData();
-    void printData(const size_t &count);
+    void printData(const size_t &count = 0);
     void setHeaders(const std::vector<std::string> &headers);
 
     size_t rowCount();
@@ -36,12 +36,11 @@ public:
 
 private:
     std::vector<TimePair> data_series;
-    size_t n_rows;
-    size_t n_cols;
 };
 
-TimeSeries parseCsvFile(const std::string &file, const bool &crypto = false);
 TimeSeries parseCsvString(const std::string &data, const bool &crypto = false);
+TimeSeries parseCsvFile(const std::string &file_path,
+                        const bool &crypto = false);
 
 } // namespace avapi
 #endif

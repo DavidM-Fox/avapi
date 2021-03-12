@@ -11,23 +11,20 @@
 namespace avapi {
 
 /// @brief TimeSeries default constructor
-TimeSeries::TimeSeries() : market("USD"), n_rows(0), n_cols(0) {}
+TimeSeries::TimeSeries() : market("USD") {}
 
 /// @brief TimeSeries constructor
 /// @param data A vector of avapi::TimePair data
 TimeSeries::TimeSeries(const std::vector<avapi::TimePair> &data)
     : market("USD"), data_series(data)
 {
-    n_rows = data.size();
-    n_cols = data[0].data.size();
 }
 
 /// @brief TimeSeries copy constructor
 TimeSeries::TimeSeries(const TimeSeries &series)
     : symbol(series.symbol), type(series.type), is_adjusted(series.is_adjusted),
       market(series.market), title(series.title), headers(series.headers),
-      data_series(series.data_series), n_rows(series.n_rows),
-      n_cols(series.n_cols)
+      data_series(series.data_series)
 {
 }
 
@@ -69,8 +66,12 @@ void TimeSeries::printData(const size_t &count)
     std::cout << separator;
 
     size_t n = count;
+    size_t n_rows = rowCount();
+
     if (count > n_rows)
-        size_t n = n_rows;
+        n = n_rows;
+    else if (count == 0)
+        n = n_rows;
 
     // Print Data
     for (size_t i = 0; i < n; ++i) {
@@ -91,11 +92,11 @@ void TimeSeries::setHeaders(const std::vector<std::string> &headers)
 
 /// @brief Get the avapi::TimeSeries' row count
 /// @return size_t row count
-size_t TimeSeries::rowCount() { return n_rows; }
+size_t TimeSeries::rowCount() { return data_series.size(); }
 
 /// @brief Get the avapi::TimeSeries' column count
 /// @return size_t column count
-size_t TimeSeries::colCount() { return n_cols; }
+size_t TimeSeries::colCount() { return data_series[0].data.size() + 1; }
 
 /// @brief push formatted avapi::TimeSeries' contents to ostream
 std::ostream &operator<<(std::ostream &os, const TimeSeries &series)
@@ -141,6 +142,54 @@ TimeSeries parseCsvString(const std::string &data, const bool &crypto)
             "'avapi::parseCsvString': Json Response:" + parser.dump(4);
         throw std::exception(error.c_str());
     }
+
+    // Successful parse (Cells could still be invalid...)
+    TimeSeries series;
+    if (crypto) {
+        // 10 -> Market Cap = volume (From alpha vantage)
+        // 5-8 -> Redundant USD columns
+        doc.RemoveColumn(10);
+        doc.RemoveColumn(8);
+        doc.RemoveColumn(7);
+        doc.RemoveColumn(6);
+        doc.RemoveColumn(5);
+    }
+
+    for (size_t i = 0; i < n_rows; ++i) {
+        std::vector<std::string> row = doc.GetRow<std::string>(i);
+
+        // Transform vector into floats, skip timestamp column
+        std::vector<float> data;
+        std::transform(row.begin() + 1, row.end(), std::back_inserter(data),
+                       [](std::string &value) { return std::stof(value); });
+
+        TimePair pair(toUnixTimestamp(row[0]), data);
+        series.pushBack({toUnixTimestamp(row[0]), data});
+    }
+
+    std::vector<std::string> headers = doc.GetColumnNames();
+    for (auto &header : headers) {
+
+        if (header == "adjusted close" || header == "adjusted_close")
+            header = "adj_close";
+        else if (header == "dividend amount" || header == "dividend_amount")
+            header = "dividends";
+        else if (header == "split coefficient" || header == "split_coefficient")
+            header = "split_coeff";
+    }
+    series.setHeaders(headers);
+    return series;
+}
+
+/// @brief   Returns an avapi::time_series created from a csv std::string
+/// @param   data An csv std::string object
+/// @param   crypto Wheter the csv data is from a crypto symbol
+/// @returns avapi::TimeSeries
+TimeSeries parseCsvFile(const std::string &file_path, const bool &crypto)
+{
+    // Create rapidcsv::Document object from csv string
+    rapidcsv::Document doc(file_path);
+    size_t n_rows = doc.GetRowCount();
 
     // Successful parse (Cells could still be invalid...)
     TimeSeries series;
