@@ -57,8 +57,6 @@ void Company::setSymbol(const std::string &symbol)
         company_earnings->symbol = symbol;
 }
 
-std::string &Company::Symbol() { return this->symbol; }
-
 CompanyStock *Company::Stock()
 {
     if (company_stock == nullptr) {

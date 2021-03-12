@@ -17,7 +17,7 @@ public:
 
     void setApiKey(const std::string &api_key);
     void setSymbol(const std::string &symbol);
-    std::string &Symbol();
+    std::string &Symbol() { return symbol; }
 
     CompanyStock *Stock();
     CompanyOverview *Overview(const bool &update = false);
