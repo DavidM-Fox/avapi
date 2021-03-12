@@ -250,7 +250,7 @@ Output:
 ---
 ## Cryptocurrency Information and Historical Pricing Data
 
-Avapi also provides a simple interface for accessing historical pricing data for a cryptocurrency of interest. For the following examples, we will explore the available functions of the `avapi::Crypto` class with Bitcoin (“BTC”). With the `symbol` “BTC” and our Alpha Vantage API `key`, lets create a new `Crypto` object. Note: The `key` can be saved to a text file and then read with a provided helper function.
+Avapi also provides a simple interface for accessing general information and historical pricing data for a cryptocurrency of interest. For the following examples, we will explore the available functions of the `avapi::Crypto` class with Bitcoin (“BTC”). With the `symbol` “BTC” and our Alpha Vantage API `key`, lets create a new `Crypto` object. Note: The `key` can be saved to a text file and then read with a provided helper function.
 
 ```C++
 
