@@ -1,6 +1,7 @@
 #ifndef HEALTHINDEX_H
 #define HEALTHINDEX_H
 #include <string>
+#include <vector>
 #include "avapi/ApiCall.hpp"
 
 namespace avapi {
@@ -12,8 +13,15 @@ public:
 
     std::string symbol;
 
+    std::time_t &Timestamp() { return timestamp; }
+    void Update();
+    void printData();
+
 private:
+    std::time_t timestamp;
+    std::vector<std::string> data;
 };
+
 } // namespace avapi
 
 #endif
