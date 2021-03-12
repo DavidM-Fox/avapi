@@ -2,7 +2,7 @@
 #define TIMESERIES_H
 #include <string>
 #include <vector>
-#include "TimePair.hpp"
+#include "avapi/Container/TimePair.hpp"
 
 namespace avapi {
 
