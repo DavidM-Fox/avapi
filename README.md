@@ -332,6 +332,30 @@ Output:
 |Exchange Rate:      57624.96|
 |Bid Price:          57624.95|
 |Ask Price:          57624.96|
+```
+---
+**General Info - Health Index**
+
+```C++
+
+auto btc_health = btc->Health();
+btc_health->printData();
+
+```
+```
+Output:
+----------------------------------------
+|             Health Index             |
+|                 BTC                  |
+----------------------------------------
+|Name:                          Bitcoin|
+|Fcas Rating:                    Superb|
+|Fcas Score:                        906|
+|Developer score:                   863|
+|Market Maturity Score:             898|
+|Utility Score:                     963|
+|Last refreshed:             1615528800|
+|Timezone:                          UTC|
 
 ```
 
