@@ -5,8 +5,8 @@
 #include <fmt/ranges.h>
 #include "rapidcsv.h"
 #include "avapi/misc.hpp"
-#include "avapi/TimePair.hpp"
-#include "avapi/TimeSeries.hpp"
+#include "avapi/containers/TimePair.hpp"
+#include "avapi/containers/TimeSeries.hpp"
 
 namespace avapi {
 

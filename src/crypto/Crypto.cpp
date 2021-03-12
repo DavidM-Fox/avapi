@@ -4,7 +4,7 @@
 #include "rapidcsv.h"
 #include "avapi/ApiCall.hpp"
 #include "avapi/misc.hpp"
-#include "avapi/TimeSeries.hpp"
+#include "avapi/containers/TimeSeries.hpp"
 #include "avapi/Crypto.hpp"
 #include "avapi/crypto/ExchangeRate.hpp"
 

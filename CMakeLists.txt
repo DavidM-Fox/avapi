@@ -31,8 +31,8 @@ set(SOURCES
         ${INC_DIR}/rapidcsv.h
         ${INC_DIR}/avapi/ApiCall.hpp
         ${INC_DIR}/avapi/misc.hpp
-        ${INC_DIR}/avapi/TimePair.hpp
-        ${INC_DIR}/avapi/TimeSeries.hpp
+        ${INC_DIR}/avapi/containers/TimePair.hpp
+        ${INC_DIR}/avapi/containers/TimeSeries.hpp
         ${INC_DIR}/avapi/Crypto.hpp
         ${INC_DIR}/avapi/crypto/ExchangeRate.hpp
         ${INC_DIR}/avapi/crypto/HealthIndex.hpp

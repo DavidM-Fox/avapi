@@ -3,7 +3,7 @@
 #include <string>
 #include <vector>
 #include "avapi/ApiCall.hpp"
-#include "avapi/TimeSeries.hpp"
+#include "avapi/containers/TimeSeries.hpp"
 #include "avapi/crypto/ExchangeRate.hpp"
 #include "avapi/crypto/HealthIndex.hpp"
 
