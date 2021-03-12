@@ -21,6 +21,7 @@ set(SOURCES
         ${SRC_DIR}/Container/ExchangeRate.cpp
         ${SRC_DIR}/Crypto/Crypto.cpp
         ${SRC_DIR}/Crypto/HealthIndex.cpp
+        ${SRC_DIR}/Crypto/Pricing.cpp
         ${SRC_DIR}/Company/Company.cpp
         ${SRC_DIR}/Company/Earnings.cpp
         ${SRC_DIR}/Company/Overview.cpp
@@ -36,6 +37,7 @@ set(SOURCES
         ${INC_DIR}/avapi/Container/ExchangeRate.hpp
         ${INC_DIR}/avapi/Crypto.hpp
         ${INC_DIR}/avapi/Crypto/HealthIndex.hpp
+        ${INC_DIR}/avapi/Crypto/Pricing.hpp
         ${INC_DIR}/avapi/Company.hpp
         ${INC_DIR}/avapi/Company/Earnings.hpp
         ${INC_DIR}/avapi/Company/Overview.hpp
