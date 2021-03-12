@@ -6,16 +6,13 @@
 
 namespace avapi {
 
-class ApiCall;
-
 class Company {
 public:
     Company();
-    explicit Company(const std::string &symbol,
-                     const std::string &api_key = "");
+    explicit Company(const std::string &symbol, const std::string &key = "");
     ~Company();
 
-    void setApiKey(const std::string &api_key);
+    void setApiKey(const std::string &key);
     void setSymbol(const std::string &symbol);
     std::string &Symbol() { return symbol; }
 

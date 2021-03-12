@@ -42,6 +42,8 @@ private:
     static const std::string m_urlBase;
 };
 
+enum class SeriesSize { COMPACT = 0, FULL };
+
 class ApiCall {
 public:
     ApiCall();
@@ -49,6 +51,8 @@ public:
     ~ApiCall();
 
     std::string api_key;
+
+    void setOutputSize(const SeriesSize &size);
     std::string output_size;
 
     void setFieldValue(const enum Url::Field &field, const std::string &value);

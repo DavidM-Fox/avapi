@@ -9,7 +9,7 @@
 
 namespace avapi {
 /// @brief   avapi::CryptoPricing default constructor
-CryptoPricing::CryptoPricing() : symbol(symbol), ApiCall("")
+CryptoPricing::CryptoPricing() : symbol(""), ApiCall("")
 {
     output_size = "compact";
 }
@@ -21,16 +21,6 @@ CryptoPricing::CryptoPricing(const std::string &symbol, const std::string &key)
     : symbol(symbol), ApiCall(key)
 {
     output_size = "compact";
-}
-
-/// @brief   Set the TimeSeries output size from Alpha Vantage
-/// @param   size enum class SeriesSize [COMPACT, FULL]
-void CryptoPricing::setOutputSize(const SeriesSize &size)
-{
-    if (size == SeriesSize::COMPACT)
-        output_size = "compact";
-    else if (size == SeriesSize::FULL)
-        output_size = "full";
 }
 
 /// @brief   Get an avapi::TimeSeries for a crypto symbol of interest.

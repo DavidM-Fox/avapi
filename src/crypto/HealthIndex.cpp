@@ -6,15 +6,23 @@
 
 namespace avapi {
 
+HealthIndex::HealthIndex() : symbol(""), ApiCall("") {}
+
 HealthIndex::HealthIndex(const std::string &symbol, const std::string &key)
     : symbol(symbol), ApiCall(key)
 {
     Update();
 }
-HealthIndex::~HealthIndex() {}
 
 void HealthIndex::Update()
 {
+    if (symbol == "" || api_key == "") {
+        std::cerr << "avapi/Crypto/HealthIndex.cpp: Warning: "
+                     "'HealthIndex::Update': symbol or api_key is empty. "
+                     "No values were updated.\n";
+        return;
+    }
+
     resetQuery();
     setFieldValue(Url::FUNCTION, "CRYPTO_RATING");
     setFieldValue(Url::SYMBOL, symbol);

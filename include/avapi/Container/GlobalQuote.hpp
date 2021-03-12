@@ -12,8 +12,6 @@ public:
 
     std::string symbol;
 
-    // Easy Getters
-    std::string &Symbol() { return symbol; }
     std::time_t &Timestamp() { return timestamp; }
     float &Open() { return quote_data[0]; }
     float &High() { return quote_data[1]; }

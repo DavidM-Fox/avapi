@@ -7,6 +7,7 @@
 #include "avapi/Container/ExchangeRate.hpp"
 
 namespace avapi {
+
 class CryptoPricing : public ApiCall {
 public:
     CryptoPricing();
@@ -15,7 +16,6 @@ public:
 
     std::string symbol;
 
-    void setOutputSize(const SeriesSize &size);
     TimeSeries getTimeSeries(const SeriesType &type,
                              const std::string &market = "USD");
     ExchangeRate Exchange(const std::string &market = "USD");

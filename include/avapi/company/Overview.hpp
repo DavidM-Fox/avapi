@@ -8,8 +8,8 @@ namespace avapi {
 
 class CompanyOverview : public ApiCall {
 public:
+    CompanyOverview();
     CompanyOverview(const std::string &symbol, const std::string &api_key);
-    ~CompanyOverview();
 
     std::string symbol;
 

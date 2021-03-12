@@ -1,6 +1,8 @@
 #include <fstream>
 #include <sstream>
 #include <nlohmann/json.hpp>
+#include "rapidcsv.h"
+#include "avapi/Container/TimeSeries.hpp"
 #include "avapi/misc.hpp"
 
 namespace avapi {
@@ -66,6 +68,111 @@ bool isJsonString(const std::string &data)
         return false;
     }
     return true;
+}
+
+/// @brief   Returns an avapi::time_series created from a csv std::string
+/// @param   data An csv std::string object
+/// @param   crypto Wheter the csv data is from a crypto symbol
+/// @returns avapi::TimeSeries
+TimeSeries parseCsvString(const std::string &data, const bool &crypto)
+{
+    // Create rapidcsv::Document object from csv string
+    std::stringstream sstream(data);
+    rapidcsv::Document doc(sstream);
+    size_t n_rows = doc.GetRowCount();
+
+    // Test if data is really a JSON response
+    if (n_rows <= 2 && isJsonString(data)) {
+        nlohmann::json parser = nlohmann::json::parse(data);
+        std::string error =
+            "'avapi::parseCsvString': Json Response:" + parser.dump(4);
+        throw std::exception(error.c_str());
+    }
+
+    // Successful parse (Cells could still be invalid...)
+    TimeSeries series;
+    if (crypto) {
+        // 10 -> Market Cap = volume (From alpha vantage)
+        // 5-8 -> Redundant USD columns
+        doc.RemoveColumn(10);
+        doc.RemoveColumn(8);
+        doc.RemoveColumn(7);
+        doc.RemoveColumn(6);
+        doc.RemoveColumn(5);
+    }
+
+    for (size_t i = 0; i < n_rows; ++i) {
+        std::vector<std::string> row = doc.GetRow<std::string>(i);
+
+        // Transform vector into floats, skip timestamp column
+        std::vector<float> data;
+        std::transform(row.begin() + 1, row.end(), std::back_inserter(data),
+                       [](std::string &value) { return std::stof(value); });
+
+        TimePair pair(toUnixTimestamp(row[0]), data);
+        series.pushBack({toUnixTimestamp(row[0]), data});
+    }
+
+    std::vector<std::string> headers = doc.GetColumnNames();
+    for (auto &header : headers) {
+
+        if (header == "adjusted close" || header == "adjusted_close")
+            header = "adj_close";
+        else if (header == "dividend amount" || header == "dividend_amount")
+            header = "dividends";
+        else if (header == "split coefficient" || header == "split_coefficient")
+            header = "split_coeff";
+    }
+    series.setHeaders(headers);
+    return series;
+}
+
+/// @brief   Returns an avapi::time_series created from a csv std::string
+/// @param   data An csv std::string object
+/// @param   crypto Wheter the csv data is from a crypto symbol
+/// @returns avapi::TimeSeries
+TimeSeries parseCsvFile(const std::string &file_path, const bool &crypto)
+{
+    // Create rapidcsv::Document object from csv string
+    rapidcsv::Document doc(file_path);
+    size_t n_rows = doc.GetRowCount();
+
+    // Successful parse (Cells could still be invalid...)
+    TimeSeries series;
+    if (crypto) {
+        // 10 -> Market Cap = volume (From alpha vantage)
+        // 5-8 -> Redundant USD columns
+        doc.RemoveColumn(10);
+        doc.RemoveColumn(8);
+        doc.RemoveColumn(7);
+        doc.RemoveColumn(6);
+        doc.RemoveColumn(5);
+    }
+
+    for (size_t i = 0; i < n_rows; ++i) {
+        std::vector<std::string> row = doc.GetRow<std::string>(i);
+
+        // Transform vector into floats, skip timestamp column
+        std::vector<float> data;
+        std::transform(row.begin() + 1, row.end(), std::back_inserter(data),
+                       [](std::string &value) { return std::stof(value); });
+
+        TimePair pair(toUnixTimestamp(row[0]), data);
+        series.pushBack({toUnixTimestamp(row[0]), data});
+    }
+
+    std::vector<std::string> headers = doc.GetColumnNames();
+    for (auto &header : headers) {
+
+        if (header == "adjusted close" || header == "adjusted_close")
+            header = "adj_close";
+        else if (header == "dividend amount" || header == "dividend_amount")
+            header = "dividends";
+        else if (header == "split coefficient" || header == "split_coefficient")
+            header = "split_coeff";
+    }
+    series.setHeaders(headers);
+    return series;
 }
 
 } // namespace avapi

@@ -6,7 +6,6 @@
 
 namespace avapi {
 
-enum class SeriesSize { COMPACT = 0, FULL };
 enum class SeriesType { INTRADAY = 0, DAILY, WEEKLY, MONTHLY };
 
 class TimeSeries {
@@ -37,10 +36,6 @@ public:
 private:
     std::vector<TimePair> data_series;
 };
-
-TimeSeries parseCsvString(const std::string &data, const bool &crypto = false);
-TimeSeries parseCsvFile(const std::string &file_path,
-                        const bool &crypto = false);
 
 } // namespace avapi
 #endif

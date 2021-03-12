@@ -8,8 +8,8 @@ namespace avapi {
 
 class HealthIndex : public ApiCall {
 public:
+    HealthIndex();
     HealthIndex(const std::string &symbol, const std::string &key);
-    ~HealthIndex();
 
     std::string symbol;
 

@@ -5,6 +5,9 @@
 
 namespace avapi {
 
+/// @brief Default constructor
+CompanyOverview::CompanyOverview() : symbol(symbol), ApiCall("") {}
+
 /// @brief Constructor
 /// @param symbol The company symbol e.g. "TSLA"
 /// @param key Alpha Vantage API key
@@ -15,11 +18,16 @@ CompanyOverview::CompanyOverview(const std::string &symbol,
     Update();
 }
 
-CompanyOverview::~CompanyOverview() {}
-
 /// @brief Get the current company overview
 void CompanyOverview::Update()
 {
+    if (symbol == "" || api_key == "") {
+        std::cerr << "avapi/Company/Overview.cpp: Warning: "
+                     "'CompanyOverview::Update': symbol or api_key is empty. "
+                     "No values were updated.\n";
+        return;
+    }
+
     resetQuery();
     setFieldValue(Url::FUNCTION, "OVERVIEW");
     setFieldValue(Url::SYMBOL, symbol);
@@ -35,5 +43,4 @@ void CompanyOverview::Update()
         }
     }
 }
-
 } // namespace avapi

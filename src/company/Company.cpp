@@ -8,15 +8,14 @@
 namespace avapi {
 
 /// @brief Company default Constructor
-Company::Company() {}
+Company::Company() : symbol(""), api_key("") {}
 
 /// @brief Company symbol/api_key constructor
 /// @param symbol The stock symbol e.g. "AAPL"
 /// @param api_key Alpha Vantage API Key
-Company::Company(const std::string &symbol, const std::string &api_key)
-    : symbol(symbol)
+Company::Company(const std::string &symbol, const std::string &key)
+    : symbol(symbol), api_key(key)
 {
-    this->api_key = api_key;
 }
 
 Company::~Company()

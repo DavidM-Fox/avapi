@@ -81,6 +81,16 @@ ApiCall::~ApiCall()
         delete url;
 }
 
+/// @brief   Set the TimeSeries output size from Alpha Vantage
+/// @param   size enum class SeriesSize [COMPACT, FULL]
+void ApiCall::setOutputSize(const SeriesSize &size)
+{
+    if (size == SeriesSize::COMPACT)
+        output_size = "compact";
+    else if (size == SeriesSize::FULL)
+        output_size = "full";
+}
+
 /// @brief   Add a field and value to url
 /// @param   field The Url::field to be set
 /// @param   value The string value

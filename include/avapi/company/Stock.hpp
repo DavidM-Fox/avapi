@@ -16,7 +16,6 @@ public:
 
     std::string symbol;
 
-    void setOutputSize(const SeriesSize &size);
     TimeSeries getTimeSeries(const SeriesType &type, const bool &adjusted,
                              const std::string &interval = "30min");
     GlobalQuote getGlobalQuote();

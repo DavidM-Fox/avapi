@@ -23,16 +23,6 @@ CompanyStock::CompanyStock(const std::string &symbol, const std::string &key)
     output_size = "compact";
 }
 
-/// @brief   Set the TimeSeries output size from Alpha Vantage
-/// @param   size enum class SeriesSize [COMPACT, FULL]
-void CompanyStock::setOutputSize(const SeriesSize &size)
-{
-    if (size == SeriesSize::COMPACT)
-        output_size = "compact";
-    else if (size == SeriesSize::FULL)
-        output_size = "full";
-}
-
 /// @brief   Get an avapi::TimeSeries for a stock symbol of interest.
 /// @param   type enum class avapi::SeriesType
 /// @param   adjusted Whether or not the data should have adjusted values
