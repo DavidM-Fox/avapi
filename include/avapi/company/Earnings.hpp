@@ -10,7 +10,8 @@ namespace avapi {
 class CompanyEarnings : public ApiCall {
 public:
     CompanyEarnings();
-    CompanyEarnings(const std::string &symbol, const std::string &key = "");
+    explicit CompanyEarnings(const std::string &symbol,
+                             const std::string &key = "");
 
     std::string symbol;
 

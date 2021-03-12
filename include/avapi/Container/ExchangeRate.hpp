@@ -9,6 +9,7 @@ namespace avapi {
 
 class ExchangeRate : public ApiCall {
 public:
+    ExchangeRate();
     ExchangeRate(const std::string &from, const std::string &to,
                  const std::string &key);
 
