@@ -58,7 +58,7 @@ set(PROJECT_SOURCES
         ${INC_DIR}/avapi/Company/Stock.hpp
 )
 
-add_executable(avapi main.cpp ${SOURCES})
+add_executable(avapi main.cpp ${PROJECT_SOURCES})
 target_link_libraries(avapi PRIVATE CURL::libcurl nlohmann_json nlohmann_json::nlohmann_json fmt::fmt)
 
 # set(TESTS
