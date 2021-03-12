@@ -113,7 +113,7 @@ TimeSeries Crypto::getTimeSeries(const SeriesType &type,
 }
 
 const std::vector<std::string> Crypto::series_function = {
-    "DIGITAL_CURRENCY_DAILY", "DIGITAL_CURRENCY_WEEKLY",
+    "", "DIGITAL_CURRENCY_DAILY", "DIGITAL_CURRENCY_WEEKLY",
     "DIGITAL_CURRENCY_MONTHLY"};
 
 } // namespace avapi
