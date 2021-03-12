@@ -6,6 +6,7 @@
 #include "avapi/misc.hpp"
 
 namespace avapi {
+
 /// @brief   Replaces a substring within a given string
 /// @param   str The given string
 /// @param   from The substring being replaced by "to"
@@ -25,7 +26,7 @@ bool stringReplace(std::string &str, const std::string &from,
 /// @brief   Reads the first line from a given file
 /// @param   file_path File to be read's path
 /// @returns first line as an std::string
-std::string readFirstLineFromFile(const std::string &file_path)
+std::string readApiKey(const std::string &file_path)
 {
     std::string api_key = "";
     std::ifstream file(file_path.c_str());
