@@ -4,8 +4,8 @@
 namespace avapi {
 class CryptoPricing {
 public:
-    Pricing();
-    ~Pricing();
+    CryptoPricing();
+    ~CryptoPricing();
 
 private:
 };
