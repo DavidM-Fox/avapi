@@ -89,7 +89,8 @@ Consumer Cyclical
 ```
 ---
 **Historical Stock Data - Time Series**
-The ```avapi::CompanyStock``` object contains the following methods for accessing historical stock data:
+
+The ```avapi::CompanyStock``` object contains the following method for accessing historical time series data:
 
 ```C++
 
@@ -114,21 +115,22 @@ The ```avapi::TimeSeries``` class is comprised of an ```std::vector``` of  ```av
 **Historical Stock Data - Intraday Time Series**
 ```C++
 
-// Get an adjusted, intraday time series on a 15 minute interval
-auto tsla_intraday = tsla.getTimeSeries(avapi::SeriesType::INTRADAY, 
-					true, "15min");				
-// Print the last 10 "open" values
-for (size_t i = 0; i < 10; ++i)
-	std::cout << tsla_intraday[i][0] <<  ' ';
-std::cout << std::endl;
+auto tsla_intraday = tsla->Stock()->getTimeSeries(
+    avapi::SeriesType::INTRADAY, true, "15min");
 
-//Print last 3 rows
+// Print the last 10 "open" values
+for (size_t i = 0; i < 10; ++i) {
+    std::cout << tsla_intraday[i][0] << ' ';
+}
+std::cout << '\n';
+
+// Print last 3 rows
 tsla_intraday.printData(3);
 
 ```
 ```
 Output:
-596.97 596.9 597 597.5 596.08 596.18 597.26 596.12 596 595.49
+698.5 699 698.9 698.25 697.72 697.52 697.79 696.25 696.5 695.5
 ```
 ```
 Output :
@@ -137,9 +139,9 @@ Output :
 -------------------------------------------------------------------------------------------
 |     timestamp|          open|          high|           low|         close|        volume|
 -------------------------------------------------------------------------------------------
-|    1615428000|        666.00|        667.95|        664.00|        664.56|      36428.00|
-|    1615427100|        667.01|        667.47|        665.31|        665.65|      20616.00|
-|    1615426200|        668.06|        668.50|        666.20|        667.00|      17452.00|
+|    1615514400|        698.50|        698.52|        697.98|        698.50|      41117.00|
+|    1615513500|        699.00|        699.00|        698.00|        698.50|      21510.00|
+|    1615512600|        698.90|        699.00|        698.71|        699.00|      11276.00|
 ```
 ---
 **Historical Stock Data - Daily, Weekly, and Monthly Time Series**
