@@ -20,6 +20,7 @@ set(SOURCES
         ${SRC_DIR}/TimeSeries.cpp
         ${SRC_DIR}/crypto/Crypto.cpp
         ${SRC_DIR}/crypto/ExchangeRate.cpp
+        ${SRC_DIR}/crypto/HealthIndex.cpp
         ${SRC_DIR}/company/Company.cpp
         ${SRC_DIR}/company/Earnings.cpp
         ${SRC_DIR}/company/Overview.cpp
@@ -34,6 +35,7 @@ set(SOURCES
         ${INC_DIR}/avapi/TimeSeries.hpp
         ${INC_DIR}/avapi/Crypto.hpp
         ${INC_DIR}/avapi/crypto/ExchangeRate.hpp
+        ${INC_DIR}/avapi/crypto/HealthIndex.hpp
         ${INC_DIR}/avapi/Company.hpp
         ${INC_DIR}/avapi/company/Earnings.hpp
         ${INC_DIR}/avapi/company/Overview.hpp
