@@ -1,8 +1,8 @@
 #include <iostream>
 #include <nlohmann/json.hpp>
 #include <fmt/core.h>
-#include "avapi/crypto/HealthIndex.hpp"
 #include "avapi/misc.hpp"
+#include "avapi/Crypto/HealthIndex.hpp"
 
 namespace avapi {
 

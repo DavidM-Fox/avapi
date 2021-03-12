@@ -4,9 +4,9 @@
 #include "rapidcsv.h"
 #include "avapi/ApiCall.hpp"
 #include "avapi/misc.hpp"
-#include "avapi/containers/TimeSeries.hpp"
+#include "avapi/Container/TimeSeries.hpp"
+#include "avapi/Container/ExchangeRate.hpp"
 #include "avapi/Crypto.hpp"
-#include "avapi/crypto/ExchangeRate.hpp"
 
 namespace avapi {
 

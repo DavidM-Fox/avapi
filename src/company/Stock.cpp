@@ -5,8 +5,8 @@
 #include "rapidcsv.h"
 #include "avapi/ApiCall.hpp"
 #include "avapi/misc.hpp"
-#include "avapi/containers/TimeSeries.hpp"
-#include "avapi/company/Stock.hpp"
+#include "avapi/Container/TimeSeries.hpp"
+#include "avapi/Company/Stock.hpp"
 
 namespace avapi {
 

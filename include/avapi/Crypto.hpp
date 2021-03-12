@@ -3,9 +3,9 @@
 #include <string>
 #include <vector>
 #include "avapi/ApiCall.hpp"
-#include "avapi/containers/TimeSeries.hpp"
-#include "avapi/crypto/ExchangeRate.hpp"
-#include "avapi/crypto/HealthIndex.hpp"
+#include "avapi/Container/TimeSeries.hpp"
+#include "avapi/Container/ExchangeRate.hpp"
+#include "avapi/Crypto/HealthIndex.hpp"
 
 namespace avapi {
 

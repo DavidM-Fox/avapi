@@ -3,7 +3,7 @@
 #include <string>
 #include <vector>
 #include "avapi/ApiCall.hpp"
-#include "avapi/containers/TimeSeries.hpp"
+#include "avapi/Container/TimeSeries.hpp"
 
 namespace avapi {
 

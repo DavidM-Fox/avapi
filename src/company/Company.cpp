@@ -1,7 +1,7 @@
 #include "avapi/Company.hpp"
-#include "avapi/company/Stock.hpp"
-#include "avapi/company/Earnings.hpp"
-#include "avapi/company/Overview.hpp"
+#include "avapi/Company/Stock.hpp"
+#include "avapi/Company/Earnings.hpp"
+#include "avapi/Company/Overview.hpp"
 #include "avapi/misc.hpp"
 #include "rapidcsv.h"
 

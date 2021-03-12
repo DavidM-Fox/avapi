@@ -17,29 +17,29 @@ set(INC_DIR include)
 set(SOURCES
         ${SRC_DIR}/ApiCall.cpp
         ${SRC_DIR}/misc.cpp
-        ${SRC_DIR}/TimeSeries.cpp
-        ${SRC_DIR}/crypto/Crypto.cpp
-        ${SRC_DIR}/crypto/ExchangeRate.cpp
-        ${SRC_DIR}/crypto/HealthIndex.cpp
-        ${SRC_DIR}/company/Company.cpp
-        ${SRC_DIR}/company/Earnings.cpp
-        ${SRC_DIR}/company/Overview.cpp
-        ${SRC_DIR}/company/Stock.cpp
+        ${SRC_DIR}/Container/TimeSeries.cpp
+        ${SRC_DIR}/Container/ExchangeRate.cpp
+        ${SRC_DIR}/Crypto/Crypto.cpp
+        ${SRC_DIR}/Crypto/HealthIndex.cpp
+        ${SRC_DIR}/Company/Company.cpp
+        ${SRC_DIR}/Company/Earnings.cpp
+        ${SRC_DIR}/Company/Overview.cpp
+        ${SRC_DIR}/Company/Stock.cpp
 
 
         ${INC_DIR}/avapi.hpp
         ${INC_DIR}/rapidcsv.h
         ${INC_DIR}/avapi/ApiCall.hpp
         ${INC_DIR}/avapi/misc.hpp
-        ${INC_DIR}/avapi/containers/TimePair.hpp
-        ${INC_DIR}/avapi/containers/TimeSeries.hpp
+        ${INC_DIR}/avapi/Container/TimePair.hpp
+        ${INC_DIR}/avapi/Container/TimeSeries.hpp
+        ${INC_DIR}/avapi/Container/ExchangeRate.hpp
         ${INC_DIR}/avapi/Crypto.hpp
-        ${INC_DIR}/avapi/crypto/ExchangeRate.hpp
-        ${INC_DIR}/avapi/crypto/HealthIndex.hpp
+        ${INC_DIR}/avapi/Crypto/HealthIndex.hpp
         ${INC_DIR}/avapi/Company.hpp
-        ${INC_DIR}/avapi/company/Earnings.hpp
-        ${INC_DIR}/avapi/company/Overview.hpp
-        ${INC_DIR}/avapi/company/Stock.hpp
+        ${INC_DIR}/avapi/Company/Earnings.hpp
+        ${INC_DIR}/avapi/Company/Overview.hpp
+        ${INC_DIR}/avapi/Company/Stock.hpp
 )
 
 add_executable(avapi main.cpp ${SOURCES})

@@ -2,7 +2,7 @@
 #include <iomanip>
 #include <nlohmann/json.hpp>
 #include <fmt/core.h>
-#include "avapi/company/Earnings.hpp"
+#include "avapi/Company/Earnings.hpp"
 #include "avapi/misc.hpp"
 
 namespace avapi {
