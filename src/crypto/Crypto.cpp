@@ -28,6 +28,9 @@ Crypto::~Crypto()
     if (exchange_rate != nullptr) {
         delete exchange_rate;
     }
+    if (health_index != nullptr) {
+        delete health_index;
+    }
 }
 
 /// @brief Set the Alpha Vantage API key for Crypto and its components
@@ -37,6 +40,9 @@ void Crypto::setApiKey(const std::string &key)
     this->api_key = key;
     if (exchange_rate != nullptr) {
         exchange_rate->api_key = key;
+    }
+    if (health_index != nullptr) {
+        health_index->api_key = key;
     }
 }
 
@@ -48,6 +54,9 @@ void Crypto::setSymbol(const std::string &symbol)
     if (exchange_rate != nullptr) {
         exchange_rate->from_symbol = symbol;
     }
+    if (health_index != nullptr) {
+        health_index->symbol = symbol;
+    }
 }
 
 /// @brief Return an avapi::ExchangeRate* for this Crypto object
@@ -58,9 +67,7 @@ ExchangeRate *Crypto::Exchange(const std::string &market)
         exchange_rate = new ExchangeRate(symbol, market, api_key);
         return exchange_rate;
     }
-    else {
-        return exchange_rate;
-    }
+    return exchange_rate;
 }
 
 /// @brief Return an avapi::HealthIndex* for this Crypto object
@@ -71,9 +78,7 @@ HealthIndex *Crypto::Health()
         health_index = new HealthIndex(symbol, api_key);
         return health_index;
     }
-    else {
-        return health_index;
-    }
+    return health_index;
 }
 
 /// @brief   Set the TimeSeries output size from Alpha Vantage
