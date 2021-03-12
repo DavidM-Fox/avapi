@@ -6,7 +6,7 @@ Avapi is a C++ library utilizing the [Alpha Vantage API](https://www.alphavantag
 - [Prerequisites](#prerequisites)
 - [Example Usage](#example-usage)
   * [Company Information and Historical Stock Data](#company-information-and-historical-stock-data)
-  * [Cryptocurrency Information and Historical Pricing Data](#cryptocurrency-historical-pricing-data)
+  * [Cryptocurrency Information and Historical Pricing Data](#cryptocurrency-information-and-historical-pricing-data)
   * [Parsing an Alpha Vantage time series csv file](#parsing-an-alpha-vantage-time-series-csv-file)
 
 
