@@ -149,13 +149,13 @@ Output :
 ```C++
 
 // Get non-adjusted daily, weekly, and monthly data
-auto  daily = tsla->Stock()->getTimeSeries(avapi::SeriesType::DAILY, false);
-auto  weekly = tsla->Stock()->getTimeSeries(avapi::SeriesType::WEEKLY, false);
-auto  monthly = tsla->Stock()->getTimeSeries(avapi::SeriesType::MONTHLY, false);
+auto daily = tsla->Stock()->getTimeSeries(avapi::SeriesType::DAILY, false);
+auto weekly = tsla->Stock()->getTimeSeries(avapi::SeriesType::WEEKLY, false);
+auto monthly = tsla->Stock()->getTimeSeries(avapi::SeriesType::MONTHLY, false);
 
 // Get adjusted daily and weekly data
-auto  daily_adj = tsla->Stock()->getTimeSeries(avapi::SeriesType::DAILY, true);
-auto  weekly_adj = tsla->Stock()->getTimeSeries(avapi::SeriesType::WEEKLY, true);
+auto daily_adj = tsla->Stock()->getTimeSeries(avapi::SeriesType::DAILY, true);
+auto weekly_adj = tsla->Stock()->getTimeSeries(avapi::SeriesType::WEEKLY, true);
 
 // Print last 3 rows of each time series
 daily.printData(3);
