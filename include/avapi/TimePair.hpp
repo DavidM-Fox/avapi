@@ -10,6 +10,9 @@ public:
         : timestamp(time), data(data)
     {
     }
+    TimePair(const TimePair &pair) : timestamp(pair.timestamp), data(pair.data)
+    {
+    }
 
     std::time_t timestamp;
     std::vector<float> data;
