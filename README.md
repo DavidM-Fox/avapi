@@ -27,7 +27,7 @@ Avapi provides a simple interface for accessing company information and stock da
 ```C++
 
 std::string symbol = "TSLA";
-std::string key = avapi::readFirstLineFromFile("api.key");
+std::string key = avapi::readApiKey("api.key");
 avapi::Company *tsla = new avapi::Company(symbol, key);
 
 ```
@@ -255,7 +255,7 @@ Avapi also provides a simple interface for accessing general information and his
 ```C++
 
 std::string symbol = "BTC";
-std::string key = avapi::readFirstLineFromFile("api.key");
+std::string key = avapi::readApiKey("api.key");
 avapi::Crypto *btc = new avapi::Crypto(symbol, key);
 
 ```
