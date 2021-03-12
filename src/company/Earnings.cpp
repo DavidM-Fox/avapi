@@ -3,7 +3,6 @@
 #include <nlohmann/json.hpp>
 #include <fmt/core.h>
 #include "avapi/Company/Earnings.hpp"
-#include "avapi/misc.hpp"
 
 namespace avapi {
 

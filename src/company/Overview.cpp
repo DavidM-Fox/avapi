@@ -1,6 +1,5 @@
-#include <iostream>
 #include <nlohmann/json.hpp>
-#include <string>
+#include <iostream>
 #include "avapi/Company/Overview.hpp"
 
 namespace avapi {
