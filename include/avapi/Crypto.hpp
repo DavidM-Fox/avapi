@@ -2,10 +2,10 @@
 #define CRYPTO_H
 #include <string>
 #include <vector>
-#include "avapi/ApiCall.hpp"
-#include "avapi/Container/TimeSeries.hpp"
-#include "avapi/Container/ExchangeRate.hpp"
-#include "avapi/Crypto/HealthIndex.hpp"
+#include "ApiCall.hpp"
+#include "Container/TimeSeries.hpp"
+#include "Container/ExchangeRate.hpp"
+#include "Crypto/HealthIndex.hpp"
 
 namespace avapi {
 

@@ -1,8 +1,8 @@
 #ifndef COMPANY_H
 #define COMPANY_H
-#include "avapi/Company/Stock.hpp"
-#include "avapi/Company/Overview.hpp"
-#include "avapi/Company/Earnings.hpp"
+#include "Company/Stock.hpp"
+#include "Company/Overview.hpp"
+#include "Company/Earnings.hpp"
 
 namespace avapi {
 

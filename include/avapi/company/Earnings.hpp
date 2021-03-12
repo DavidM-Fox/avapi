@@ -30,11 +30,7 @@ public:
 
         std::vector<report> data;
         void printData();
-        const avapi::CompanyEarnings::AnnualEarnings::report &
-        operator[](size_t i) const
-        {
-            return data[i];
-        }
+        const report &operator[](size_t i) { return data[i]; }
 
     private:
         std::string symbol;
