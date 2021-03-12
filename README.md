@@ -6,7 +6,7 @@ Avapi is a C++ library utilizing the [Alpha Vantage API](https://www.alphavantag
 - [Prerequisites](#prerequisites)
 - [Example Usage](#example-usage)
   * [Company Information and Historical Stock Data](#company-information-and-historical-stock-data)
-  * [Cryptocurrency Historical Pricing Data](#cryptocurrency-historical-pricing-data)
+  * [Cryptocurrency Information and Historical Pricing Data](#cryptocurrency-historical-pricing-data)
   * [Parsing an Alpha Vantage time series csv file](#parsing-an-alpha-vantage-time-series-csv-file)
 
 
@@ -248,7 +248,7 @@ Output:
 |Change%:               4.72|
 ```
 ---
-## Cryptocurrency Historical Pricing Data
+## Cryptocurrency Information and Historical Pricing Data
 
 Avapi also provides a simple interface for accessing historical pricing data for a cryptocurrency of interest. For the following examples, we will explore the available functions of the `avapi::Crypto` class with Bitcoin (“BTC”). With the `symbol` “BTC” and our Alpha Vantage API `key`, lets create a new `Crypto` object. Note: The `key` can be saved to a text file and then read with a provided helper function.
 
