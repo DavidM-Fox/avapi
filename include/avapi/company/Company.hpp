@@ -1,8 +1,8 @@
 #ifndef COMPANY_H
 #define COMPANY_H
-#include "Company/Stock.hpp"
-#include "Company/Overview.hpp"
-#include "Company/Earnings.hpp"
+#include "avapi/Company/Earnings.hpp"
+#include "avapi/Company/Overview.hpp"
+#include "avapi/Company/Stock.hpp"
 
 namespace avapi {
 
@@ -16,9 +16,9 @@ public:
     void setSymbol(const std::string &symbol);
     std::string &Symbol() { return symbol; }
 
-    CompanyStock *Stock();
-    CompanyOverview *Overview(const bool &update = false);
     CompanyEarnings *Earnings(const bool &update = false);
+    CompanyOverview *Overview(const bool &update = false);
+    CompanyStock *Stock();
 
 private:
     std::string symbol;
