@@ -22,7 +22,7 @@ public:
     };
 
     std::vector<report> data;
-    void printData();
+    void printData(const size_t &count = 0);
     const report &operator[](size_t i) { return data[i]; }
 };
 

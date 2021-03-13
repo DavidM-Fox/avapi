@@ -13,9 +13,17 @@ QuarterlyEarnings::QuarterlyEarnings(const std::string &symbol) : symbol(symbol)
 {
 }
 
-/// @brief Print formatted QuarterlyEarnings data
-void QuarterlyEarnings::printData()
+/// @brief Print QuarterlyEarnings data
+/// @param count: The number of rows to print (default = 0 or all)
+void QuarterlyEarnings::printData(const size_t &count)
 {
+    size_t n = count;
+    size_t n_rows = data.size();
+    if (count > n_rows)
+        n = n_rows;
+    else if (count == 0)
+        n = n_rows;
+
     std::cout << std::string(102, '-') << '\n';
     fmt::print("|{:^100}|\n", symbol + " Quarterly Earnings");
     fmt::print("|{:^20}|{:^15}|{:^15}|{:^15}|{:^15}|{:^15}|\n",
@@ -23,19 +31,19 @@ void QuarterlyEarnings::printData()
                "Estimated EPS", "Surprise", "Surprise %");
     std::cout << std::string(102, '-') << '\n';
 
-    for (auto &report : data) {
-        if (report.estimated_eps == "None") {
+    for (size_t i = 0; i < n; ++i) {
+        if (data[i].estimated_eps == "None") {
             fmt::print("|{:^20}|{:^15}|{:>15.2f}|{:>15}|{:>15}|{:>15}|\n",
-                       report.fiscal_date_ending, report.reported_date,
-                       std::stof(report.reported_eps), "None", "None", "None");
+                       data[i].fiscal_date_ending, data[i].reported_date,
+                       std::stof(data[i].reported_eps), "None", "None", "None");
         }
         else {
             fmt::print(
                 "|{:^20}|{:^15}|{:>15.2f}|{:>15.2f}|{:>15.2f}|{:>15.2f}|\n",
-                report.fiscal_date_ending, report.reported_date,
-                std::stof(report.reported_eps), std::stof(report.estimated_eps),
-                std::stof(report.surprise),
-                std::stof(report.surprise_percentage));
+                data[i].fiscal_date_ending, data[i].reported_date,
+                std::stof(data[i].reported_eps),
+                std::stof(data[i].estimated_eps), std::stof(data[i].surprise),
+                std::stof(data[i].surprise_percentage));
         }
     }
 }
