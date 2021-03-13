@@ -5,13 +5,13 @@
 namespace avapi {
 
 /// @brief Default constructor
-Crypto::Crypto() : symbol(""), api_key("") {}
+Crypto::Crypto() : symbol(""), api_key(""), crypto_pricing(nullptr) {}
 
 /// @brief Constructor
 /// @param symbol: The cryptocurrency symbol of interest
 /// @param key: Alpha Vantage API key
 Crypto::Crypto(const std::string &symbol, const std::string &key)
-    : symbol(symbol), api_key(key)
+    : symbol(symbol), api_key(key), crypto_pricing(nullptr)
 {
 }
 
@@ -20,9 +20,6 @@ Crypto::~Crypto()
 {
     if (crypto_pricing != nullptr) {
         delete crypto_pricing;
-    }
-    if (health_index != nullptr) {
-        delete health_index;
     }
 }
 
@@ -35,9 +32,6 @@ void Crypto::setApiKey(const std::string &key)
     if (crypto_pricing != nullptr) {
         crypto_pricing->api_key = key;
     }
-    if (health_index != nullptr) {
-        health_index->api_key = key;
-    }
 }
 
 /// @brief Set the cryptocurrency of interest for this Crypto instance and its
@@ -48,9 +42,6 @@ void Crypto::setSymbol(const std::string &symbol)
     this->symbol = symbol;
     if (crypto_pricing != nullptr) {
         crypto_pricing->symbol = symbol;
-    }
-    if (health_index != nullptr) {
-        health_index->symbol = symbol;
     }
 }
 
@@ -64,13 +55,6 @@ CryptoPricing *Crypto::Pricing()
     return crypto_pricing;
 }
 
-/// @brief Return a HealthIndex* for this instance. A new HealthIndex
-/// object is instantiated when first called
-HealthIndex *Crypto::Health()
-{
-    if (health_index == nullptr) {
-        health_index = new HealthIndex(symbol, api_key);
-    }
-    return health_index;
-}
+/// @brief Return a HealthIndex for this instance
+HealthIndex Crypto::Health() { return {symbol, api_key}; }
 } // namespace avapi

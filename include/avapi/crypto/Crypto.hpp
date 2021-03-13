@@ -16,14 +16,13 @@ public:
     std::string &Symbol() { return symbol; }
 
     CryptoPricing *Pricing();
-    HealthIndex *Health();
+    HealthIndex Health();
 
 private:
     std::string symbol;
     std::string api_key;
 
-    CryptoPricing *crypto_pricing = nullptr;
-    HealthIndex *health_index = nullptr;
+    CryptoPricing *crypto_pricing;
 };
 
 } // namespace avapi
