@@ -10,8 +10,8 @@ namespace avapi {
 CompanyEarnings::CompanyEarnings() : symbol(""), ApiCall("") {}
 
 /// @brief Constructor
-/// @param symbol The company symbol e.g. "TSLA"
-/// @param key Alpha Vantage API key
+/// @param symbol: The company symbol e.g. "TSLA"
+/// @param key: Alpha Vantage API key
 CompanyEarnings::CompanyEarnings(const std::string &symbol,
                                  const std::string &key)
     : symbol(symbol), ApiCall(key)
@@ -19,7 +19,7 @@ CompanyEarnings::CompanyEarnings(const std::string &symbol,
     Update();
 }
 
-/// @brief Get the current annual and quarterly earnings
+/// @brief Update the current annual and quarterly earnings
 void CompanyEarnings::Update()
 {
     if (symbol == "" || api_key == "") {
@@ -30,8 +30,8 @@ void CompanyEarnings::Update()
     }
 
     resetQuery();
-    setFieldValue(Url::FUNCTION, "EARNINGS");
-    setFieldValue(Url::SYMBOL, symbol);
+    setFieldValue(Url::Field::FUNCTION, "EARNINGS");
+    setFieldValue(Url::Field::SYMBOL, symbol);
 
     std::string data = curlQuery();
 
@@ -53,5 +53,4 @@ void CompanyEarnings::Update()
              field["surprisePercentage"]});
     }
 }
-
 } // namespace avapi

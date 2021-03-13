@@ -17,7 +17,6 @@ public:
     void pushBack(const TimePair &pair);
     void reverseData();
     void printData(const size_t &count = 0);
-    void setHeaders(const std::vector<std::string> &headers);
 
     size_t rowCount();
     size_t colCount();

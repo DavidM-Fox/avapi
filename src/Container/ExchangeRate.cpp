@@ -6,13 +6,17 @@
 
 namespace avapi {
 
-/// @brief Default constructor
-ExchangeRate::ExchangeRate() : from_symbol(""), to_symbol(""), ApiCall("") {}
+/// @brief  Default constructor
+ExchangeRate::ExchangeRate()
+    : from_symbol(""), to_symbol(""), timestamp(0), exchange_data({0.0}),
+      ApiCall("")
+{
+}
 
-/// @brief ExchangeRate constructor
-/// @param from Symbol converting from
-/// @param to Symbol converting to
-/// @param key An Alpha Vantage API Key
+/// @brief  ExchangeRate constructor
+/// @param  from: Symbol converting from
+/// @param  to: Symbol converting to
+/// @param  key: An Alpha Vantage API Key
 ExchangeRate::ExchangeRate(const std::string &from, const std::string &to,
                            const std::string &key)
     : from_symbol(from), to_symbol(to), ApiCall(key)
@@ -20,13 +24,13 @@ ExchangeRate::ExchangeRate(const std::string &from, const std::string &to,
     Update();
 }
 
-/// @brief   Get the current exchange rate for a specific market
+/// @brief  Update the ExchangeRate data using to_symbol/from_symbol
 void ExchangeRate::Update()
 {
     resetQuery();
-    setFieldValue(Url::FUNCTION, "CURRENCY_EXCHANGE_RATE");
-    setFieldValue(Url::FROM_CURRENCY, from_symbol);
-    setFieldValue(Url::TO_CURRENCY, to_symbol);
+    setFieldValue(Url::Field::FUNCTION, "CURRENCY_EXCHANGE_RATE");
+    setFieldValue(Url::Field::FROM_CURRENCY, from_symbol);
+    setFieldValue(Url::Field::TO_CURRENCY, to_symbol);
 
     nlohmann::json json =
         nlohmann::json::parse(curlQuery())["Realtime Currency Exchange Rate"];
@@ -37,7 +41,7 @@ void ExchangeRate::Update()
                            std::stof(std::string(json["9. Ask Price"]))};
 }
 
-/// @brief print formatted avapi::ExchangeRate data
+/// @brief  Print formatted ExchangeRate data
 void ExchangeRate::printData()
 {
     std::cout << std::string(30, '-') << '\n';

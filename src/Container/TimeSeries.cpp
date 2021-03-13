@@ -10,17 +10,21 @@
 
 namespace avapi {
 
-/// @brief TimeSeries default constructor
-TimeSeries::TimeSeries() : market("USD") {}
-
-/// @brief TimeSeries constructor
-/// @param data A vector of avapi::TimePair data
-TimeSeries::TimeSeries(const std::vector<avapi::TimePair> &data)
-    : market("USD"), data_series(data)
+/// @brief  TimeSeries default constructor
+TimeSeries::TimeSeries()
+    : type(avapi::SeriesType::DAILY), is_adjusted(false), market("USD")
 {
 }
 
-/// @brief TimeSeries copy constructor
+/// @brief  TimeSeries constructor
+/// @param  data: A vector of avapi::TimePair data
+TimeSeries::TimeSeries(const std::vector<avapi::TimePair> &data)
+    : type(avapi::SeriesType::DAILY), is_adjusted(false), market("USD"),
+      data_series(data)
+{
+}
+
+/// @brief  TimeSeries copy constructor
 TimeSeries::TimeSeries(const TimeSeries &series)
     : symbol(series.symbol), type(series.type), is_adjusted(series.is_adjusted),
       market(series.market), title(series.title), headers(series.headers),
@@ -28,11 +32,11 @@ TimeSeries::TimeSeries(const TimeSeries &series)
 {
 }
 
-/// @brief Push an avapi::TimePair into the avapi::TimeSeries
-/// @param pair An avapi::TimePair to be pushed back
+/// @brief  Push TimePair data into the TimeSeries
+/// @param  pair: An avapi::TimePair to be pushed back
 void TimeSeries::pushBack(const TimePair &pair) { data_series.push_back(pair); }
 
-/// @brief   Reverses the avapi::TimeSeries' data, useful for when the data is
+/// @brief  Reverses the avapi::TimeSeries' data, useful for when the data is
 /// desired to be plotted
 void TimeSeries::reverseData()
 {
@@ -40,7 +44,8 @@ void TimeSeries::reverseData()
     std::reverse(data_series.begin(), data_series.end());
 }
 
-/// @brief print formatted avapi::TimeSeries' contents
+/// @brief Print formatted TimeSeries' data
+/// @param count: The # of rows to print (default = 0 or all)
 void TimeSeries::printData(const size_t &count)
 {
     size_t cell_w = 14;
@@ -83,22 +88,13 @@ void TimeSeries::printData(const size_t &count)
     }
 }
 
-/// @brief Set the avapi::TimeSeries' column headers
-/// @param headers A vector of header strings
-void TimeSeries::setHeaders(const std::vector<std::string> &headers)
-{
-    this->headers = headers;
-}
-
-/// @brief Get the avapi::TimeSeries' row count
-/// @return size_t row count
+/// @brief Get the TimeSeries' row count
 size_t TimeSeries::rowCount() { return data_series.size(); }
 
-/// @brief Get the avapi::TimeSeries' column count
-/// @return size_t column count
+/// @brief Get the TimeSeries' column count
 size_t TimeSeries::colCount() { return data_series[0].data.size() + 1; }
 
-/// @brief push formatted avapi::TimeSeries' contents to ostream
+/// @brief Push formatted TimeSeries' data to ostream
 std::ostream &operator<<(std::ostream &os, const TimeSeries &series)
 {
     size_t width = 14;

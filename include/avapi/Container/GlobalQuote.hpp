@@ -8,6 +8,7 @@
 namespace avapi {
 class GlobalQuote : public ApiCall {
 public:
+    GlobalQuote();
     GlobalQuote(const std::string &symbol, const std::string &key);
 
     std::string symbol;

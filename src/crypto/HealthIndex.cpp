@@ -24,8 +24,8 @@ void HealthIndex::Update()
     }
 
     resetQuery();
-    setFieldValue(Url::FUNCTION, "CRYPTO_RATING");
-    setFieldValue(Url::SYMBOL, symbol);
+    setFieldValue(Url::Field::FUNCTION, "CRYPTO_RATING");
+    setFieldValue(Url::Field::SYMBOL, symbol);
 
     nlohmann::json json =
         nlohmann::json::parse(curlQuery())["Crypto Rating (FCAS)"];

@@ -44,7 +44,7 @@ std::string Url::buildQuery()
     std::string url{"https://www.alphavantage.co/query?"};
 
     for (auto &param : m_query) {
-        url += m_fieldStrings[param.field] + param.value;
+        url += m_fieldStrings[static_cast<int>(param.field)] + param.value;
     }
     return url;
 }
@@ -62,7 +62,7 @@ const std::string Url::m_urlBase{"https://www.alphavantage.co/query?"};
 ApiCall::ApiCall() : api_key("")
 {
     url = new avapi::Url();
-    url->setFieldValue(Url::API_KEY, api_key);
+    url->setFieldValue(Url::Field::API_KEY, api_key);
 }
 
 /// @brief   ApiCall Class constructor
@@ -70,7 +70,7 @@ ApiCall::ApiCall() : api_key("")
 ApiCall::ApiCall(const std::string &key) : api_key(key)
 {
     url = new avapi::Url();
-    url->setFieldValue(Url::API_KEY, api_key);
+    url->setFieldValue(Url::Field::API_KEY, api_key);
 }
 
 /// @brief   ApiCall Class deconstructor
@@ -118,7 +118,7 @@ std::string ApiCall::curlQuery()
     }
 
     CURL *curl;
-    CURLcode res;
+    int res;
     std::string data;
 
     curl = curl_easy_init();
@@ -142,7 +142,7 @@ void ApiCall::resetQuery()
         delete url;
 
     url = new Url();
-    url->setFieldValue(Url::API_KEY, api_key);
+    url->setFieldValue(Url::Field::API_KEY, api_key);
 }
 
 /// @brief   Callback function for CURLOPT_WRITEFUNCTION

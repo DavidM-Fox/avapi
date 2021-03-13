@@ -8,7 +8,7 @@ namespace avapi {
 CompanyOverview::CompanyOverview() : symbol(symbol), ApiCall("") {}
 
 /// @brief Constructor
-/// @param symbol The company symbol e.g. "TSLA"
+/// @param symbol The Company symbol e.g. "TSLA"
 /// @param key Alpha Vantage API key
 CompanyOverview::CompanyOverview(const std::string &symbol,
                                  const std::string &key)
@@ -17,7 +17,7 @@ CompanyOverview::CompanyOverview(const std::string &symbol,
     Update();
 }
 
-/// @brief Get the current company overview
+/// @brief Update the Company overview
 void CompanyOverview::Update()
 {
     if (symbol == "" || api_key == "") {
@@ -28,11 +28,11 @@ void CompanyOverview::Update()
     }
 
     resetQuery();
-    setFieldValue(Url::FUNCTION, "OVERVIEW");
-    setFieldValue(Url::SYMBOL, symbol);
+    setFieldValue(Url::Field::FUNCTION, "OVERVIEW");
+    setFieldValue(Url::Field::SYMBOL, symbol);
 
     nlohmann::json json_data = nlohmann::json::parse(curlQuery());
-
+    data.clear();
     if (json_data.is_object()) {
         auto obj = json_data.get<nlohmann::json::object_t>();
         for (auto &kvp : obj) {

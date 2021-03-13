@@ -6,10 +6,13 @@
 namespace avapi {
 class TimePair {
 public:
+    TimePair() : timestamp(0), data({0}) {}
+
     TimePair(const std::time_t &time, const std::vector<float> &data)
         : timestamp(time), data(data)
     {
     }
+
     TimePair(const TimePair &pair) : timestamp(pair.timestamp), data(pair.data)
     {
     }

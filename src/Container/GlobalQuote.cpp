@@ -7,25 +7,30 @@
 
 namespace avapi {
 
-/// @brief GlobalQuote constructor
-/// @param timestamp A Unix timestamp
-/// @param data std::vector<float> ordered: [Open, High, Low, Close, Volume,
-/// Prev_Close, Change, Change%]
+/// @brief Default Constructor
+GlobalQuote::GlobalQuote()
+    : symbol(""), ApiCall(""), timestamp(0), quote_data({0})
+{
+}
+
+/// @brief  GlobalQuote constructor
+/// @param  symbol: The stock symbol e.g. "TSLA"
+/// @param  key: An Alpha Vantage API Key
 GlobalQuote::GlobalQuote(const std::string &symbol, const std::string &key)
     : symbol(symbol), ApiCall(key)
 {
     Update();
 }
 
-/// @brief   Update to current Global Quote
+/// @brief  Update GlobalQuote data
 void GlobalQuote::Update()
 {
     resetQuery();
 
     // Only three parameters needed for GlobalQuote
-    setFieldValue(Url::FUNCTION, "GLOBAL_QUOTE");
-    setFieldValue(Url::SYMBOL, symbol);
-    setFieldValue(Url::DATA_TYPE, "csv");
+    setFieldValue(Url::Field::FUNCTION, "GLOBAL_QUOTE");
+    setFieldValue(Url::Field::SYMBOL, symbol);
+    setFieldValue(Url::Field::DATA_TYPE, "csv");
 
     // Download csv data for global quote
     std::stringstream csv(curlQuery());
@@ -61,7 +66,7 @@ void GlobalQuote::Update()
     this->quote_data = data_f;
 }
 
-/// @brief print formatted avapi::GlobalQuote data
+/// @brief  Print formatted GlobalQuote data
 void GlobalQuote::printData()
 {
 

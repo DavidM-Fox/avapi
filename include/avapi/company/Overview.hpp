@@ -10,7 +10,7 @@ class CompanyOverview : public ApiCall {
 public:
     CompanyOverview();
     explicit CompanyOverview(const std::string &symbol,
-                             const std::string &api_key = "");
+                             const std::string &key = "");
 
     std::string symbol;
 

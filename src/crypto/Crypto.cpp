@@ -57,7 +57,6 @@ CryptoPricing *Crypto::Pricing()
 {
     if (crypto_pricing == nullptr) {
         crypto_pricing = new CryptoPricing(symbol, api_key);
-        return crypto_pricing;
     }
     return crypto_pricing;
 }
@@ -67,7 +66,6 @@ HealthIndex *Crypto::Health()
 {
     if (health_index == nullptr) {
         health_index = new HealthIndex(symbol, api_key);
-        return health_index;
     }
     return health_index;
 }

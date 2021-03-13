@@ -8,7 +8,7 @@ namespace avapi {
 AnnualEarnings::AnnualEarnings() : symbol("") {}
 
 /// @brief Constructor
-/// @param symbol The stock symbol e.g. "TSLA"
+/// @param symbol: The stock symbol e.g. "TSLA"
 AnnualEarnings::AnnualEarnings(const std::string &symbol) : symbol(symbol) {}
 
 /// @brief Print formatted annual earnings

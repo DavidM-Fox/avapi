@@ -10,7 +10,7 @@ class Url {
 public:
     Url();
 
-    enum Field {
+    enum class Field {
         FUNCTION = 0,
         SYMBOL,
         INTERVAL,

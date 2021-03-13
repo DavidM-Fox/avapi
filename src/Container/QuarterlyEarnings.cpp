@@ -8,12 +8,12 @@ namespace avapi {
 QuarterlyEarnings::QuarterlyEarnings() : symbol("") {}
 
 /// @brief Constructor
-/// @param symbol The stock symbol e.g. "TSLA"
+/// @param symbol: The stock symbol e.g. "TSLA"
 QuarterlyEarnings::QuarterlyEarnings(const std::string &symbol) : symbol(symbol)
 {
 }
 
-/// @brief Print formatted quarterly earnings
+/// @brief Print formatted QuarterlyEarnings data
 void QuarterlyEarnings::printData()
 {
     std::cout << std::string(102, '-') << '\n';

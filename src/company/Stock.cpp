@@ -8,15 +8,15 @@
 
 namespace avapi {
 
-/// @brief   avapi::CompanyStock default constructor
+/// @brief Default Constructor
 CompanyStock::CompanyStock() : symbol(symbol), ApiCall("")
 {
     output_size = "compact";
 }
 
-/// @brief   avapi::CompanyStock constructor
-/// @param   symbol The stock symbol of interest
-/// @param   api_key The Alpha Vantage API key to use
+/// @brief Constructor
+/// @param symbol: The stock symbol of interest
+/// @param api_key: The Alpha Vantage API key to use
 CompanyStock::CompanyStock(const std::string &symbol, const std::string &key)
     : symbol(symbol), ApiCall(key)
 {
@@ -24,13 +24,10 @@ CompanyStock::CompanyStock(const std::string &symbol, const std::string &key)
 }
 
 /// @brief   Get an avapi::TimeSeries for a stock symbol of interest.
-/// @param   type enum class avapi::SeriesType
-/// @param   adjusted Whether or not the data should have adjusted values
-/// @param   interval The interval for avapi::series::INTRADAY, ignored
-/// otherwise (default = "30min")
-/// @returns An avapi::TimeSeries: [open,high,low,close,volume]
-/// or an adjusted avapi::TimeSeries:
-/// [open,high,low,close,adjusted_close,volume,dividend_amount,split_coefficient]
+/// @param   type: The avapi::SeriesType
+/// @param   adjusted: Adjusted or Non-Adjusted data
+/// @param   interval: The interval for INTRADAY, ignored otherwise (default =
+/// "30min")
 TimeSeries CompanyStock::getTimeSeries(const avapi::SeriesType &type,
                                        const bool &adjusted,
                                        const std::string &interval)
@@ -42,32 +39,32 @@ TimeSeries CompanyStock::getTimeSeries(const avapi::SeriesType &type,
 
     // Check if intraday (Uses different parameters than daily, weekly, monthly)
     if (type == SeriesType::INTRADAY) {
-        setFieldValue(Url::FUNCTION, function);
-        setFieldValue(Url::INTERVAL, interval);
+        setFieldValue(Url::Field::FUNCTION, function);
+        setFieldValue(Url::Field::INTERVAL, interval);
         if (adjusted) {
-            setFieldValue(Url::ADJUSTED, "true");
+            setFieldValue(Url::Field::ADJUSTED, "true");
             title = function + " (" + interval + ", Adjusted)";
         }
         else {
-            setFieldValue(Url::ADJUSTED, "false");
+            setFieldValue(Url::Field::ADJUSTED, "false");
             title = function + " (" + interval + ", Non-Adjusted)";
         }
     }
     else {
         if (adjusted) {
-            setFieldValue(Url::FUNCTION, function + "_ADJUSTED");
+            setFieldValue(Url::Field::FUNCTION, function + "_ADJUSTED");
             title = function + " (Adjusted)";
         }
         else {
-            setFieldValue(Url::FUNCTION, function);
+            setFieldValue(Url::Field::FUNCTION, function);
             title = function + " (Non-Adjusted)";
         }
     }
 
     // Set other needed API fields
-    setFieldValue(Url::SYMBOL, symbol);
-    setFieldValue(Url::OUTPUT_SIZE, output_size);
-    setFieldValue(Url::DATA_TYPE, "csv");
+    setFieldValue(Url::Field::SYMBOL, symbol);
+    setFieldValue(Url::Field::OUTPUT_SIZE, output_size);
+    setFieldValue(Url::Field::DATA_TYPE, "csv");
 
     // Download, parse, and create TimeSeries from csv data
     TimeSeries series = parseCsvString(curlQuery());
@@ -77,8 +74,6 @@ TimeSeries CompanyStock::getTimeSeries(const avapi::SeriesType &type,
     series.title = symbol + ": " + title;
     return series;
 }
-
-GlobalQuote CompanyStock::getGlobalQuote() { return {symbol, api_key}; }
 
 const std::vector<std::string> CompanyStock::series_function = {
     "TIME_SERIES_INTRADAY", "TIME_SERIES_DAILY", "TIME_SERIES_WEEKLY",

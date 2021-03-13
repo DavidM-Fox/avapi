@@ -36,6 +36,5 @@
 build/
 .vscode/
 .vs/
-src/main.cpp
-main.cpp
 CppProperties.json
+CMakeSettings.json

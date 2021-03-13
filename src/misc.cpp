@@ -124,7 +124,7 @@ TimeSeries parseCsvString(const std::string &data, const bool &crypto)
         else if (header == "split coefficient" || header == "split_coefficient")
             header = "split_coeff";
     }
-    series.setHeaders(headers);
+    series.headers = headers;
     return series;
 }
 
@@ -172,7 +172,7 @@ TimeSeries parseCsvFile(const std::string &file_path, const bool &crypto)
         else if (header == "split coefficient" || header == "split_coefficient")
             header = "split_coeff";
     }
-    series.setHeaders(headers);
+    series.headers = headers;
     return series;
 }
 

@@ -44,13 +44,13 @@ TimeSeries CryptoPricing::getTimeSeries(const SeriesType &type,
     }
 
     function = series_function[static_cast<int>(check)];
-    setFieldValue(Url::FUNCTION, function);
+    setFieldValue(Url::Field::FUNCTION, function);
 
     // Set other needed API fields
-    setFieldValue(Url::SYMBOL, symbol);
-    setFieldValue(Url::MARKET, market);
-    setFieldValue(Url::OUTPUT_SIZE, output_size);
-    setFieldValue(Url::DATA_TYPE, "csv");
+    setFieldValue(Url::Field::SYMBOL, symbol);
+    setFieldValue(Url::Field::MARKET, market);
+    setFieldValue(Url::Field::OUTPUT_SIZE, output_size);
+    setFieldValue(Url::Field::DATA_TYPE, "csv");
 
     // Download, parse, and create TimeSeries from csv data
     TimeSeries series = parseCsvString(curlQuery(), true);
