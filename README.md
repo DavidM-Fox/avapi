@@ -77,8 +77,8 @@ The ```avapi::CompanyOverview```class has an ```std::unordered_map``` containing
 
 ```C++
 
-std::string tsla_sector = tsla->Overview()->data["Sector"];
-std::string tsla_employees = tsla->Overview()->data["FullTimeEmployees"];
+std::string tsla_sector = tsla->Overview()->Get("Sector");
+std::string tsla_employees = tsla->Overview()->Get("FullTimeEmployees");
 std::cout << tsla_sector << '\n' << tsla_employees << '\n';
 
 ```
