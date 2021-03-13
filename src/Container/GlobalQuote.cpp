@@ -13,16 +13,16 @@ GlobalQuote::GlobalQuote()
 {
 }
 
-/// @brief  GlobalQuote constructor
-/// @param  symbol: The stock symbol e.g. "TSLA"
-/// @param  key: An Alpha Vantage API Key
+/// @brief Constructor
+/// @param symbol: The stock symbol e.g. "TSLA"
+/// @param key: An Alpha Vantage API Key
 GlobalQuote::GlobalQuote(const std::string &symbol, const std::string &key)
     : symbol(symbol), ApiCall(key)
 {
     Update();
 }
 
-/// @brief  Update GlobalQuote data
+/// @brief Update GlobalQuote data
 void GlobalQuote::Update()
 {
     resetQuery();
@@ -66,7 +66,7 @@ void GlobalQuote::Update()
     this->quote_data = data_f;
 }
 
-/// @brief  Print formatted GlobalQuote data
+/// @brief Print formatted GlobalQuote data
 void GlobalQuote::printData()
 {
 

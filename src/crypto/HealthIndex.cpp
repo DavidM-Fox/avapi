@@ -6,14 +6,19 @@
 
 namespace avapi {
 
+/// @brief Default constructor
 HealthIndex::HealthIndex() : symbol(""), ApiCall("") {}
 
+/// @brief Constructor
+/// @param symbol: The cryptocurrency symbol of interest
+/// @param key: Alpha Vantage API key
 HealthIndex::HealthIndex(const std::string &symbol, const std::string &key)
     : symbol(symbol), ApiCall(key)
 {
     Update();
 }
 
+/// @brief Update HealthIndex data
 void HealthIndex::Update()
 {
     if (symbol == "" || api_key == "") {
@@ -42,6 +47,7 @@ void HealthIndex::Update()
     data.push_back(json["9. timezone"]);
 }
 
+/// @brief Print formatted HealthIndex data
 void HealthIndex::printData()
 {
     std::cout << std::string(40, '-') << '\n';

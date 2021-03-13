@@ -6,17 +6,17 @@
 
 namespace avapi {
 
-/// @brief  Default constructor
+/// @brief Default constructor
 ExchangeRate::ExchangeRate()
     : from_symbol(""), to_symbol(""), timestamp(0), exchange_data({0.0}),
       ApiCall("")
 {
 }
 
-/// @brief  ExchangeRate constructor
-/// @param  from: Symbol converting from
-/// @param  to: Symbol converting to
-/// @param  key: An Alpha Vantage API Key
+/// @brief Constructor
+/// @param from: Symbol converting from
+/// @param to: Symbol converting to
+/// @param key: An Alpha Vantage API Key
 ExchangeRate::ExchangeRate(const std::string &from, const std::string &to,
                            const std::string &key)
     : from_symbol(from), to_symbol(to), ApiCall(key)
@@ -24,7 +24,7 @@ ExchangeRate::ExchangeRate(const std::string &from, const std::string &to,
     Update();
 }
 
-/// @brief  Update the ExchangeRate data using to_symbol/from_symbol
+/// @brief Update the ExchangeRate data using to_symbol/from_symbol
 void ExchangeRate::Update()
 {
     resetQuery();
@@ -41,7 +41,7 @@ void ExchangeRate::Update()
                            std::stof(std::string(json["9. Ask Price"]))};
 }
 
-/// @brief  Print formatted ExchangeRate data
+/// @brief Print formatted ExchangeRate data
 void ExchangeRate::printData()
 {
     std::cout << std::string(30, '-') << '\n';

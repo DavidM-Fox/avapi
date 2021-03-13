@@ -10,13 +10,13 @@
 
 namespace avapi {
 
-/// @brief  TimeSeries default constructor
+/// @brief Default constructor
 TimeSeries::TimeSeries()
     : type(avapi::SeriesType::DAILY), is_adjusted(false), market("USD")
 {
 }
 
-/// @brief TimeSeries constructor
+/// @brief Constructor
 /// @param data: A vector of avapi::TimePair data
 TimeSeries::TimeSeries(const std::vector<avapi::TimePair> &data)
     : type(avapi::SeriesType::DAILY), is_adjusted(false), market("USD"),
@@ -24,7 +24,7 @@ TimeSeries::TimeSeries(const std::vector<avapi::TimePair> &data)
 {
 }
 
-/// @brief TimeSeries copy constructor
+/// @brief Copy constructor
 TimeSeries::TimeSeries(const TimeSeries &series)
     : symbol(series.symbol), type(series.type), is_adjusted(series.is_adjusted),
       market(series.market), title(series.title), headers(series.headers),
