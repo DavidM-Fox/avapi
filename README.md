@@ -32,9 +32,9 @@ avapi::Company *tsla = new avapi::Company(symbol, key);
 
 ```
 The ```Company``` class has three component classes with corresponding methods to access pointers to them:
- - avapi::CompanyEarnings - Earnings()
- - avapi::CompanyOverview - Overview()
- - avapi::CompanyStock - Stock()
+ - avapi::CompanyEarnings* - Earnings()
+ - avapi::CompanyOverview* - Overview()
+ - avapi::CompanyStock* - Stock()
 ---
 **Company Information - Annual and Quarterly Earnings:**
 
@@ -263,9 +263,9 @@ avapi::Crypto *btc = new avapi::Crypto(symbol, key);
 
 ```
 
-The Crypto class has two component classes with corresponding methods to access pointers to them:
+The Crypto class has two component classes with corresponding methods to access them:
 
- - avapi::CryptoPricing - Pricing()
+ - avapi::CryptoPricing* - Pricing()
  - avapi::HealthIndex - Health()
 ---
 **Historical Pricing Data - Daily, Weekly, and Monthly Time Series**
@@ -328,7 +328,7 @@ The ```avapi::ExchangeRate``` object is a class containing the cryptocurrency's 
 
 // Get an avapi::ExchangeRate object for "BTC"
 auto exchange_rate = btc->Pricing()->Exchange("USD");
-exchange_rate->printData();
+exchange_rate.printData();
 
 ```
 ```
@@ -351,7 +351,7 @@ The ```avapi::HealthIndex``` object is a class containing the cryptocurrency's c
 ```C++
 
 auto btc_health = btc->Health();
-btc_health->printData();
+btc_health.printData();
 
 ```
 ```
