@@ -14,9 +14,12 @@ public:
 
     std::string symbol;
 
-    std::unordered_map<std::string, std::string> data;
-    std::string operator[](const std::string &str) { return data[str]; }
+    const std::string &Get(const std::string &field);
+    std::string operator[](const std::string &field) { return data[field]; }
     void Update();
+
+private:
+    std::unordered_map<std::string, std::string> data;
 };
 
 } // namespace avapi

@@ -17,6 +17,14 @@ CompanyOverview::CompanyOverview(const std::string &symbol,
     Update();
 }
 
+/// @brief Get a CompanyOverview field value
+/// @param field: The field in question
+/// @return The value associated with the field
+const std::string &CompanyOverview::Get(const std::string &field)
+{
+    return data[field];
+}
+
 /// @brief Update the Company overview
 void CompanyOverview::Update()
 {
