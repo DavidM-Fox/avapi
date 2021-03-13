@@ -8,8 +8,8 @@ namespace avapi {
 CompanyOverview::CompanyOverview() : symbol(symbol), ApiCall("") {}
 
 /// @brief Constructor
-/// @param symbol The Company symbol e.g. "TSLA"
-/// @param key Alpha Vantage API key
+/// @param symbol: The Company symbol e.g. "TSLA"
+/// @param key: Alpha Vantage API key
 CompanyOverview::CompanyOverview(const std::string &symbol,
                                  const std::string &key)
     : symbol(symbol), ApiCall(key)

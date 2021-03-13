@@ -16,15 +16,15 @@ TimeSeries::TimeSeries()
 {
 }
 
-/// @brief  TimeSeries constructor
-/// @param  data: A vector of avapi::TimePair data
+/// @brief TimeSeries constructor
+/// @param data: A vector of avapi::TimePair data
 TimeSeries::TimeSeries(const std::vector<avapi::TimePair> &data)
     : type(avapi::SeriesType::DAILY), is_adjusted(false), market("USD"),
       data_series(data)
 {
 }
 
-/// @brief  TimeSeries copy constructor
+/// @brief TimeSeries copy constructor
 TimeSeries::TimeSeries(const TimeSeries &series)
     : symbol(series.symbol), type(series.type), is_adjusted(series.is_adjusted),
       market(series.market), title(series.title), headers(series.headers),
@@ -32,11 +32,11 @@ TimeSeries::TimeSeries(const TimeSeries &series)
 {
 }
 
-/// @brief  Push TimePair data into the TimeSeries
-/// @param  pair: An avapi::TimePair to be pushed back
+/// @brief Push TimePair data into the TimeSeries
+/// @param pair: A TimePair to be pushed back
 void TimeSeries::pushBack(const TimePair &pair) { data_series.push_back(pair); }
 
-/// @brief  Reverses the avapi::TimeSeries' data, useful for when the data is
+/// @brief Reverses the TimeSeries' data, useful for when the data is
 /// desired to be plotted
 void TimeSeries::reverseData()
 {

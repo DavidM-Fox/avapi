@@ -8,25 +8,25 @@
 #include "avapi/Crypto/Pricing.hpp"
 
 namespace avapi {
-/// @brief   avapi::CryptoPricing default constructor
+/// @brief Default constructor
 CryptoPricing::CryptoPricing() : symbol(""), ApiCall("")
 {
     output_size = "compact";
 }
 
-/// @brief   avapi::CryptoPricing constructor
-/// @param   symbol The stock symbol of interest
-/// @param   api_key The Alpha Vantage API key to use
+/// @brief Constructor
+/// @param symbol: The cryptocurrency symbol of interest
+/// @param key: Alpha Vantage API key
 CryptoPricing::CryptoPricing(const std::string &symbol, const std::string &key)
     : symbol(symbol), ApiCall(key)
 {
     output_size = "compact";
 }
 
-/// @brief   Get an avapi::TimeSeries for a crypto symbol of interest.
-/// @param   type enum class avapi::SeriesType
-/// @param   market The exchange market (default = "USD")
-/// @returns An avapi::TimeSeries ordered [open,high,low,close,volume]
+/// @brief Get a specified TimeSeries for this cryptocurrency
+/// @param type: The avapi::SeriesType (INTRADAY not available)
+/// @param market: The exchange market (default = "USD")
+/// @returns A TimeSeries ordered [open, high, low, close, volume]
 TimeSeries CryptoPricing::getTimeSeries(const SeriesType &type,
                                         const std::string &market)
 {
@@ -62,8 +62,8 @@ TimeSeries CryptoPricing::getTimeSeries(const SeriesType &type,
     return series;
 }
 
-/// @brief Get an avapi::ExchangeRate for this Crypto object
-/// @param market Exchange Market e.g. ("USD")
+/// @brief Get an ExchangeRate for this cryptocurrency
+/// @param market: Exchange Market e.g. ("USD")
 ExchangeRate CryptoPricing::Exchange(const std::string &market)
 {
     return {symbol, market, api_key};

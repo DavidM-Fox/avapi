@@ -7,11 +7,10 @@
 
 namespace avapi {
 
-/// @brief   Replaces a substring within a given string
-/// @param   str The given string
-/// @param   from The substring being replaced by "to"
-/// @param   to The substring replacing "from"
-/// @returns A success/fail bool
+/// @brief Replaces a substring within a given string
+/// @param str: The given string
+/// @param from: The substring to be replaced
+/// @param to: The substring replacing "from"
 bool stringReplace(std::string &str, const std::string &from,
                    const std::string &to)
 {
@@ -24,7 +23,7 @@ bool stringReplace(std::string &str, const std::string &from,
 }
 
 /// @brief   Reads the first line from a given file
-/// @param   file_path File to be read's path
+/// @param   file_path: File to be read's path
 /// @returns first line as an std::string
 std::string readApiKey(const std::string &file_path)
 {
@@ -45,9 +44,8 @@ std::string readApiKey(const std::string &file_path)
 }
 
 /// @brief   Converts date + time string "%Y-%m-%d %H:%M:%S" to Unix Timestamp
-/// (seconds since unic epoch)
-/// @param   input The input string to be converted
-/// @returns The time as an std::time_t unix timestamp
+/// (Seconds since unix epoch)
+/// @param   input: The string to be converted
 std::time_t toUnixTimestamp(const std::string &input)
 {
     std::tm t{};
@@ -57,9 +55,8 @@ std::time_t toUnixTimestamp(const std::string &input)
     return mktime(&t);
 }
 
-/// @brief   Test if a string is in JSON format
-/// @param   data The string to be tested
-/// @returns bool
+/// @brief Test if a string is JSON convertable
+/// @param data: The string to be tested
 bool isJsonString(const std::string &data)
 {
     try {
@@ -71,10 +68,9 @@ bool isJsonString(const std::string &data)
     return true;
 }
 
-/// @brief   Returns an avapi::time_series created from a csv std::string
-/// @param   data An csv std::string object
-/// @param   crypto Wheter the csv data is from a crypto symbol
-/// @returns avapi::TimeSeries
+/// @brief Returns a TimeSeries created from a csv std::string
+/// @param data: An csv std::string object
+/// @param crypto: Whether the csv data is from a cryptocurrency
 TimeSeries parseCsvString(const std::string &data, const bool &crypto)
 {
     // Create rapidcsv::Document object from csv string
@@ -128,10 +124,9 @@ TimeSeries parseCsvString(const std::string &data, const bool &crypto)
     return series;
 }
 
-/// @brief   Returns an avapi::time_series created from a csv std::string
-/// @param   data An csv std::string object
-/// @param   crypto Wheter the csv data is from a crypto symbol
-/// @returns avapi::TimeSeries
+/// @brief Returns a TimeSeries created from a csv file
+/// @param file_path: The csv file's path
+/// @param crypto: Whether the csv data is from a cryptocurrency
 TimeSeries parseCsvFile(const std::string &file_path, const bool &crypto)
 {
     // Create rapidcsv::Document object from csv string

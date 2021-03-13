@@ -4,18 +4,18 @@
 
 namespace avapi {
 
-/// @brief   avapi::Crypto Default Constructor
+/// @brief Default constructor
 Crypto::Crypto() : symbol(""), api_key("") {}
 
-/// @brief   avapi::Crypto constructor
-/// @param   symbol The crypto symbol of interest
-/// @param   key The Alpha Vantage API key to use
+/// @brief Constructor
+/// @param symbol: The cryptocurrency symbol of interest
+/// @param key: Alpha Vantage API key
 Crypto::Crypto(const std::string &symbol, const std::string &key)
     : symbol(symbol), api_key(key)
 {
 }
 
-/// @brief  Crypto deconstructor
+/// @brief Crypto deconstructor
 Crypto::~Crypto()
 {
     if (crypto_pricing != nullptr) {
@@ -26,8 +26,9 @@ Crypto::~Crypto()
     }
 }
 
-/// @brief Set the Alpha Vantage API key for Crypto and its components
-/// @param key Alpha Vantage API key
+/// @brief Set the Alpha Vantage API key for this Crypto instance and its
+/// components
+/// @param key: Alpha Vantage API key
 void Crypto::setApiKey(const std::string &key)
 {
     this->api_key = key;
@@ -39,8 +40,9 @@ void Crypto::setApiKey(const std::string &key)
     }
 }
 
-/// @brief Set the cryptocurrency of interest for Crypto and its components
-/// @param symbol cryptocurrency symbol
+/// @brief Set the cryptocurrency of interest for this Crypto instance and its
+/// components
+/// @param symbol: Cryptocurrency symbol
 void Crypto::setSymbol(const std::string &symbol)
 {
     this->symbol = symbol;
@@ -52,7 +54,8 @@ void Crypto::setSymbol(const std::string &symbol)
     }
 }
 
-/// @brief Return an avapi::CryptoPricing* for this Crypto object
+/// @brief Return a CryptoPricing* for this instance. A new CryptoPricing
+/// object is instantiated when first called
 CryptoPricing *Crypto::Pricing()
 {
     if (crypto_pricing == nullptr) {
@@ -61,7 +64,8 @@ CryptoPricing *Crypto::Pricing()
     return crypto_pricing;
 }
 
-/// @brief Return an avapi::HealthIndex* for this Crypto object
+/// @brief Return a HealthIndex* for this instance. A new HealthIndex
+/// object is instantiated when first called
 HealthIndex *Crypto::Health()
 {
     if (health_index == nullptr) {
