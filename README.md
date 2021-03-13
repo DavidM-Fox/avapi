@@ -38,14 +38,17 @@ The ```Company``` class has three component classes with corresponding methods t
 ---
 **Company Information - Annual and Quarterly Earnings:**
 
-The following shows us accessing the annual and quarterly earnings for Tesla and then printing them to console. (The displayed output only shows the first 3 rows)
+The following shows us accessing the annual and quarterly earnings for Tesla and then printing them to console.
+
 ```C++
 
+// Get annual and quarterly earnings
 auto tsla_annual = tsla->Earnings()->Annual();
 auto tsla_quarterly = tsla->Earnings()->Quarterly();
 
-tsla_annual->printData();
-tsla_quarterly->printData();
+// Print the first 3 rows
+tsla_annual.printData(3);
+tsla_quarterly->printData(3);
 
 ```
 ```
@@ -56,7 +59,7 @@ Output:
 --------------------------------------
 |     2020-12-31     |           2.22|
 |     2019-12-31     |          -0.02|
-|     2018-12-31     |          -0.32|...
+|     2018-12-31     |          -0.32|
 ```
 ```
 Output:
@@ -66,7 +69,7 @@ Output:
 ------------------------------------------------------------------------------------------------------
 |     2020-12-31     |  2021-01-27   |           0.80|           1.05|          -0.25|         -23.91|
 |     2020-09-30     |  2020-10-21   |           0.76|           0.60|           0.16|          25.79|
-|     2020-06-30     |  2020-07-22   |           0.44|          -0.03|           0.47|        1458.26|...
+|     2020-06-30     |  2020-07-22   |           0.44|          -0.03|           0.47|        1458.26|
 ```
 ---
 **Company Information - Overview:**
