@@ -27,7 +27,7 @@ Avapi provides a simple interface for accessing company information and stock da
 ```C++
 
 std::string symbol = "TSLA";
-std::string key = avapi::readFirstLineFromFile("api.key");
+std::string key = avapi::readApiKey("api.key");
 avapi::Company *tsla = new avapi::Company(symbol, key);
 
 ```
@@ -223,7 +223,7 @@ Output:
 ---
 **Historical Stock Data - Global Quote**
 
-The ```avapi::CompanyStock::GlobalQuote``` class contains the stock of interest's current global quote data. It is constructed with the stock of interest's symbol, a UNIX timestamp, and a data vector ordered: ```[open, high, low, price, volume, previous_close, change, change%]```
+The ```avapi::CompanyStock::GlobalQuote``` class contains the stock of interest's current [global quote](https://www.alphavantage.co/documentation/#latestprice) data. It is constructed with the stock of interest's symbol, a UNIX timestamp, and a data vector ordered: ```[open, high, low, price, volume, previous_close, change, change%]```
 
 
 ```C++
@@ -255,7 +255,7 @@ Avapi also provides a simple interface for accessing general information and his
 ```C++
 
 std::string symbol = "BTC";
-std::string key = avapi::readFirstLineFromFile("api.key");
+std::string key = avapi::readApiKey("api.key");
 avapi::Crypto *btc = new avapi::Crypto(symbol, key);
 
 ```
@@ -319,7 +319,7 @@ Output:
 **Pricing Data - Current Exchange Rate**
 
 
-The ```avapi::ExchangeRate``` object is a class containing the cryptocurrency's current exchange rate for a specified market.
+The ```avapi::ExchangeRate``` object is a class containing the cryptocurrency's current [exchange rate](https://www.alphavantage.co/documentation/#currency-exchange) for a specified market.
 
 ```C++
 
@@ -343,7 +343,7 @@ Output:
 **General Info - Health Index**
 
 
-The ```avapi::HealthIndex``` object is a class containing the cryptocurrency's current Health Index.
+The ```avapi::HealthIndex``` object is a class containing the cryptocurrency's current [Health Index](https://www.alphavantage.co/documentation/#crypto-ratings).
 
 ```C++
 
