@@ -31,9 +31,11 @@
 *.out
 *.app
 
-# Project Specific 
+# Project Specific
 *.key
 build/
 .vscode/
+.vs/
 src/main.cpp
 main.cpp
+CppProperties.json
