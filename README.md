@@ -48,7 +48,7 @@ auto tsla_quarterly = tsla->Earnings()->Quarterly();
 
 // Print the first 3 rows
 tsla_annual.printData(3);
-tsla_quarterly->printData(3);
+tsla_quarterly.printData(3);
 
 ```
 ```
