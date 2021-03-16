@@ -127,7 +127,7 @@ for (size_t i = 0; i < 10; ++i) {
 }
 std::cout << '\n';
 
-// Print last 3 rows
+// Print first 3 rows
 tsla_intraday.printData(3);
 
 ```
@@ -160,7 +160,7 @@ auto monthly = tsla->Stock()->getTimeSeries(avapi::SeriesType::MONTHLY, false);
 auto daily_adj = tsla->Stock()->getTimeSeries(avapi::SeriesType::DAILY, true);
 auto weekly_adj = tsla->Stock()->getTimeSeries(avapi::SeriesType::WEEKLY, true);
 
-// Print last 3 rows of each time series
+// Print first 3 rows of each time series
 daily.printData(3);
 weekly.printData(3);
 monthly.printData(3);
@@ -278,7 +278,7 @@ auto daily = btc->Pricing()->getTimeSeries(avapi::SeriesType::DAILY,"USD");
 auto weekly = btc->Pricing()->getTimeSeries(avapi::SeriesType::WEEKLY,"USD");
 auto monthly = btc->Pricing()->getTimeSeries(avapi::SeriesType::MONTHLY,"USD");
 
-// Print last 3 rows
+// Print first 3 rows
 daily.printData(3);
 weekly.printData(3);
 monthly.printData(3);
