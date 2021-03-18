@@ -3,31 +3,29 @@
 #include <iomanip>
 #include <string>
 #include <vector>
-#include "avapi/ApiCall.hpp"
 
 namespace avapi {
 
-class ExchangeRate : public ApiCall {
+class ExchangeRate {
 public:
-    ExchangeRate();
+    ExchangeRate()
+        : from_symbol(""), to_symbol(""), timestamp(0), exchange_data(0.0)
+    {
+    }
     ExchangeRate(const std::string &from, const std::string &to,
-                 const std::string &key);
+                 const std::time_t &time, const std::vector<float> &data)
+        : from_symbol(from), to_symbol(to), timestamp(time), exchange_data(data)
+    {
+    }
 
     std::string from_symbol;
     std::string to_symbol;
-
-    std::time_t &Timestamp() { return timestamp; }
-    float &Price() { return exchange_data[0]; }
-    float &BidPrice() { return exchange_data[1]; }
-    float &AskPrice() { return exchange_data[2]; }
-    float &operator[](size_t i) { return exchange_data[i]; }
-
-    void Update();
-    void printData();
-
-private:
     std::time_t timestamp;
+
+    /// @brief [exchange_rate, bid_price, ask_price]
     std::vector<float> exchange_data;
+    float &operator[](size_t i) { return exchange_data[i]; }
+    void printData();
 };
 
 } // namespace avapi

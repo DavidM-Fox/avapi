@@ -66,7 +66,20 @@ TimeSeries CryptoPricing::getTimeSeries(const SeriesType &type,
 /// @param market: Exchange Market e.g. ("USD")
 ExchangeRate CryptoPricing::Exchange(const std::string &market)
 {
-    return {symbol, market, api_key};
+    resetQuery();
+    setFieldValue(Url::Field::FUNCTION, "CURRENCY_EXCHANGE_RATE");
+    setFieldValue(Url::Field::FROM_CURRENCY, this->symbol);
+    setFieldValue(Url::Field::TO_CURRENCY, market);
+
+    nlohmann::json json =
+        nlohmann::json::parse(curlQuery())["Realtime Currency Exchange Rate"];
+
+    std::time_t timestamp = avapi::toUnixTimestamp(json["6. Last Refreshed"]);
+    std::vector<float> data = {std::stof(std::string(json["5. Exchange Rate"])),
+                               std::stof(std::string(json["8. Bid Price"])),
+                               std::stof(std::string(json["9. Ask Price"]))};
+
+    return {symbol, market, timestamp, data};
 }
 
 const std::vector<std::string> CryptoPricing::series_function = {
