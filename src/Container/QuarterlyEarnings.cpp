@@ -19,9 +19,7 @@ void QuarterlyEarnings::printData(const size_t &count)
 {
     size_t n = count;
     size_t n_rows = data.size();
-    if (count > n_rows)
-        n = n_rows;
-    else if (count == 0)
+    if (count > n_rows || count == 0)
         n = n_rows;
 
     std::cout << std::string(102, '-') << '\n';
