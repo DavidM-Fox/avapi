@@ -18,7 +18,7 @@ public:
 
     TimeSeries getTimeSeries(const SeriesType &type, const bool &adjusted,
                              const std::string &interval = "30min");
-    GlobalQuote getGlobalQuote() { return {symbol, api_key}; }
+    GlobalQuote getGlobalQuote();
 
 private:
     static const std::vector<std::string> series_function;
