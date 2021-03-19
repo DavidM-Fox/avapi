@@ -32,9 +32,9 @@ avapi::Company *tsla = new avapi::Company(symbol, key);
 
 ```
 The ```Company``` class has three component classes with corresponding methods to access pointers to them:
- - avapi::CompanyEarnings* - Earnings()
- - avapi::CompanyOverview* - Overview()
- - avapi::CompanyStock* - Stock()
+ - avapi::CompanyEarnings* - earnings()
+ - avapi::CompanyOverview* - overview()
+ - avapi::CompanyStock* - stock()
 ---
 **Company Information - Annual and Quarterly Earnings:**
 
@@ -43,8 +43,8 @@ The following shows us accessing the annual and quarterly earnings for Tesla and
 ```C++
 
 // Get annual and quarterly earnings
-auto tsla_annual = tsla->Earnings()->Annual();
-auto tsla_quarterly = tsla->Earnings()->Quarterly();
+auto tsla_annual = tsla->earnings()->annual();
+auto tsla_quarterly = tsla->earnings()->quarterly();
 
 // Print the first 3 rows
 tsla_annual.printData(3);
@@ -80,8 +80,8 @@ The ```avapi::CompanyOverview```class has an ```std::unordered_map``` containing
 
 ```C++
 
-std::string tsla_sector = tsla->Overview()->Get("Sector");
-std::string tsla_employees = tsla->Overview()->Get("FullTimeEmployees");
+std::string tsla_sector = tsla->overview()->get("Sector");
+std::string tsla_employees = tsla->overview()->get("FullTimeEmployees");
 std::cout << tsla_sector << '\n' << tsla_employees << '\n';
 
 ```
@@ -118,7 +118,7 @@ The ```avapi::TimeSeries``` class is comprised of an ```std::vector``` of  ```av
 **Historical Stock Data - Intraday Time Series**
 ```C++
 
-auto tsla_intraday = tsla->Stock()->getTimeSeries(
+auto tsla_intraday = tsla->stock()->getTimeSeries(
     avapi::SeriesType::INTRADAY, true, "15min");
 
 // Print the last 10 "open" values
@@ -152,13 +152,13 @@ Output :
 ```C++
 
 // Get non-adjusted daily, weekly, and monthly data
-auto daily = tsla->Stock()->getTimeSeries(avapi::SeriesType::DAILY, false);
-auto weekly = tsla->Stock()->getTimeSeries(avapi::SeriesType::WEEKLY, false);
-auto monthly = tsla->Stock()->getTimeSeries(avapi::SeriesType::MONTHLY, false);
+auto daily = tsla->stock()->getTimeSeries(avapi::SeriesType::DAILY, false);
+auto weekly = tsla->stock()->getTimeSeries(avapi::SeriesType::WEEKLY, false);
+auto monthly = tsla->stock()->getTimeSeries(avapi::SeriesType::MONTHLY, false);
 
 // Get adjusted daily and weekly data
-auto daily_adj = tsla->Stock()->getTimeSeries(avapi::SeriesType::DAILY, true);
-auto weekly_adj = tsla->Stock()->getTimeSeries(avapi::SeriesType::WEEKLY, true);
+auto daily_adj = tsla->stock()->getTimeSeries(avapi::SeriesType::DAILY, true);
+auto weekly_adj = tsla->stock()->getTimeSeries(avapi::SeriesType::WEEKLY, true);
 
 // Print first 3 rows of each time series
 daily.printData(3);
@@ -231,7 +231,7 @@ The ```avapi::CompanyStock::GlobalQuote``` class contains the stock of interest'
 
 ```C++
 
-auto tsla_quote = tsla->Stock()->getGlobalQuote();
+auto tsla_quote = tsla->stock()->getGlobalQuote();
 tsla_quote.printData();
 
 ```
@@ -265,8 +265,8 @@ avapi::Crypto *btc = new avapi::Crypto(symbol, key);
 
 The Crypto class has two component classes with corresponding methods to access them:
 
- - avapi::CryptoPricing* - Pricing()
- - avapi::HealthIndex - Health()
+ - avapi::CryptoPricing* - pricing()
+ - avapi::HealthIndex - health()
 ---
 **Historical Pricing Data - Daily, Weekly, and Monthly Time Series**
 
@@ -274,9 +274,9 @@ The Crypto class has two component classes with corresponding methods to access 
 ```C++
 
 // Get daily, weekly, and monthly time series for "BTC" with the market "USD"
-auto daily = btc->Pricing()->getTimeSeries(avapi::SeriesType::DAILY,"USD");
-auto weekly = btc->Pricing()->getTimeSeries(avapi::SeriesType::WEEKLY,"USD");
-auto monthly = btc->Pricing()->getTimeSeries(avapi::SeriesType::MONTHLY,"USD");
+auto daily = btc->pricing()->getTimeSeries(avapi::SeriesType::DAILY,"USD");
+auto weekly = btc->pricing()->getTimeSeries(avapi::SeriesType::WEEKLY,"USD");
+auto monthly = btc->pricing()->getTimeSeries(avapi::SeriesType::MONTHLY,"USD");
 
 // Print first 3 rows
 daily.printData(3);
@@ -327,7 +327,7 @@ The ```avapi::ExchangeRate``` object is a class containing the cryptocurrency's 
 ```C++
 
 // Get an avapi::ExchangeRate object for "BTC"
-auto exchange_rate = btc->Pricing()->Exchange("USD");
+auto exchange_rate = btc->pricing()->exchange("USD");
 exchange_rate.printData();
 
 ```
@@ -350,7 +350,7 @@ The ```avapi::HealthIndex``` object is a class containing the cryptocurrency's c
 
 ```C++
 
-auto btc_health = btc->Health();
+auto btc_health = btc->health();
 btc_health.printData();
 
 ```
