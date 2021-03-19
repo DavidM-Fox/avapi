@@ -16,17 +16,17 @@ public:
     void setSymbol(const std::string &symbol);
     std::string &Symbol() { return symbol; }
 
-    CompanyEarnings *Earnings();
-    CompanyOverview *Overview();
-    CompanyStock *Stock();
+    std::unique_ptr<CompanyEarnings> &earnings();
+    std::unique_ptr<CompanyOverview> &overview();
+    std::unique_ptr<CompanyStock> &stock();
 
 private:
     std::string symbol;
     std::string api_key;
 
-    CompanyStock *company_stock;
-    CompanyOverview *company_overview;
-    CompanyEarnings *company_earnings;
+    std::unique_ptr<CompanyEarnings> company_earnings;
+    std::unique_ptr<CompanyOverview> company_overview;
+    std::unique_ptr<CompanyStock> company_stock;
 };
 
 } // namespace avapi

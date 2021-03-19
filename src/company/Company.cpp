@@ -21,19 +21,8 @@ Company::Company(const std::string &symbol, const std::string &key)
 {
 }
 
-/// @brief Company deconstructor, deletes members
-Company::~Company()
-{
-    if (company_stock != nullptr) {
-        delete company_stock;
-    }
-    if (company_overview != nullptr) {
-        delete company_overview;
-    }
-    if (company_earnings != nullptr) {
-        delete company_earnings;
-    }
-}
+/// @brief Company deconstructor
+Company::~Company() {}
 
 /// @brief Set the Alpha Vantage API key for Company and its components
 /// @param key - Alpha Vantage API key
@@ -68,33 +57,33 @@ void Company::setSymbol(const std::string &symbol)
     }
 }
 
-/// @brief Return an avapi::CompanyStock* for this Company, the first time this
-/// is called will create a new avapi::CompanyStock object
-CompanyStock *Company::Stock()
+/// @brief Return an avapi::CompanyEarnings* for this Company, the first time
+/// this is called will create a new avapi::CompanyEarnings object
+std::unique_ptr<CompanyEarnings> &Company::earnings()
 {
-    if (company_stock == nullptr) {
-        company_stock = new CompanyStock(symbol, api_key);
+    if (company_earnings = nullptr) {
+        company_earnings.reset(new CompanyEarnings(symbol, api_key));
     }
-    return company_stock;
+    return company_earnings;
 }
 
 /// @brief Return an avapi::CompanyOverview* for this Company, the first time
 /// this is called will create a new avapi::CompanyOverview object
-CompanyOverview *Company::Overview()
+std::unique_ptr<CompanyOverview> &Company::overview()
 {
-    if (company_overview == nullptr) {
-        company_overview = new CompanyOverview(symbol, api_key);
+    if (company_overview = nullptr) {
+        company_overview.reset(new CompanyOverview(symbol, api_key));
     }
     return company_overview;
 }
 
-/// @brief Return an avapi::CompanyEarnings* for this Company, the first time
-/// this is called will create a new avapi::CompanyEarnings object
-CompanyEarnings *Company::Earnings()
+/// @brief Return an avapi::CompanyStock* for this Company, the first time this
+/// is called will create a new avapi::CompanyStock object
+std::unique_ptr<CompanyStock> &Company::stock()
 {
-    if (company_earnings == nullptr) {
-        company_earnings = new CompanyEarnings(symbol, api_key);
+    if (company_stock = nullptr) {
+        company_stock.reset(new CompanyStock(symbol, api_key));
     }
-    return company_earnings;
+    return company_stock;
 }
 } // namespace avapi

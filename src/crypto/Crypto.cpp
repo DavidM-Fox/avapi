@@ -16,12 +16,7 @@ Crypto::Crypto(const std::string &symbol, const std::string &key)
 }
 
 /// @brief Crypto deconstructor
-Crypto::~Crypto()
-{
-    if (crypto_pricing != nullptr) {
-        delete crypto_pricing;
-    }
-}
+Crypto::~Crypto() {}
 
 /// @brief Set the Alpha Vantage API key for this Crypto instance and its
 /// components
@@ -47,14 +42,14 @@ void Crypto::setSymbol(const std::string &symbol)
 
 /// @brief Return a CryptoPricing* for this instance. A new CryptoPricing
 /// object is instantiated when first called
-CryptoPricing *Crypto::Pricing()
+std::unique_ptr<CryptoPricing> &Crypto::pricing()
 {
     if (crypto_pricing == nullptr) {
-        crypto_pricing = new CryptoPricing(symbol, api_key);
+        crypto_pricing.reset(new CryptoPricing(symbol, api_key));
     }
     return crypto_pricing;
 }
 
 /// @brief Return a HealthIndex for this instance
-HealthIndex Crypto::Health() { return {symbol, api_key}; }
+HealthIndex Crypto::health() { return {symbol, api_key}; }
 } // namespace avapi
