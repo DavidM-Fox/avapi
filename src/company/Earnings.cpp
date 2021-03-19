@@ -16,11 +16,11 @@ CompanyEarnings::CompanyEarnings(const std::string &symbol,
                                  const std::string &key)
     : symbol(symbol), ApiCall(key)
 {
-    Update();
+    update();
 }
 
 /// @brief Update the current annual and quarterly earnings
-void CompanyEarnings::Update()
+void CompanyEarnings::update()
 {
     if (symbol == "" || api_key == "") {
         std::cerr << "avapi/Company/Earnings.cpp: Warning: "

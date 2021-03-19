@@ -15,11 +15,11 @@ HealthIndex::HealthIndex() : symbol(""), ApiCall("") {}
 HealthIndex::HealthIndex(const std::string &symbol, const std::string &key)
     : symbol(symbol), ApiCall(key)
 {
-    Update();
+    update();
 }
 
 /// @brief Update HealthIndex data
-void HealthIndex::Update()
+void HealthIndex::update()
 {
     if (symbol == "" || api_key == "") {
         std::cerr << "avapi/Crypto/HealthIndex.cpp: Warning: "
@@ -35,7 +35,7 @@ void HealthIndex::Update()
     nlohmann::json json =
         nlohmann::json::parse(curlQuery())["Crypto Rating (FCAS)"];
 
-    // Skip "1. symbol" and "8. last refreshed"
+    // Skip push_back for "8. last refreshed"
     data.push_back(json["1. symbol"]);
     data.push_back(json["2. name"]);
     data.push_back(json["3. fcas rating"]);

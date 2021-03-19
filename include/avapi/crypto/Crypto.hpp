@@ -13,15 +13,15 @@ public:
 
     void setApiKey(const std::string &key);
     void setSymbol(const std::string &symbol);
-    std::string &Symbol() { return symbol; }
 
+    std::string &symbol() { return crypto_symbol; }
     std::unique_ptr<CryptoPricing> &pricing();
     HealthIndex health();
 
 private:
-    std::string symbol;
     std::string api_key;
 
+    std::string crypto_symbol;
     std::unique_ptr<CryptoPricing> crypto_pricing;
 };
 

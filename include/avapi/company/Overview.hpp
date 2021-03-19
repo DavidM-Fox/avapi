@@ -14,9 +14,9 @@ public:
 
     std::string symbol;
 
-    const std::string &Get(const std::string &field);
+    const std::string &get(const std::string &field);
     std::string operator[](const std::string &field) { return data[field]; }
-    void Update();
+    void update();
 
 private:
     std::unordered_map<std::string, std::string> data;

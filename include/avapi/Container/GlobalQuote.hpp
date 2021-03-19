@@ -8,7 +8,7 @@ namespace avapi {
 
 class GlobalQuote {
 public:
-    GlobalQuote() : symbol(""), timestamp(0), quote_data(0.0) {}
+    GlobalQuote() : symbol(""), timestamp(0), quote_data() {}
     GlobalQuote(const std::string &symbol, const std::time_t &timestamp,
                 const std::vector<float> &data)
         : symbol(symbol), timestamp(timestamp), quote_data(data)

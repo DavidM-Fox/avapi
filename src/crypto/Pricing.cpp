@@ -64,7 +64,7 @@ TimeSeries CryptoPricing::getTimeSeries(const SeriesType &type,
 
 /// @brief Get an ExchangeRate for this cryptocurrency
 /// @param market: Exchange Market e.g. ("USD")
-ExchangeRate CryptoPricing::Exchange(const std::string &market)
+ExchangeRate CryptoPricing::exchange(const std::string &market)
 {
     resetQuery();
     setFieldValue(Url::Field::FUNCTION, "CURRENCY_EXCHANGE_RATE");

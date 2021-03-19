@@ -14,19 +14,19 @@ CompanyOverview::CompanyOverview(const std::string &symbol,
                                  const std::string &key)
     : symbol(symbol), ApiCall(key)
 {
-    Update();
+    update();
 }
 
 /// @brief Get a CompanyOverview field value
 /// @param field: The field in question
 /// @return The value associated with the field
-const std::string &CompanyOverview::Get(const std::string &field)
+const std::string &CompanyOverview::get(const std::string &field)
 {
     return data[field];
 }
 
 /// @brief Update the Company overview
-void CompanyOverview::Update()
+void CompanyOverview::update()
 {
     if (symbol == "" || api_key == "") {
         std::cerr << "avapi/Company/Overview.cpp: Warning: "

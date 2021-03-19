@@ -5,13 +5,13 @@
 namespace avapi {
 
 /// @brief Default constructor
-Crypto::Crypto() : symbol(""), api_key(""), crypto_pricing(nullptr) {}
+Crypto::Crypto() : crypto_symbol(""), api_key(""), crypto_pricing(nullptr) {}
 
 /// @brief Constructor
 /// @param symbol: The cryptocurrency symbol of interest
 /// @param key: Alpha Vantage API key
 Crypto::Crypto(const std::string &symbol, const std::string &key)
-    : symbol(symbol), api_key(key), crypto_pricing(nullptr)
+    : crypto_symbol(symbol), api_key(key), crypto_pricing(nullptr)
 {
 }
 
@@ -34,7 +34,7 @@ void Crypto::setApiKey(const std::string &key)
 /// @param symbol: Cryptocurrency symbol
 void Crypto::setSymbol(const std::string &symbol)
 {
-    this->symbol = symbol;
+    this->crypto_symbol = symbol;
     if (crypto_pricing != nullptr) {
         crypto_pricing->symbol = symbol;
     }
@@ -45,11 +45,11 @@ void Crypto::setSymbol(const std::string &symbol)
 std::unique_ptr<CryptoPricing> &Crypto::pricing()
 {
     if (crypto_pricing == nullptr) {
-        crypto_pricing.reset(new CryptoPricing(symbol, api_key));
+        crypto_pricing.reset(new CryptoPricing(crypto_symbol, api_key));
     }
     return crypto_pricing;
 }
 
 /// @brief Return a HealthIndex for this instance
-HealthIndex Crypto::health() { return {symbol, api_key}; }
+HealthIndex Crypto::health() { return {crypto_symbol, api_key}; }
 } // namespace avapi

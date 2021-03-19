@@ -18,7 +18,7 @@ public:
 
     TimeSeries getTimeSeries(const SeriesType &type,
                              const std::string &market = "USD");
-    ExchangeRate Exchange(const std::string &market = "USD");
+    ExchangeRate exchange(const std::string &market = "USD");
 
 private:
     static const std::vector<std::string> series_function;

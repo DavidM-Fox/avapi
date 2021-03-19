@@ -15,9 +15,9 @@ public:
 
     std::string symbol;
 
-    AnnualEarnings Annual() { return annual_earnings; }
-    QuarterlyEarnings Quarterly() { return quarterly_earnings; };
-    void Update();
+    AnnualEarnings annual() { return annual_earnings; }
+    QuarterlyEarnings quarterly() { return quarterly_earnings; };
+    void update();
 
 private:
     AnnualEarnings annual_earnings;

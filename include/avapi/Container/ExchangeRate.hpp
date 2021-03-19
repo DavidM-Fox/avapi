@@ -9,7 +9,7 @@ namespace avapi {
 class ExchangeRate {
 public:
     ExchangeRate()
-        : from_symbol(""), to_symbol(""), timestamp(0), exchange_data(0.0)
+        : from_symbol(""), to_symbol(""), timestamp(0), exchange_data()
     {
     }
     ExchangeRate(const std::string &from, const std::string &to,
