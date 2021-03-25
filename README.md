@@ -104,7 +104,7 @@ TimeSeries CompanyStock::getTimeSeries(const SeriesType &type,
 
 ```
 
-The ```avapi::TimeSeries``` class is comprised of an ```std::vector``` of  ```avapi::TimePair``` objects along with other important meta data. Each ```TimePair``` object simply contains an ```std::time_t``` UNIX timestamp and an ```std::vector<float>``` data vector. The data vector is ordered according to the ```TimeSeries``` type:
+The ```avapi::TimeSeries``` class is comprised of an ```std::vector``` of  ```avapi::TimePair``` objects along with other important meta data. Each ```TimePair``` object simply contains an ```std::time_t``` UNIX timestamp and an ```std::vector<double>``` data vector. The data vector is ordered according to the ```TimeSeries``` type:
 
 * Adjusted/Non-Adjusted **Intraday** data:
 	* ```[open, high, low, close, volume]```
