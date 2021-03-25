@@ -13,7 +13,7 @@ public:
     {
     }
     ExchangeRate(const std::string &from, const std::string &to,
-                 const std::time_t &time, const std::vector<float> &data)
+                 const std::time_t &time, const std::vector<double> &data)
         : from_symbol(from), to_symbol(to), timestamp(time), exchange_data(data)
     {
     }
@@ -23,8 +23,8 @@ public:
     std::time_t timestamp;
 
     /// @brief [exchange_rate, bid_price, ask_price]
-    std::vector<float> exchange_data;
-    float &operator[](size_t i) { return exchange_data[i]; }
+    std::vector<double> exchange_data;
+    double &operator[](size_t i) { return exchange_data[i]; }
     void printData();
 };
 

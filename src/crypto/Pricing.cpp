@@ -75,9 +75,10 @@ ExchangeRate CryptoPricing::exchange(const std::string &market)
         nlohmann::json::parse(curlQuery())["Realtime Currency Exchange Rate"];
 
     std::time_t timestamp = avapi::toUnixTimestamp(json["6. Last Refreshed"]);
-    std::vector<float> data = {std::stof(std::string(json["5. Exchange Rate"])),
-                               std::stof(std::string(json["8. Bid Price"])),
-                               std::stof(std::string(json["9. Ask Price"]))};
+    std::vector<double> data = {
+        std::stod(std::string(json["5. Exchange Rate"])),
+        std::stod(std::string(json["8. Bid Price"])),
+        std::stod(std::string(json["9. Ask Price"]))};
 
     return {symbol, market, timestamp, data};
 }

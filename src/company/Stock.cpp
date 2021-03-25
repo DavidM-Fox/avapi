@@ -110,9 +110,9 @@ GlobalQuote CompanyStock::getGlobalQuote()
     data.erase(data.begin());
 
     // Convert to vector of floats
-    std::vector<float> data_f(data.size());
+    std::vector<double> data_f(data.size());
     transform(data.begin(), data.end(), data_f.begin(),
-              [](std::string const &val) { return std::stof(val); });
+              [](std::string const &val) { return std::stod(val); });
 
     return {symbol, timestamp, data_f};
 }

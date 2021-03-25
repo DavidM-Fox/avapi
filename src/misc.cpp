@@ -102,9 +102,9 @@ TimeSeries parseCsvString(const std::string &data, const bool &crypto)
         std::vector<std::string> row = doc.GetRow<std::string>(i);
 
         // Transform vector into floats, skip timestamp column
-        std::vector<float> data;
+        std::vector<double> data;
         std::transform(row.begin() + 1, row.end(), std::back_inserter(data),
-                       [](std::string &value) { return std::stof(value); });
+                       [](std::string &value) { return std::stod(value); });
 
         TimePair pair(toUnixTimestamp(row[0]), data);
         series.pushBack({toUnixTimestamp(row[0]), data});
@@ -149,9 +149,9 @@ TimeSeries parseCsvFile(const std::string &file_path, const bool &crypto)
         std::vector<std::string> row = doc.GetRow<std::string>(i);
 
         // Transform vector into floats, skip timestamp column
-        std::vector<float> data;
+        std::vector<double> data;
         std::transform(row.begin() + 1, row.end(), std::back_inserter(data),
-                       [](std::string &value) { return std::stof(value); });
+                       [](std::string &value) { return std::stod(value); });
 
         TimePair pair(toUnixTimestamp(row[0]), data);
         series.pushBack({toUnixTimestamp(row[0]), data});

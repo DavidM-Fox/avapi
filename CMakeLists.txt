@@ -9,6 +9,7 @@ find_package(CURL CONFIG REQUIRED)
 find_package(Catch2 CONFIG REQUIRED)
 find_package(nlohmann_json CONFIG REQUIRED)
 find_package(fmt CONFIG REQUIRED)
+find_package(boost 1.75.0 REQUIRED)
 
 include_directories(include)
 set(SRC_DIR src)
@@ -57,9 +58,9 @@ set(PROJECT_SOURCES
         ${INC_DIR}/avapi/Company/Earnings.hpp
         ${INC_DIR}/avapi/Company/Overview.hpp
         ${INC_DIR}/avapi/Company/Stock.hpp
-)
+ "include/TablePrinter.hpp")
 
-add_executable(avapi ${PROJECT_SOURCES})
+add_executable(avapi ${PROJECT_SOURCES} )
 target_link_libraries(avapi PRIVATE CURL::libcurl nlohmann_json nlohmann_json::nlohmann_json fmt::fmt)
 
 # set(TESTS

@@ -4,6 +4,7 @@
 #include <fmt/core.h>
 #include <fmt/ranges.h>
 #include "rapidcsv.h"
+#include "TablePrinter.hpp"
 #include "avapi/misc.hpp"
 #include "avapi/Container/TimePair.hpp"
 #include "avapi/Container/TimeSeries.hpp"
@@ -48,27 +49,17 @@ void TimeSeries::reverseData()
 /// @param count: The # of rows to print (default = 0 or all)
 void TimeSeries::printData(const size_t &count)
 {
-    size_t cell_w = 14;
+    using namespace dmf::tableprinter;
 
-    size_t table_w = (headers.size() * cell_w) + headers.size() + 1;
+    TablePrinter printer(this->title, this->headers);
 
-    // Create fmt::print() format strings
-    std::string title_format = "|{:^" + std::to_string(table_w - 2) + "}|";
-    std::string cell_format = "|{:>" + std::to_string(cell_w) + "}";
-    std::string cell_format_float = "|{:>" + std::to_string(cell_w) + ".2f}";
-    std::string separator = "\n" + std::string(table_w, '-') + "\n";
-
-    // Print Title
-    std::cout << separator;
-    fmt::print(title_format, this->title);
-    std::cout << separator;
-
-    // Print Headers
-    for (auto &header : this->headers) {
-        fmt::print(cell_format, header);
+    for (size_t i = 0; i < printer.columns.size(); ++i) {
+        printer.columns[i].setWidth(15);
+        if (i != 0)
+            printer.columns[i].data_fmt.additional = ".2f";
     }
-    std::cout << "|";
-    std::cout << separator;
+    printer.formatHeading();
+    printer.printHeading();
 
     size_t n = count;
     size_t n_rows = rowCount();
@@ -78,13 +69,54 @@ void TimeSeries::printData(const size_t &count)
 
     // Print Data
     for (size_t i = 0; i < n; ++i) {
-        fmt::print(cell_format, data_series[i].timestamp);
-        for (auto &value : data_series[i].data) {
-            fmt::print(cell_format_float, value);
-        }
-        std::cout << "|\n";
+        std::vector<double> data_row = {(double)data_series[i].timestamp};
+        data_row.insert(data_row.end(), data_series[i].data.begin(),
+                        data_series[i].data.end());
+        printer.printDataRow(data_row);
     }
 }
+
+/// @brief Print formatted TimeSeries' data
+/// @param count: The # of rows to print (default = 0 or all)
+// void TimeSeries::printData(const size_t &count)
+//{
+//    size_t cell_w = 14;
+//
+//    size_t table_w = (headers.size() * cell_w) + headers.size() + 1;
+//
+//    // Create fmt::print() format strings
+//    std::string title_format = "|{:^" + std::to_string(table_w - 2) + "}|";
+//    std::string cell_format = "|{:>" + std::to_string(cell_w) + "}";
+//    std::string cell_format_float = "|{:>" + std::to_string(cell_w) + ".2f}";
+//    std::string separator = "\n" + std::string(table_w, '-') + "\n";
+//
+//    // Print Title
+//    std::cout << separator;
+//    fmt::print(title_format, this->title);
+//    std::cout << separator;
+//
+//    // Print Headers
+//    for (auto &header : this->headers) {
+//        fmt::print(cell_format, header);
+//    }
+//    std::cout << "|";
+//    std::cout << separator;
+//
+//    size_t n = count;
+//    size_t n_rows = rowCount();
+//
+//    if (count > n_rows || count == 0)
+//        n = n_rows;
+//
+//    // Print Data
+//    for (size_t i = 0; i < n; ++i) {
+//        fmt::print(cell_format, data_series[i].timestamp);
+//        for (auto &value : data_series[i].data) {
+//            fmt::print(cell_format_float, value);
+//        }
+//        std::cout << "|\n";
+//    }
+//}
 
 /// @brief Get the TimeSeries' row count
 size_t TimeSeries::rowCount() { return data_series.size(); }

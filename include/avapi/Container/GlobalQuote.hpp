@@ -10,7 +10,7 @@ class GlobalQuote {
 public:
     GlobalQuote() : symbol(""), timestamp(0), quote_data() {}
     GlobalQuote(const std::string &symbol, const std::time_t &timestamp,
-                const std::vector<float> &data)
+                const std::vector<double> &data)
         : symbol(symbol), timestamp(timestamp), quote_data(data)
     {
     }
@@ -20,8 +20,8 @@ public:
 
     /// @brief [Open, High, Low, Close, Volume, PreviousClose, ChangeAmount,
     /// ChangePercent]
-    std::vector<float> quote_data;
-    float &operator[](size_t i) { return quote_data[i]; }
+    std::vector<double> quote_data;
+    double &operator[](size_t i) { return quote_data[i]; }
     void printData();
 
 private:

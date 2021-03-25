@@ -5,8 +5,8 @@ int main()
     std::string symbol = "BTC";
     std::string key = avapi::readApiKey("../../api.key");
 
-    avapi::Crypto *btc = new avapi::Crypto(symbol, key);
-    btc->pricing()->exchange("USD").printData();
-    delete btc;
+    std::unique_ptr<avapi::Crypto> btc(new avapi::Crypto(symbol, key));
+    btc->pricing()->getTimeSeries(avapi::SeriesType::DAILY, "USD").printData(3);
+
     return 0;
 }

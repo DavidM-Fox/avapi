@@ -8,7 +8,7 @@ class TimePair {
 public:
     TimePair() : timestamp(0), data({0}) {}
 
-    TimePair(const std::time_t &time, const std::vector<float> &data)
+    TimePair(const std::time_t &time, const std::vector<double> &data)
         : timestamp(time), data(data)
     {
     }
@@ -18,8 +18,8 @@ public:
     }
 
     std::time_t timestamp;
-    std::vector<float> data;
-    float &operator[](size_t i) { return data[i]; }
+    std::vector<double> data;
+    double &operator[](size_t i) { return data[i]; }
 };
 } // namespace avapi
 #endif
