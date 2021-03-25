@@ -54,9 +54,11 @@ void TimeSeries::printData(const size_t &count)
     TablePrinter printer(this->title, this->headers);
 
     for (size_t i = 0; i < printer.columns.size(); ++i) {
-        printer.columns[i].setWidth(15);
-        if (i != 0)
+        printer.columns[i].setWidth(12);
+        if (i != 0) {
+            printer.columns[i].data_fmt.alignment = Align::RIGHT;
             printer.columns[i].data_fmt.additional = ".2f";
+        }
     }
     printer.formatHeading();
     printer.printHeading();
